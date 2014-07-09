@@ -1,0 +1,54 @@
+---
+- name: OpenStack Image Serivce (Frontend)
+  hosts: frontend
+  sudo: yes
+
+  
+  tasks:
+    - name: ensure glance is installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - openstack-glance 
+        - openstack-utils 
+        - openstack-selinux 
+        - sheepdog
+        - MySQL-python
+      notify:
+      - restart glance-api
+
+    
+    - name: ensure glance-api.conf file is configured
+      template: >
+          src=templates/etc/glance/glance-api.conf
+          dest=/etc/glance/glance-api.conf
+          owner=root
+          group=glance
+          mode=0640
+          backup=no
+      notify:
+      - restart glance-api
+
+      # glance_manager cannot be used due to the lack of glance.db.sqlalchemy.migration.py
+    - name: ensure glance database is synchronized
+      command: su glance -s /bin/sh -c "glance-manage --debug db_sync"
+      #glance_manage: action=dbsync
+      notify:
+         - restart glance-api    
+         
+    - name: ensure glance-api port 9292 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=9292
+  
+    - name: ensure glance-api automatically boots after reboot
+      service: name=openstack-glance-api state=started enabled=yes
+
+  
+
+  handlers:
+    - include: ../reusables/handlers.yml
+      
+    - name: restart glance-api
+      service: name=openstack-glance-api state=restarted
+
+
+
+    

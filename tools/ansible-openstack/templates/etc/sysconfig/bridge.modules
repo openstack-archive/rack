@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/sbin/modprobe bridge > /dev/null 2>&1
+

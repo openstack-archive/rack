@@ -1,0 +1,16 @@
+---
+- name: restart services(COMPUTE)
+  hosts: compute_backend
+  serial: 1
+  sudo: yes
+  gather_facts: no
+
+  tasks:
+    - name: ensure COMPUTE services are restarted
+      service: name={{ item }} state=restarted
+      with_items: 
+        - neutron-linuxbridge-agent
+        - libvirtd
+        - openstack-nova-compute
+        
+

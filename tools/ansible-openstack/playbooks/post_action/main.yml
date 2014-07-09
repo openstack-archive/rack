@@ -1,0 +1,10 @@
+- include: rabbitmq.yml
+- include: compute.yml
+- include: gateway.yml
+- include: controller.yml
+- include: frontend.yml
+- include: post-prepareProviderNW.yml
+
+#- include: post-prepareTenant-keystone.yml
+#- include: post-prepareTenant-NW.yml
+

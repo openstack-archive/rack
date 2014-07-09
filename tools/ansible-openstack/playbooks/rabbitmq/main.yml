@@ -1,0 +1,71 @@
+---
+- name: RabbitMQ Server
+  hosts: amqp_backend
+  gather_facts: yes
+  sudo: yes
+
+  tasks:
+  
+    - name: ensure rabbitmq-server packages are installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - rabbitmq-server
+        - erlang
+    
+    - name: ensure port 5672 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=5672
+    - name: ensure port 4369 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=4369
+    - name: ensure port $amqp_erlang_port is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port={{ amqp_erlang_port }}
+ 
+  
+    - name: ensure erlang port is configured for rabbitmq( and cluster )
+      template: >
+            src=templates/etc/rabbitmq/rabbitmq.config
+            dest=/etc/rabbitmq/rabbitmq.config
+            owner=root
+            group=root
+            mode=0644
+      notify:
+        - restart rabbitmq-server
+
+
+    - name: ensure erlang kernel parameter is set
+      template: >
+            src=templates/etc/rabbitmq/rabbitmq-env.conf
+            dest=/etc/rabbitmq/rabbitmq-env.conf
+            owner=root
+            group=root
+            mode=0644
+      notify:
+        - restart rabbitmq-server
+
+        
+    - name: ensure rabbitmq runs automatically after boot.
+      service: name=rabbitmq-server state=started enabled=yes
+
+    - name: ensure only rabbitmq user is admin
+      rabbitmq_user: user={{ amqp_user }}
+                     password={{ amqp_pass }}
+                     vhost=/
+                     configure_priv=.*
+                     read_priv=.*
+                     write_priv=.*
+                     state=present
+                     tags=administrator
+
+    - name: ensure guest user is removed from rabbitmq
+      rabbitmq_user: user=guest
+                     vhost=/
+                     state=absent
+
+
+  handlers:
+    - include: ../reusables/handlers.yml
+    - name: restart rabbitmq-server
+      service: name=rabbitmq-server state=restarted
+
+
+
+

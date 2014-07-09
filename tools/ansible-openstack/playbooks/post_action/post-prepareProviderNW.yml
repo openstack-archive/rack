@@ -1,0 +1,40 @@
+---
+- name: prepare provider Network
+  hosts: frontend[0]
+  sudo: yes
+
+  tasks:
+    - name: ensure provider network exists
+      neutron_network: >
+        name={{ provider_nw_name }}
+        tenant_name={{ service_tenant }}
+        provider_network_type={{ provider_network_type }}
+        provider_physical_network=phys_external
+        router_external=yes
+        state=present
+        region_name={{ openstack_region }}
+        auth_url={{ keystone_admin_url }}
+        login_username={{ admin_user }}
+        login_password={{ admin_password }}
+        login_tenant_name={{ admin_tenant }}
+
+    - name: ensure provider subnetwork exists
+      neutron_subnet: >
+        name={{ provider_subnet_name }}
+        network_name={{ provider_nw_name }}
+        cidr={{ provider_cidr }}
+        tenant_name={{ service_tenant }}
+        ip_version=4
+        enable_dhcp={{ provider_enable_dhcp }}
+        gateway_ip={{ provider_gateway_ip }}
+        allocation_pool_start={{ provider_allocation_pool_start }}
+        allocation_pool_end={{ provider_allocation_pool_end }}
+        state=present
+        region_name={{ openstack_region }}
+        auth_url={{ keystone_admin_url }}
+        login_username={{ admin_user }}
+        login_password={{ admin_password }}
+        login_tenant_name={{ admin_tenant }}
+
+      
+      

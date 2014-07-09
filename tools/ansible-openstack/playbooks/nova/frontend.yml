@@ -1,0 +1,59 @@
+---
+- name: OpenStack Compute (Frontend)
+  hosts: frontend
+  sudo: yes
+
+  tasks:
+    - name: ensure nova packages are installed
+      yum: name={{item}} state=latest
+      with_items:
+        - openstack-nova-api 
+      notify:
+        - ensure services are restarted
+
+    
+    - name: ensure nova.conf file is configured
+      template: >
+            src=templates/etc/nova/nova.conf
+            dest=/etc/nova/nova.conf
+            owner=root group=nova mode=0640 backup=no
+      notify:
+        - ensure services are restarted
+
+    - name: ensure nova port 8773 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=8773
+        
+    - name: ensure nova port 8774 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=8774
+        
+    - name: ensure nova port 8775 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=8775
+        
+        
+    - name: ensure database is synchronized
+      command: su nova -s /bin/sh -c "nova-manage db sync"
+      notify:
+        - ensure services are restarted        
+        
+        
+    - name: ensure nova services automatically boots after reboot
+      service: name={{item}} state=started enabled=yes
+      with_items:
+        - openstack-nova-api
+        - messagebus
+
+
+        
+  handlers:
+    - include: ../reusables/handlers.yml
+      
+    - name: ensure services are restarted
+      service: name={{item}} state=restarted
+      with_items:
+        - openstack-nova-api
+        - messagebus
+
+        
+        
+        
+        

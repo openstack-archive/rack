@@ -1,0 +1,55 @@
+---
+- name: OpenStack Dashboard
+  hosts: frontend
+  sudo: yes
+
+  tasks:
+    - name: ensure horizon packages are installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - mod_wsgi
+        - httpd
+        - mod_ssl
+        - memcached
+        - python-memcached
+        - openstack-dashboard
+      notify:
+        - ensure services are restarted 
+        
+    - name: ensure local_settings file is configured
+      template: >
+          src=templates/etc/openstack-dashboard/local_settings
+          dest=/etc/openstack-dashboard/local_settings
+          owner=root
+          group=root
+          mode=0644
+          backup=yes
+      notify: ensure services are restarted 
+
+    - name: ensure httpd.conf is configured
+      lineinfile: >
+       dest=/etc/httpd/conf/httpd.conf
+       state=present
+       line="ServerName {{ ansible_hostname }}:80"
+       insertafter='#ServerName www.example.com:80'
+      notify:
+        - ensure services are restarted 
+
+    - name: ensure port 80 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=80
+    - name: ensure port 443 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=443
+
+    - name: ensure httpd services automatically boots after reboot
+      service: name={{item}} state=started enabled=yes
+      with_items:
+        - httpd
+
+  handlers:
+    - include: ../reusables/handlers.yml
+      
+    - name: ensure services are restarted 
+      service: name={{ item }} state=restarted
+      with_items:
+        - httpd
+        - memcached

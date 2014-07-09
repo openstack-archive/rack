@@ -1,0 +1,42 @@
+---
+- name: OpenStack Block Storage (Controller)
+  hosts: controller
+  sudo: yes
+
+  tasks:
+    - name: ensure cinder-related packages are installed
+      yum: name={{ item }}  state=latest
+      with_items:
+        - openstack-cinder
+        - openstack-utils
+        - openstack-selinux
+        - MySQL-python
+      notify:
+        - restart cinder services
+
+    - name: ensure cinder.conf file is configured
+      template: >
+        src=templates/etc/cinder/cinder.conf
+        dest=/etc/cinder/cinder.conf
+        owner=root group=cinder mode=0640 backup=no
+      notify:
+       - restart cinder services
+  
+
+
+    - name: ensure cinder automatically boots after reboot
+      service: name={{ item }} state=started enabled=yes
+      with_items: 
+        - openstack-cinder-scheduler 
+    
+  handlers:
+
+    - name: restart cinder services
+      service: name={{ item }} state=restarted
+      with_items: 
+        - openstack-cinder-scheduler 
+        
+      
+          
+      
+      

@@ -1,0 +1,67 @@
+---
+- name: OpenStack Networking (Frontend)
+  hosts: frontend
+  sudo: yes
+
+  tasks:
+    #OVS agent required due to the packaging bug of ml2 plugin.
+    - name: ensure neutron packages are installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - MySQL-python
+        - openstack-neutron
+        - openstack-neutron-ml2
+        - openstack-neutron-openvswitch
+        - openstack-utils
+        - openstack-selinux
+        - python-neutron
+        - python-neutronclient
+      notify:
+        - restart neutron-server
+    
+     # you can't use delegate_to and register at simultaneously
+     # delegate_to is used for simple "fire and forget" command.
+    - name: determine tenant id of "service"
+      shell: >
+        /usr/bin/keystone 
+        --os-endpoint "{{ keystone_admin_url }}" 
+        --os-token "{{ admin_token }}"
+        tenant-get {{service_tenant}}  | grep "id " | awk {'print $4'}      
+      register: nova_admin_tenant_id
+    
+    - name: set_fact nova_admin_tenant_id for later use
+      action: set_fact
+      args: 
+        admin_tenantID: "{{ nova_admin_tenant_id.stdout }}"
+
+    - name: ensure neutron configuration files are copied
+      template: 
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: neutron
+        mode: 0640
+      with_items: 
+        - { src: templates/etc/neutron/neutron.conf, dest: /etc/neutron/neutron.conf}
+        - { src: templates/etc/neutron/plugins/ml2/ml2_conf_linuxbridge_VLAN.ini, dest: /etc/neutron/plugins/ml2/ml2_conf.ini}
+      notify:
+        - restart neutron-server
+
+
+    - name: ensure symlink to ml2 plugin is created.
+      file: src=/etc/neutron/plugins/ml2/ml2_conf.ini
+            path=/etc/neutron/plugin.ini
+            state=link
+            
+           
+    - name: ensure neutron-server port 9696 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=9696
+ 
+    - name: ensure neutron-server automatically boots after reboot
+      service: name=neutron-server state=started enabled=yes
+
+  handlers:
+    - include: ../reusables/handlers.yml
+      
+    - name: restart neutron-server
+      service: name=neutron-server state=restarted

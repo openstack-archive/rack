@@ -1,0 +1,71 @@
+---
+- name: System settings for all OpenStack nodes
+  hosts: all
+  sudo: yes
+
+  tasks:
+    - name: ensure python SELinux library is installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - libselinux-python 
+
+    - name: ensure SELinux is congirured permissive
+      selinux: >
+               policy=targeted
+               state=permissive
+
+    - name: ensure epel and rdo-release repository are installed
+      yum: name={{ item }} state=present
+      with_items:
+        - "http://ftp.riken.jp/Linux/fedora/epel/6/x86_64/epel-release-6-8.noarch.rpm"
+        - "http://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-3.noarch.rpm"
+      when: not use_your_own_repository
+               
+    - name: ensure local repository file is updated(if any)
+      copy: 
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items: 
+        - { src: templates/etc/yum.repos.d/CentOS-Base.repo, dest: /etc/yum.repos.d/CentOS-Base.repo }
+        - { src: templates/etc/yum.repos.d/epel.repo, dest: /etc/yum.repos.d/epel.repo }
+        - { src: templates/etc/yum.repos.d/epel-testing.repo, dest: /etc/yum.repos.d/epel-testing.repo  }
+        - { src: templates/etc/yum.repos.d/rdo-release.repo, dest: /etc/yum.repos.d/rdo-release.repo  }
+      when: use_your_own_repository
+    
+    - name: yum clean all
+      command: /usr/bin/yum clean all
+
+    - name: ensure python keyczar is installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - python-keyczar
+
+    - name: ensure python-keyczar port 5099 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=5099
+
+    - name: ensure additional packages are installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - bash-completion
+        - openstack-utils
+        - iptables
+        - openstack-selinux
+
+    - name: make sure iptables is automatically booted
+      service: name=iptables state=started enabled=yes
+      
+    - name: "Build hosts file for OpenStack nodes"
+      lineinfile: dest=/etc/hosts regexp='.*{{hostvars[item].ansible_fqdn}}$' line="{{ hostvars[item].my_int_ip }} {{item}} {{hostvars[item].ansible_fqdn}}" state=present
+      when: hostvars[item].ansible_default_ipv4.address is defined
+      with_items: groups['all']      
+      
+    - name: ensure all packages are updated (yum update)
+      yum: name=* state=latest
+      
+      
+      
+  handlers:
+    - include: ../reusables/handlers.yml

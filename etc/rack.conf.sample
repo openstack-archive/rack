@@ -1,0 +1,23 @@
+[DEFAULT]
+#debug = True
+#verbose = True
+#rabbit_password = guest
+#rabbit_host = localhost
+#rpc_backend = rack.openstack.common.rpc.impl_kombu
+#lock_path = /var/lib/rack/lock
+#state_path = /var/lib/rack
+#sql_connection = mysql://root:password@127.0.0.1/rack?charset=utf8
+#my_ip = 127.0.0.1
+#api_paste_config = /etc/api-paste.ini
+#auth_strategy = noauth
+#os_username = admin
+#os_password = password
+#os_tenant_name = demo
+#os_auth_url = http://localhost:5000/v2.0
+
+[keystone_authtoken]
+#signing_dir = /var/cache/rack
+#admin_password = password
+#admin_user = rack
+#admin_tenant_name = services
+#auth_host = 127.0.0.1

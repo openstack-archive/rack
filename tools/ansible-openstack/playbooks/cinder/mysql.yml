@@ -1,0 +1,20 @@
+---
+- name: Install Cinder database
+  hosts: sql_backend[0]
+  sudo: True
+  tasks:
+
+    - name: ensure cinder database is present
+      mysql_db: 
+        name: cinder
+        encoding: utf8
+
+    - name: ensure cinder database user is present
+      mysql_user: 
+        name: cinder 
+        host: "{{ item }}" 
+        password: "{{ cinder_db_password }}" 
+        priv: cinder.*:ALL
+      with_items:
+        - "%"
+        - localhost

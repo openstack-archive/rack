@@ -1,0 +1,7 @@
+- include: common.yml
+- include: common_sysconfig_VLAN.yml
+- include: common_kernelParameters.yml
+- include: yum_iproute.yml
+- include: yum_KVM.yml
+- include: yum_kernel.yml
+

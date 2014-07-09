@@ -1,0 +1,45 @@
+---
+- name: edit kernel parameters for COMPUTE and NW
+  hosts: compute_backend:network_gateway
+  sudo: yes
+
+  tasks:
+    - name: to make sure net.bridge.bridge-nf-call-* to be activated after reboot
+      copy: >
+            src=templates/etc/sysconfig/bridge.modules
+            dest=/etc/sysconfig/modules
+            owner=root
+            group=root
+            mode=0755
+            
+    - name: manually load bridge module
+      modprobe: name=bridge state=present
+
+    - name: set all.rp_filter zero
+      sysctl: name=net.ipv4.conf.all.rp_filter value=0 state=present reload=yes sysctl_set=yes
+
+    - name: set default.rp_filter zero
+      sysctl: name=net.ipv4.conf.default.rp_filter value=0 state=present reload=yes sysctl_set=yes
+      
+    - name: set net.bridge.bridge-nf-call-ip6tables one
+      sysctl: name=net.bridge.bridge-nf-call-ip6tables value=1 state=present reload=yes sysctl_set=yes
+      
+    - name: set net.bridge.bridge-nf-call-iptables one
+      sysctl: name=net.bridge.bridge-nf-call-iptables value=1 state=present reload=yes sysctl_set=yes
+
+    - name: set net.bridge.bridge-nf-call-arptables one
+      sysctl: name=net.bridge.bridge-nf-call-arptables value=1 state=present reload=yes sysctl_set=yes
+      
+      
+- name: edit kernel parameters exclusively for NW
+  hosts: network_gateway
+  sudo: yes
+
+  tasks:
+    - name: set ip_forward one
+      sysctl: name=net.ipv4.ip_forward value=1 state=present reload=yes sysctl_set=yes
+    
+
+      
+
+

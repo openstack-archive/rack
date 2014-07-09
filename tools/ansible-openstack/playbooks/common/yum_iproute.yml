@@ -1,0 +1,13 @@
+---
+- name: update network namespace package
+  hosts: network_gateway
+  sudo: yes
+
+  tasks:
+    - name: ensure lates network namespace package
+      yum: name={{ item }} state=latest
+      with_items:
+        - iproute
+
+    - name: ensure lates network namespace package
+      yum: name={{ latest_dnsmasq }}  state=present

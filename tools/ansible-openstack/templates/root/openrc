@@ -1,0 +1,12 @@
+if [ "$1" == "" -o "$2" == "" ]; then
+   echo "usage: $ source openstackrc <<tenant_name>> <<user_name>>" 
+else
+   export OS_TENANT_NAME=$1
+   export OS_USERNAME=$2
+   export OS_PASSWORD=$2
+   export OS_AUTH_URL=http://{{frontend_ext_ip}}:5000/v2.0
+   export PS1="${PS1}[( $OS_TENANT_NAME - \$OS_USERNAME )] $ "
+fi
+
+
+

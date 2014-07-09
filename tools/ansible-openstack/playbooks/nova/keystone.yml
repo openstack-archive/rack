@@ -1,0 +1,51 @@
+---
+- name: Configure nova-api in keystone
+  hosts: frontend[0]
+  sudo: False
+  gather_facts: True
+  tasks:
+
+    - name: create nova service user
+      keystone_user: 
+        endpoint: "{{ keystone_admin_url }}"
+        token: "{{ admin_token }}" 
+        tenant: "{{ service_tenant }}" 
+        user: nova 
+        password: "{{ nova_identity_password }}"
+
+    - name: add nova service user to the service tenant with the admin role
+      keystone_user: 
+        endpoint: "{{ keystone_admin_url }}"
+        token: "{{ admin_token }}" 
+        tenant: "{{ service_tenant }}" 
+        user: nova 
+        role: admin
+
+    - name: add nova endpoint to keystone
+      keystone_service: 
+        endpoint: "{{ keystone_admin_url }}"
+        token: "{{ admin_token }}" 
+        region: "{{ openstack_region }}"
+        name: nova
+        type: compute
+        description: "Compute Service"
+        public_url: "{{ nova_public_url }}"
+        internal_url: "{{ nova_internal_url }}"
+        admin_url: "{{ nova_admin_url }}"
+
+    - name: add ec2 compatibility layer endpoint
+      keystone_service: 
+        endpoint: "{{ keystone_admin_url }}"
+        token: "{{ admin_token }}"
+        region: "{{ openstack_region }}"
+        name: ec2
+        type: ec2
+        description: "EC2 Compatibility Layer"
+        public_url: "{{ ec2_public_url }}"
+        internal_url: "{{ ec2_internal_url }}"
+        admin_url: "{{ ec2_admin_url }}"
+
+        
+        
+        
+        

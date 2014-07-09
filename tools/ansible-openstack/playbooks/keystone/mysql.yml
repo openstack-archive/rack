@@ -1,0 +1,26 @@
+---
+- name: OpenStack Identity Database
+  hosts: sql_backend[0]
+  sudo: yes
+
+
+  tasks:
+  
+    - name: ensure keystone database is present
+      mysql_db: 
+        name: keystone
+        encoding: utf8
+
+    - name: ensure keystone database user is present
+      mysql_user: 
+          name: keystone
+          host: "{{ item }}"
+          password: "{{ keystone_db_password }}"
+          priv: keystone.*:ALL
+      with_items: 
+        - '%'
+        - localhost
+
+        
+        
+    
