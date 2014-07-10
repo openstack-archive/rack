@@ -280,8 +280,9 @@ class Controller(wsgi.Controller):
             processes = db.process_get_all(context, gid, {"ppid": pid})
             targets=[]
             for process in processes:
-                targets.append(process["pid"])
-                targets.extend(_get_child_pid(context, gid, process["pid"]))
+                if process.has_key("pid"): 
+                    targets.append(process["pid"])
+                    targets.extend(_get_child_pid(context, gid, process["pid"]))
             return targets
 
         try:

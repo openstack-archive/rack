@@ -302,15 +302,6 @@ class ProcessesTest(test.NoDBTestCase):
             method.AndRaise(exception)
             self._set_mox_db_process_update_on_error()
         
-    def _set_mox_resource_operator_process_delete(self, exception=None):
-        self._set_mox_scheduler_select_destinations()
-        self.mox.StubOutWithMock(operator_rpcapi.ResourceOperatorAPI, "process_delete")
-        method = operator_rpcapi.ResourceOperatorAPI.process_delete(IsA(context.RequestContext), "fake_host", 
-                                                                    nova_instance_id=IsA(unicode), 
-                                                                    )
-        if issubclass(exception.__class__, Exception):
-            method.AndRaise(exception)
-
     def setUp(self):
         super(ProcessesTest, self).setUp()
         self.stubs.Set(uuid, "uuid4", fake_pid1)
@@ -745,3 +736,98 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
         self.assertEqual(res.status_code, 404)
+
+class ProcessesTest2(test.NoDBTestCase):
+
+    def _set_mox_db_process_update_on_error(self):
+        self.mox.StubOutWithMock(db, "process_update")
+        db.process_update(IsA(context.RequestContext), IsA(unicode), IsA(unicode), {"status": "ERROR"})
+
+    def _set_mox_scheduler_select_destinations(self, return_value={"host": "fake_host"}, do_process_update=True):
+        method = scheduler_rpcapi.SchedulerAPI.select_destinations(
+                                                                   IsA(context.RequestContext), 
+                                                                   request_spec={}, 
+                                                                   filter_properties={})
+        if issubclass(return_value.__class__, Exception):
+            method.AndRaise(return_value)
+            if do_process_update:
+                self._set_mox_db_process_update_on_error()
+        else:
+            method.AndReturn(return_value)
+
+        
+    def _set_mox_resource_operator_process_delete(self, exception=None):
+        self._set_mox_scheduler_select_destinations()
+        method = operator_rpcapi.ResourceOperatorAPI.process_delete(IsA(context.RequestContext), "fake_host", 
+                                                                    nova_instance_id=IsA(unicode), 
+                                                                    )
+        if issubclass(exception.__class__, Exception):
+            method.AndRaise(exception)
+
+    def setUp(self):
+        super(ProcessesTest2, self).setUp()
+        self.stubs.Set(uuid, "uuid4", fake_pid1)
+        self.app = fakes.wsgi_app()
+        self.view = ViewBuilder()
+
+    def test_delete_non_parent(self):
+        self.stubs.Set(db, "process_delete", fake_delete)
+        self.mox.StubOutWithMock(db, 'process_get_all')
+        self.mox.StubOutWithMock(scheduler_rpcapi.SchedulerAPI, "select_destinations")
+        self.mox.StubOutWithMock(operator_rpcapi.ResourceOperatorAPI, "process_delete")
+            
+        self._set_mox_resource_operator_process_delete()
+        db.process_get_all(IsA(context.RequestContext), GID, {"ppid": PID1}).AndReturn([{}])
+
+        self.mox.ReplayAll()
+
+        url = get_base_url(GID) + "/" + PID1
+        req = get_request(url, "DELETE")
+        res = req.get_response(self.app)
+        self.assertEqual(res.status_code, 204)
+
+    def test_delete_parent_child_relation(self):
+        self.stubs.Set(db, "process_delete", fake_delete)
+        self.mox.StubOutWithMock(db, 'process_get_all')
+        self.mox.StubOutWithMock(scheduler_rpcapi.SchedulerAPI, "select_destinations")
+        self.mox.StubOutWithMock(operator_rpcapi.ResourceOperatorAPI, "process_delete")
+            
+        self._set_mox_resource_operator_process_delete()
+        self._set_mox_resource_operator_process_delete()
+
+        db.process_get_all(IsA(context.RequestContext), GID, {"ppid": PID1}).AndReturn([{"pid" : PID2}])
+        db.process_get_all(IsA(context.RequestContext), GID, {"ppid": PID2}).AndReturn([{}])
+
+        self.mox.ReplayAll()
+
+        url = get_base_url(GID) + "/" + PID1
+        req = get_request(url, "DELETE")
+        res = req.get_response(self.app)
+        self.assertEqual(res.status_code, 204)
+
+    def test_delete_not_found_exception(self):
+        self.mox.StubOutWithMock(db, 'process_get_all')
+        self.mox.StubOutWithMock(db, 'process_delete')
+            
+        db.process_get_all(IsA(context.RequestContext), GID, {"ppid": PID1}).AndReturn([{}])
+        db.process_delete(IsA(context.RequestContext), GID, PID1).AndRaise(exception.ProcessNotFound(pid=PID1))
+        self.mox.ReplayAll()
+        url = get_base_url(GID) + "/" + PID1
+        req = get_request(url, "DELETE")
+        res = req.get_response(self.app)
+        self.assertEqual(res.status_code, 404)
+
+    def test_delete_exception(self):
+        self.stubs.Set(db, "process_delete", fake_delete)
+        self.mox.StubOutWithMock(db, 'process_get_all')
+        self.mox.StubOutWithMock(scheduler_rpcapi.SchedulerAPI, "select_destinations")
+        self.mox.StubOutWithMock(operator_rpcapi.ResourceOperatorAPI, "process_delete")
+            
+        db.process_get_all(IsA(context.RequestContext), GID, {"ppid": PID1}).AndReturn([{}])
+        self._set_mox_resource_operator_process_delete(Exception())
+
+        self.mox.ReplayAll()
+        url = get_base_url(GID) + "/" + PID1
+        req = get_request(url, "DELETE")
+        res = req.get_response(self.app)
+        self.assertEqual(res.status_code, 500)

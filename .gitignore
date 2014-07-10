@@ -43,3 +43,4 @@ rack/vcsversion.py
 tools/conf/rack.conf*
 tools/lintstack.head.py
 tools/pylint_exceptions
+/bin
