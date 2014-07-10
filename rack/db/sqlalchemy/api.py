@@ -539,9 +539,9 @@ def process_get_all(context, gid, filters={}):
     if 'status' in filters:
         query = query.filter_by(status=filters['status'])
     if 'glance_image_id' in filters:
-        query = query.filter_by(is_default=filters['glance_image_id'])
+        query = query.filter_by(glance_image_id=filters['glance_image_id'])
     if 'nova_flavor_id' in filters:
-        query = query.filter_by(is_default=filters['nova_flavor_id'])
+        query = query.filter_by(nova_flavor_id=filters['nova_flavor_id'])
     if 'keypair_id' in filters:
         query = query.filter_by(keypair_id=filters['keypair_id'])
     if 'securitygroup_id' in filters:
@@ -552,6 +552,10 @@ def process_get_all(context, gid, filters={}):
         query = query.filter(
                     models.Process.networks.any(
                         network_id=filters["network_id"]))
+    if 'is_proxy' in filters:
+        query = query.filter_by(is_proxy=filters['is_proxy'])
+    if 'app_status' in filters:
+        query = query.filter_by(app_status=filters['app_status'])
         
     process_refs = query.all()
     return [_get_process_dict(process_ref) for process_ref in process_refs]

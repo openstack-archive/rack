@@ -13,7 +13,7 @@
 #    limitations under the License.
 from migrate import ForeignKeyConstraint
 from sqlalchemy import Column, MetaData, Table
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import Boolean, DateTime, Integer, String
 
 from rack.openstack.common.gettextutils import _
 from rack.openstack.common import log as logging
@@ -39,6 +39,11 @@ processes = Table('processes', meta,
         Column('project_id', String(length=255), nullable=False),
         Column('display_name', String(length=255), nullable=False),
         Column('status', String(length=255), nullable=False),
+        Column('app_status', String(length=255)),
+        Column('is_proxy', Boolean),
+        Column('shm_endpoint', String(length=255)),
+        Column('ipc_endpoint', String(length=255)),
+        Column('fs_endpoint', String(length=255)),
         mysql_engine='InnoDB',
         mysql_charset='utf8'
     )
