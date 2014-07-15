@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: nob <nobuteru.nishida@ctc-g.co.jp>
+Code-Review+2: Tomohiro Maruyama <tomohiro.maruyama@ctc-g.co.jp>
+Workflow+1: Tomohiro Maruyama <tomohiro.maruyama@ctc-g.co.jp>
+Submitted-by: Jenkins
+Submitted-at: Tue, 15 Jul 2014 01:40:21 +0000
+Reviewed-on: https://review.openstack.org/106662
+Project: stackforge/rack
+Branch: refs/heads/master
