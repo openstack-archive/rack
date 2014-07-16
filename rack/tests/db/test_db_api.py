@@ -885,7 +885,13 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "project_id": self.user_ctxt.project_id,
             "display_name": "test_process",
             "status": "BUILDING",
-            "deleted": 0
+            "deleted": 0,
+            "is_proxy": False,
+            "app_status": "BUILDING",
+            "shm_endpoint":None,
+            "ipc_endpoint":None,
+            "fs_endpoint":None,
+            "arg":None 
         }
 
     def _create_group(self, gid):
