@@ -34,8 +34,19 @@ class ViewBuilder(common.ViewBuilder):
         return dict(process=base)
 
     def update(self, process):
-        base = self._base_response(process)
-        return dict(process=base)
+        return {
+            "gid": process.get("gid"),
+            "pid": process.get("pid"),
+            "ppid": process.get("ppid", ""),
+            "user_id": process.get("user_id"),
+            "project_id": process.get("project_id"),
+            "name": process.get("display_name"),
+            "glance_image_id": process.get("glance_image_id"),
+            "nova_flavor_id": process.get("nova_flavor_id"),
+            "status": process.get("status"),
+            "keypair_id": process.get("keypair_id"),
+            "app_status": process.get("app_status"),
+         }
 
     def _base_response(self, process):
         return {
@@ -49,8 +60,9 @@ class ViewBuilder(common.ViewBuilder):
             "nova_flavor_id": process.get("nova_flavor_id"),
             "status": process.get("status"),
             "keypair_id": process.get("keypair_id"),
+            "app_status": process.get("app_status"),
             "network_ids": [network.get("network_id") 
                                   for network in process.get("networks")],
             "securitygroup_ids": [securitygroup.get("securitygroup_id") 
                                   for securitygroup in process.get("securitygroups")],
-        }
+         }

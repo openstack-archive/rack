@@ -167,6 +167,10 @@ def process_get_by_pid(context, gid, pid):
     return IMPL.process_get_by_pid(context, gid, pid)
 
 
+def process_get_not_error_status_for_proxy(context, gid):
+    return IMPL.process_get_not_error_status_for_proxy(context, gid)
+
+
 def process_create(context, values, network_ids, securitygroup_ids):
     return IMPL.process_create(context, values, network_ids, securitygroup_ids)
 

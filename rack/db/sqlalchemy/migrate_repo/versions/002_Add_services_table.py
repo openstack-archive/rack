@@ -38,28 +38,32 @@ services = Table('services', meta,
         mysql_charset='utf8'
     )
 
+uc1 = UniqueConstraint('host', 'topic', 'deleted',
+                     table=services,
+                     name='uniq_services0host0topic0deleted')
+uc2 = UniqueConstraint('host', 'binary', 'deleted',
+                     table=services,
+                     name='uniq_services0host0binary0deleted')
+
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
 
     try:
         services.create()
+        uc1.create()
+        uc2.create()
     except Exception:
         LOG.info(repr(services))
         LOG.exception(_('Exception while creating services table.'))
         raise
-
-    UniqueConstraint('host', 'topic', 'deleted',
-                     table=services,
-                     name='uniq_services0host0topic0deleted').create()
-    UniqueConstraint('host', 'binary', 'deleted',
-                     table=services,
-                     name='uniq_services0host0binary0deleted').create()
 
 
 def downgrade(migrate_engine):
     meta.bind = migrate_engine
 
     try:
+        uc1.drop()
+        uc2.drop()
         services.drop()
     except Exception:
         LOG.info(repr(services))
