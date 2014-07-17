@@ -141,6 +141,14 @@ class Process(models.SoftDeleteMixin,
     project_id = Column(String(255), nullable=False)
     display_name = Column(String(255), nullable=False)
     status = Column(String(255), nullable=False)
+    is_proxy = Column(Boolean(), nullable=False)
+    shm_endpoint = Column(String(255), nullable=True)
+    ipc_endpoint = Column(String(255), nullable=True)
+    fs_endpoint = Column(String(255), nullable=True)
+    args = Column(Text, nullable=True)
+    userdata = Column(Text, nullable=True)
+    app_status = Column(String(255), nullable=True)
+
 
     group = relationship("Group",
                             foreign_keys=gid,

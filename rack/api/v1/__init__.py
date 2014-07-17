@@ -27,6 +27,7 @@ from rack.api.v1 import networks
 from rack.api.v1 import keypairs
 from rack.api.v1 import securitygroups
 from rack.api.v1 import processes
+from rack.api.v1 import proxy
 from rack.api import versions
 from rack import exception
 from rack.openstack.common import gettextutils
@@ -35,9 +36,15 @@ from rack.openstack.common import log as logging
 from rack import utils
 from rack import wsgi as base_wsgi
 
-LOG = logging.getLogger(__name__)
-CONF = cfg.CONF
+openstack_client_opts = [
+    cfg.StrOpt('sql_connection',
+               help='Valid sql_connection for Rack'),
+]
 
+CONF = cfg.CONF
+CONF.register_opts(openstack_client_opts)
+
+LOG = logging.getLogger(__name__)
 
 class APIMapper(routes.Mapper):
     def routematch(self, url=None, environ=None):
@@ -182,5 +189,23 @@ class APIRouter(base_wsgi.Router):
                        conditions={"method": ["POST"]})
         mapper.connect("/groups/{gid}/processes/{pid}",
                        controller=processes_resource,
+                       action="update",
+                       conditions={"method": ["PUT"]})
+        mapper.connect("/groups/{gid}/processes/{pid}",
+                       controller=processes_resource,
                        action="delete",
                        conditions={"method": ["DELETE"]})
+
+        proxy_resource = proxy.create_resource()
+        mapper.connect("/groups/{gid}/proxy",
+                       controller=proxy_resource,
+                       action="show",
+                       conditions={"method": ["GET"]})
+        mapper.connect("/groups/{gid}/proxy",
+                       controller=proxy_resource,
+                       action="create",
+                       conditions={"method": ["POST"]})
+        mapper.connect("/groups/{gid}/proxy",
+                       controller=proxy_resource,
+                       action="update",
+                       conditions={"method": ["PUT"]})

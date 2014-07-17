@@ -306,13 +306,15 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         neutron_securitygroup_ids = ["947dc616-e737-4cb9-b816-52ad80cb9e37", "1892987f-3874-46ef-a487-fb8e925210ce"]
         neutron_network_ids = ["a3c6488a-a236-46f7-aab6-8f1fe91ad9ef","43015163-babe-4bee-8fe8-38470d28b2a2"]
         metadata = {"metadata": "metadata"}
+        userdata = "userdata"
         self.manager.process_client.process_create(display_name,
                                                    glance_image_id,
                                                    nova_flavor_id,
                                                    nova_keypair_id,
                                                    neutron_securitygroup_ids,
                                                    neutron_network_ids,
-                                                   metadata)\
+                                                   metadata,
+                                                   userdata)\
                                                    .AndReturn(self.nova_instance_id)
 
         self.mox.StubOutWithMock(db, "process_update")
@@ -333,7 +335,8 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
                                      nova_keypair_id,
                                      neutron_securitygroup_ids,
                                      neutron_network_ids,
-                                     metadata)
+                                     metadata,
+                                     userdata)
 
     def test_processes_create_catch_exception(self):
         self.mox.StubOutWithMock(self.manager.process_client, "process_create")
@@ -347,13 +350,15 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         neutron_securitygroup_ids = ["947dc616-e737-4cb9-b816-52ad80cb9e37", "1892987f-3874-46ef-a487-fb8e925210ce"]
         neutron_network_ids = ["a3c6488a-a236-46f7-aab6-8f1fe91ad9ef","43015163-babe-4bee-8fe8-38470d28b2a2"]
         metadata = {"metadata": "metadata"}
+        userdata = "userdata"
         self.manager.process_client.process_create(display_name,
                                                    glance_image_id,
                                                    nova_flavor_id,
                                                    nova_keypair_id,
                                                    neutron_securitygroup_ids,
                                                    neutron_network_ids,
-                                                   metadata)\
+                                                   metadata,
+                                                   userdata)\
                                                    .AndRaise(exception.ProcessCreateFailed())
 
         self.mox.StubOutWithMock(db, "process_update")
@@ -373,7 +378,8 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
                                      nova_keypair_id,
                                      neutron_securitygroup_ids,
                                      neutron_network_ids,
-                                     metadata)
+                                     metadata,
+                                     userdata)
 
     def test_process_delete(self):
         self.mox.StubOutWithMock(self.manager.process_client, "process_delete")

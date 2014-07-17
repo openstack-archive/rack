@@ -120,8 +120,8 @@ class CommonTestsMixIn(object):
             self._reset_database(key)
             self._walk_versions(engine, self.snake_walk, self.downgrade)
 
-    def test_mysql_opportunistically(self):
-        self._test_mysql_opportunistically()
+#     def test_mysql_opportunistically(self):
+#         self._test_mysql_opportunistically()
 
     def test_mysql_connect_fail(self):
         """Test that we can trigger a mysql connection failure and we fail
@@ -131,8 +131,8 @@ class CommonTestsMixIn(object):
                                         "openstack_cifail", self.PASSWD):
             self.fail("Shouldn't have connected")
 
-    def test_postgresql_opportunistically(self):
-        self._test_postgresql_opportunistically()
+#     def test_postgresql_opportunistically(self):
+#         self._test_postgresql_opportunistically()
 
     def test_postgresql_connect_fail(self):
         """Test that we can trigger a postgres connection failure and we fail
