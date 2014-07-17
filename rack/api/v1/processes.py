@@ -16,6 +16,7 @@ import netaddr
 
 import six
 import webob
+import base64
 
 from rack.api.v1.views import processes as views_processes
 from rack.api import wsgi
@@ -131,6 +132,7 @@ class Controller(wsgi.Controller):
             glance_image_id = values.get("glance_image_id")
             nova_flavor_id = values.get("nova_flavor_id")
             securitygroup_ids = values.get("securitygroup_ids")
+            userdata = values.get("userdata")
 
             if ppid is not None:
                 if not uuidutils.is_uuid_like(ppid):
@@ -178,6 +180,12 @@ class Controller(wsgi.Controller):
                 msg = _("securitygroup_ids must be list")
                 raise exception.InvalidInput(reason=msg)
             
+            if userdata:
+                try:
+                    userdata = base64.b64decode(userdata)
+                except TypeError as e:
+                    raise webob.exc.HTTPBadRequest(explanation=e.format_message())
+
             valid_values = {}
             valid_values_process = {}
             valid_values_process["gid"] = gid
@@ -186,12 +194,19 @@ class Controller(wsgi.Controller):
             valid_values_process["display_name"] = name
             valid_values_process["glance_image_id"] = glance_image_id
             valid_values_process["nova_flavor_id"] = nova_flavor_id
+            valid_values_process["is_proxy"] = False
+            valid_values_process["app_status"] = "BUILDING"
+
+            valid_values_userdata = {}
+            valid_values_userdata["userdata"] = userdata
 
             valid_values_securitygroup = {}
             valid_values_securitygroup["securitygroup_ids"] = securitygroup_ids
 
             valid_values["process"] = valid_values_process
+            valid_values["userdata"] = valid_values_userdata
             valid_values["securitygroup"] = valid_values_securitygroup
+            
             return valid_values
 
         def _validate_metadata(metadata):
@@ -209,8 +224,8 @@ class Controller(wsgi.Controller):
             valid_values = _validate_process(context, gid, body)
             values = valid_values.get("process")
             securitygroup_ids = valid_values.get("securitygroup").get("securitygroup_ids")
-            metadata = _validate_metadata(
-                                        body["process"].get("metadata"))
+            metadata = _validate_metadata(metadata=body["process"].get("args"))
+            userdata = valid_values.get("userdata")
 
             values["deleted"] = 0
             values["status"] = "BUILDING"
@@ -218,6 +233,7 @@ class Controller(wsgi.Controller):
             values["user_id"] = context.user_id
             values["project_id"] = context.project_id
             values["display_name"] = values["display_name"] or "pro-" + values["pid"]
+            values["userdata"] = userdata.get("userdata")
 
             if values["ppid"]:
                 db.process_get_by_pid(context, gid, values["ppid"])
@@ -255,7 +271,8 @@ class Controller(wsgi.Controller):
                         nova_keypair_id=nova_keypair_id, 
                         neutron_securitygroup_ids=[securitygroup["neutron_securitygroup_id"] for securitygroup in process["securitygroups"]],
                         neutron_network_ids=[network["neutron_network_id"] for network in process["networks"]],
-                        metadata=metadata)
+                        metadata=metadata,
+                        userdata=userdata.get("userdata"))
         except Exception as e:
             LOG.exception(e)
             pid = values["pid"]
@@ -263,6 +280,49 @@ class Controller(wsgi.Controller):
             raise exception.ProcessCreateFailed()
 
         return self._view_builder.create(process)
+
+
+    @wsgi.response(200)
+    def update(self, req, body, gid, pid):
+
+        def _validate(body, gid, pid):
+            if not uuidutils.is_uuid_like(gid):
+                raise exception.GroupNotFound(gid=gid)
+
+            if not uuidutils.is_uuid_like(pid):
+                raise exception.ProcessNotFound(pid=pid)
+
+            if not self.is_valid_body(body, 'process'):
+                msg = _("Invalid request body")
+                raise exception.InvalidInput(reason=msg)
+
+            db.process_get_by_pid(context, gid, pid)
+
+            values = body["process"]
+            app_status = values.get("app_status")
+
+            if not app_status:
+                msg = _("app_status is required")
+                raise exception.InvalidInput(reason=msg)
+
+            valid_values = {}
+            valid_values["app_status"] = app_status
+
+            return valid_values
+
+        context = req.environ['rack.context']
+
+        try:
+            values = _validate(body, gid, pid)
+            process = db.process_update(context, gid, pid, values)
+
+        except exception.InvalidInput as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.format_message())
+
+        except exception.ProcessNotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
+
+        return self._view_builder.update(process)
 
 
     @wsgi.response(204)

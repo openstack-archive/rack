@@ -180,7 +180,8 @@ def get_parser():
     process_create_parser.add_argument("--glance_image_id", action="store")
     process_create_parser.add_argument("--keypair_id", action="store")
     process_create_parser.add_argument("--securitygroup_ids", action="store", nargs="+")
-    process_create_parser.add_argument("--metadata", metavar="key1=value1[,key2=value2...]", action="store")
+    process_create_parser.add_argument("--userdata", metavar="\"Customization Script...(must be base64 encoded)\"", action="store")
+    process_create_parser.add_argument("--args", metavar="key1=value1[,key2=value2...]", action="store")
     process_create_parser.set_defaults(func=process_create)
 
     #process delete
@@ -188,6 +189,39 @@ def get_parser():
     process_delete_parser.add_argument("--gid", action="store", required=True)
     process_delete_parser.add_argument("--pid", action="store", required=True)
     process_delete_parser.set_defaults(func=process_delete)
+
+    #process update
+    process_update_parser = subparsers.add_parser("process-update", help="update process")
+    process_update_parser.add_argument("--gid", action="store", required=True)
+    process_update_parser.add_argument("--pid", action="store", required=True)
+    process_update_parser.add_argument("--app_status", action="store", required=True)
+    process_update_parser.set_defaults(func=process_update)
+
+    #proxy show
+    proxy_show_parser = subparsers.add_parser("proxy-show", help="list proxy details")
+    proxy_show_parser.add_argument("--gid", action="store", required=True)
+    proxy_show_parser.set_defaults(func=proxy_show)
+
+    #proxy create
+    proxy_create_parser = subparsers.add_parser("proxy-create", help="create proxy")
+    proxy_create_parser.add_argument("--gid", action="store", required=True)
+    proxy_create_parser.add_argument("--name", action="store")
+    proxy_create_parser.add_argument("--nova_flavor_id", action="store")
+    proxy_create_parser.add_argument("--glance_image_id", action="store")
+    proxy_create_parser.add_argument("--keypair_id", action="store")
+    proxy_create_parser.add_argument("--securitygroup_ids", action="store", nargs="+")
+    proxy_create_parser.add_argument("--userdata", metavar="\"Customization Script...(must be base64 encoded)\"", action="store")
+    proxy_create_parser.add_argument("--args", metavar="key1=value1[,key2=value2...] value_separator:'/'", action="store")
+    proxy_create_parser.set_defaults(func=proxy_create)
+
+    #proxy update
+    proxy_update_parser = subparsers.add_parser("proxy-update", help="update proxy")
+    proxy_update_parser.add_argument("--gid", action="store", required=True)
+    proxy_update_parser.add_argument("--shm_endpoint", action="store", required=False)
+    proxy_update_parser.add_argument("--ipc_endpoint", action="store", required=False)
+    proxy_update_parser.add_argument("--fs_endpoint", action="store", required=False)
+    proxy_update_parser.add_argument("--app_status", action="store", required=False)
+    proxy_update_parser.set_defaults(func=proxy_update)
 
     return parser
 
@@ -383,23 +417,74 @@ def process_create(args, headers):
         payload["ppid"] = args.ppid
     if args.keypair_id:
         payload["keypair_id"] = args.keypair_id
-    if args.metadata:
-        payload["metadata"] = dict(v.split("=", 1) for v in args.metadata.split(","))
     if args.nova_flavor_id:
         payload["nova_flavor_id"] = args.nova_flavor_id
     if args.glance_image_id:
         payload["glance_image_id"] = args.glance_image_id
     if args.securitygroup_ids:
         payload["securitygroup_ids"] = args.securitygroup_ids
+    if args.args:
+        payload["args"] = dict(v.split("=", 1) for v in args.metadata.split(","))
+    if args.userdata:
+        payload["userdata"] = args.userdata
     data = json.dumps(dict(process=payload))
 
     return requests.post(url, data=data, headers=headers)
+
+
+def process_update(args, headers):
+    url = args.url + "groups/" + args.gid + "/processes/" + args.pid
+
+    payload = {}
+    payload["app_status"] = args.app_status
+    data = json.dumps(dict(process=payload))
+
+    return requests.put(url, data=data, headers=headers)
 
 
 def process_delete(args, headers):
     url = args.url + "groups/" + args.gid + "/processes/" + args.pid
     return requests.delete(url, headers=headers)
 
+
+def proxy_show(args, headers):
+    url = args.url + "groups/" + args.gid + "/proxy"
+    return requests.get(url, headers=headers)
+
+
+def proxy_create(args, headers):
+    url = args.url + "groups/" + args.gid + "/proxy"
+
+    payload = {}
+    if args.name:
+        payload["name"] = args.name
+    if args.keypair_id:
+        payload["keypair_id"] = args.keypair_id
+    if args.nova_flavor_id:
+        payload["nova_flavor_id"] = args.nova_flavor_id
+    if args.glance_image_id:
+        payload["glance_image_id"] = args.glance_image_id
+    if args.securitygroup_ids:
+        payload["securitygroup_ids"] = args.securitygroup_ids
+    if args.userdata:
+        payload["userdata"] = args.userdata
+    if args.args:
+        payload["args"] = dict(v.split("=", 1) for v in args.metadata.split(","))
+    data = json.dumps(dict(proxy=payload))
+
+    return requests.post(url, data=data, headers=headers)
+
+def proxy_update(args, headers):
+    url = args.url + "groups/" + args.gid + "/proxy"
+
+    payload = {}
+    payload["shm_endpoint"] = args.shm_endpoint
+    payload["ipc_endpoint"] = args.ipc_endpoint
+    payload["fs_endpoint"] = args.fs_endpoint
+    payload["app_status"] = args.app_status
+    data = json.dumps(dict(proxy=payload))
+
+    return requests.put(url, data=data, headers=headers)
 
 def main():
     parser = get_parser()

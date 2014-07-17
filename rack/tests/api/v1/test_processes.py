@@ -66,6 +66,9 @@ GLANCE_IMAGE_ID2 = unicode(uuid.uuid4())
 
 METADATA1 = {"type1":"test1","type2":"test2"}
 
+USER_DATA_B64_ENC = "IyEvYmluL3NoCmVjaG8gXCd0ZXN0Llwn"
+USER_DATA_B64_DEC = "#!/bin/sh\necho \\'test.\\'"
+
 NOVA_INSTANCE_ID = unicode(uuid.uuid4())
 
 def _base(context):
@@ -128,8 +131,9 @@ def _base_process1(gid, pid):
             "keypair_id":KEYPAIR_ID1,
             "securitygroups":_base_securitygroups1(),
             "networks":_base_networks(),
-            "status":"BUILDING"
-               }
+            "status":"BUILDING",
+            "app_status":"BUILDING",
+            "userdata" : USER_DATA_B64_ENC               }
 
 
 def _base_process2(gid, pid):
@@ -144,8 +148,9 @@ def _base_process2(gid, pid):
             "keypair_id":KEYPAIR_ID2,
             "securitygroups":_base_securitygroups2(),
             "networks":_base_networks(),
-            "status":"BUILDING"
-               }
+            "status":"BUILDING",
+            "app_status":"BUILDING",
+            "userdata" : USER_DATA_B64_ENC               }
 
 
 def _base_processes(gid):
@@ -231,7 +236,8 @@ def get_base_body(process):
             "keypair_id": process["keypair_id"],
             "securitygroup_ids": [securitygroup["securitygroup_id"] 
                                   for securitygroup in process["securitygroups"]],
-            "metadata" : METADATA1
+            "metadata" : METADATA1,
+            "userdata" : process["userdata"]
             }
 
 
@@ -247,6 +253,8 @@ def get_base_process_body(process):
     process_body.update(user_id="fake")
     process_body.update(project_id="fake")
     process_body.update(network_ids=[NETWORK_ID1,NETWORK_ID2])
+    process_body.update(app_status=process["app_status"])
+    process_body.update(userdata=process["userdata"])
     process_body.pop("metadata")
     return process_body
 
@@ -296,7 +304,8 @@ class ProcessesTest(test.NoDBTestCase):
                                                                     nova_keypair_id=IgnoreArg(), 
                                                                     neutron_securitygroup_ids=IsA(list), 
                                                                     neutron_network_ids=IsA(list), 
-                                                                    metadata=IsA(dict), 
+                                                                    metadata=IsA(dict),
+                                                                    userdata=USER_DATA_B64_DEC
                                                                     )
         if issubclass(exception.__class__, Exception):
             method.AndRaise(exception)
@@ -390,6 +399,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 202)
+        expect["process"]["userdata"] = USER_DATA_B64_DEC
         for key in body["process"]:
             self.assertEqual(body["process"][key], expect["process"][key])
 
@@ -454,6 +464,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 202)
+        expect["process"]["userdata"] = USER_DATA_B64_DEC
         for key in body["process"]:
             self.assertEqual(body["process"][key], expect["process"][key])
    
@@ -484,6 +495,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 202)
+        expect["process"]["userdata"] = USER_DATA_B64_DEC
         for key in body["process"]:
             self.assertEqual(body["process"][key], expect["process"][key])
 
@@ -514,6 +526,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 202)
+        expect["process"]["userdata"] = USER_DATA_B64_DEC
         for key in body["process"]:
             self.assertEqual(body["process"][key], expect["process"][key])
 
@@ -556,6 +569,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 202)
+        expect["process"]["userdata"] = USER_DATA_B64_DEC
         for key in body["process"]:
             self.assertEqual(body["process"][key], expect["process"][key])
   
@@ -620,7 +634,7 @@ class ProcessesTest(test.NoDBTestCase):
         process = _base_process1(GID, PID1)
         request_body = get_base_request_body1(process)
 
-        request_body["process"].update(metadata="aaaaaaa")
+        request_body["process"].update(args="aaaaaaa")
  
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
@@ -642,6 +656,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 202)
+        expect["process"]["userdata"] = USER_DATA_B64_DEC
         for key in body["process"]:
             self.assertEqual(body["process"][key], expect["process"][key])
 
@@ -722,6 +737,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 202)
+        expect["process"]["userdata"] = USER_DATA_B64_DEC
         for key in body["process"]:
             self.assertEqual(body["process"][key], expect["process"][key])
 
