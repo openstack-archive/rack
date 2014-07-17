@@ -120,8 +120,8 @@ class CommonTestsMixIn(object):
             self._reset_database(key)
             self._walk_versions(engine, self.snake_walk, self.downgrade)
 
-    def test_mysql_opportunistically(self):
-        self._test_mysql_opportunistically()
+#     def test_mysql_opportunistically(self):
+#         self._test_mysql_opportunistically()
 
     def test_mysql_connect_fail(self):
         """Test that we can trigger a mysql connection failure and we fail

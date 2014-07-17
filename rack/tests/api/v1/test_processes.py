@@ -128,7 +128,8 @@ def _base_process1(gid, pid):
             "keypair_id":KEYPAIR_ID1,
             "securitygroups":_base_securitygroups1(),
             "networks":_base_networks(),
-            "status":"BUILDING"
+            "status":"BUILDING",
+            "app_status":"BUILDING"
                }
 
 
@@ -144,7 +145,8 @@ def _base_process2(gid, pid):
             "keypair_id":KEYPAIR_ID2,
             "securitygroups":_base_securitygroups2(),
             "networks":_base_networks(),
-            "status":"BUILDING"
+            "status":"BUILDING",
+            "app_status":"BUILDING"
                }
 
 
@@ -247,6 +249,7 @@ def get_base_process_body(process):
     process_body.update(user_id="fake")
     process_body.update(project_id="fake")
     process_body.update(network_ids=[NETWORK_ID1,NETWORK_ID2])
+    process_body.update(app_status=process["app_status"])
     process_body.pop("metadata")
     return process_body
 

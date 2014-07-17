@@ -186,6 +186,8 @@ class Controller(wsgi.Controller):
             valid_values_process["display_name"] = name
             valid_values_process["glance_image_id"] = glance_image_id
             valid_values_process["nova_flavor_id"] = nova_flavor_id
+            valid_values_process["is_proxy"] = False
+            valid_values_process["app_status"] = "BUILDING"
 
             valid_values_securitygroup = {}
             valid_values_securitygroup["securitygroup_ids"] = securitygroup_ids
@@ -263,6 +265,49 @@ class Controller(wsgi.Controller):
             raise exception.ProcessCreateFailed()
 
         return self._view_builder.create(process)
+
+
+    @wsgi.response(200)
+    def update(self, req, body, gid, pid):
+
+        def _validate(body, gid, pid):
+            if not uuidutils.is_uuid_like(gid):
+                raise exception.GroupNotFound(gid=gid)
+
+            if not uuidutils.is_uuid_like(pid):
+                raise exception.ProcessNotFound(pid=pid)
+
+            if not self.is_valid_body(body, 'process'):
+                msg = _("Invalid request body")
+                raise exception.InvalidInput(reason=msg)
+
+            process = db.process_get_by_pid(context, gid, pid)
+
+            values = body["process"]
+            app_status = values.get("app_status")
+
+            if not app_status:
+                msg = _("app_status is required")
+                raise exception.InvalidInput(reason=msg)
+
+            valid_values = {}
+            valid_values["app_status"] = app_status
+
+            return valid_values
+
+        context = req.environ['rack.context']
+
+        try:
+            values = _validate(body, gid, pid)
+            process = db.process_update(context, gid, pid, values)
+
+        except exception.InvalidInput as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.format_message())
+
+        except exception.ProcessNotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
+
+        return self._view_builder.update(process)
 
 
     @wsgi.response(204)
