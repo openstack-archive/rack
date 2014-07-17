@@ -130,7 +130,8 @@ class ResourceOperatorManager(manager.Manager):
                         nova_keypair_id, 
                         neutron_securitygroup_ids, 
                         neutron_network_ids, 
-                        metadata
+                        metadata,
+                        userdata
                         ):
         update_values = {}
         try:
@@ -143,7 +144,8 @@ class ResourceOperatorManager(manager.Manager):
                                                                   nova_keypair_id, 
                                                                   neutron_securitygroup_ids, 
                                                                   neutron_network_ids, 
-                                                                  metadata)
+                                                                  metadata,
+                                                                  userdata)
             update_values["nova_instance_id"] = nova_instance_id
             update_values["status"] = "ACTIVE"
             db.process_update(context, gid, pid, update_values)

@@ -39,6 +39,7 @@ class ProcessesTest(test.NoDBTestCase):
         neutron_securitygroup_ids = ["947dc616-e737-4cb9-b816-52ad80cb9e37", "1892987f-3874-46ef-a487-fb8e925210ce"]
         neutron_network_ids = ["a3c6488a-a236-46f7-aab6-8f1fe91ad9ef","43015163-babe-4bee-8fe8-38470d28b2a2"]
         metadata = {"metadata": "metadata"}
+        userdata = "userdata"
         process_build = fake_process()
         process_build.status = "BUILD"
         process_build.id = self.process_id
@@ -50,6 +51,7 @@ class ProcessesTest(test.NoDBTestCase):
                                    image=glance_image_id, 
                                    flavor=nova_flavor_id, 
                                    meta=metadata,
+                                   userdata=userdata,
                                    nics=nics, 
                                    key_name=nova_keypair_id, 
                                    security_groups=neutron_securitygroup_ids)\
@@ -67,7 +69,8 @@ class ProcessesTest(test.NoDBTestCase):
                                            nova_keypair_id, 
                                            neutron_securitygroup_ids, 
                                            neutron_network_ids, 
-                                           metadata)
+                                           metadata,
+                                           userdata)
         self.assertEqual(process_id, self.process_id)
 
     def test_process_create_raise_exception(self):
@@ -78,6 +81,7 @@ class ProcessesTest(test.NoDBTestCase):
         neutron_securitygroup_ids = ["947dc616-e737-4cb9-b816-52ad80cb9e37", "1892987f-3874-46ef-a487-fb8e925210ce"]
         neutron_network_ids = ["a3c6488a-a236-46f7-aab6-8f1fe91ad9ef","43015163-babe-4bee-8fe8-38470d28b2a2"]
         metadata = {"metadata": "metadata"}
+        userdata = "userdata"
         process_build = fake_process()
         process_build.status = "BUILD"
         process_build.id = self.process_id
@@ -89,6 +93,7 @@ class ProcessesTest(test.NoDBTestCase):
                                    image=glance_image_id, 
                                    flavor=nova_flavor_id, 
                                    meta=metadata,
+                                   userdata=userdata,
                                    nics=nics, 
                                    key_name=nova_keypair_id, 
                                    security_groups=neutron_securitygroup_ids)\
@@ -108,7 +113,8 @@ class ProcessesTest(test.NoDBTestCase):
                 nova_keypair_id, 
                 neutron_securitygroup_ids, 
                 neutron_network_ids, 
-                metadata)
+                metadata,
+                userdata)
 
     def test_process_delete(self):
         self.nova.servers.delete(self.process_id)
