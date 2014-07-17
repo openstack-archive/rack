@@ -27,6 +27,7 @@ from rack.api.v1 import networks
 from rack.api.v1 import keypairs
 from rack.api.v1 import securitygroups
 from rack.api.v1 import processes
+from rack.api.v1 import proxy
 from rack.api import versions
 from rack import exception
 from rack.openstack.common import gettextutils
@@ -182,5 +183,23 @@ class APIRouter(base_wsgi.Router):
                        conditions={"method": ["POST"]})
         mapper.connect("/groups/{gid}/processes/{pid}",
                        controller=processes_resource,
+                       action="update",
+                       conditions={"method": ["PUT"]})
+        mapper.connect("/groups/{gid}/processes/{pid}",
+                       controller=processes_resource,
                        action="delete",
                        conditions={"method": ["DELETE"]})
+
+        proxy_resource = proxy.create_resource()
+        mapper.connect("/groups/{gid}/proxy",
+                       controller=proxy_resource,
+                       action="show",
+                       conditions={"method": ["GET"]})
+        mapper.connect("/groups/{gid}/proxy",
+                       controller=proxy_resource,
+                       action="create",
+                       conditions={"method": ["POST"]})
+        mapper.connect("/groups/{gid}/proxy",
+                       controller=proxy_resource,
+                       action="update",
+                       conditions={"method": ["PUT"]})
