@@ -18,12 +18,12 @@ Scheduler Service
 from oslo.config import cfg
 from oslo import messaging
 
-from rack.resourceoperator import rpcapi
 from rack import exception
 from rack import manager
 from rack.openstack.common import importutils
 from rack.openstack.common import jsonutils
 from rack.openstack.common import log as logging
+from rack.resourceoperator import rpcapi
 
 
 LOG = logging.getLogger(__name__)
@@ -65,5 +65,5 @@ class SchedulerManager(manager.Manager):
         'limits' as keys.
         """
         dests = self.driver.select_destinations(context, request_spec,
-            filter_properties)
+                                                filter_properties)
         return jsonutils.to_primitive(dests)

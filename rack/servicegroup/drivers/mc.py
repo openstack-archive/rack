@@ -77,7 +77,7 @@ class MemcachedDriver(api.ServiceGroupDriver):
 
     def _report_state(self, service):
         """Update the state of this service in the datastore."""
-        ctxt = context.get_admin_context()
+        context.get_admin_context()
         try:
             key = "%(topic)s:%(host)s" % service.service_ref
             # memcached has data expiration time capability.

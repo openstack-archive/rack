@@ -11,18 +11,20 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from rack import test, db, context, exception
+from exceptions import Exception
+import mox
+
+from rack import context
+from rack import db
+from rack import exception
 from rack.openstack.common import jsonutils
 from rack.resourceoperator import rpcapi as resourceoperator_rpcapi
 from rack.scheduler import rpcapi as scheduler_rpcapi
+from rack import test
 from rack.tests.api import fakes
+
 import uuid
-
 import webob
-
-import mox
-from exceptions import Exception
-
 
 GID = unicode(uuid.uuid4())
 NETWORK_ID1 = unicode(uuid.uuid4())
@@ -52,6 +54,7 @@ def fake_network_get_all(context, gid, filters=None):
 
 def fake_network_get_all_empty_list(contextm, gid):
     return []
+
 
 def fake_raise_exception():
     raise Exception()
@@ -336,7 +339,7 @@ class NetworksTest(test.NoDBTestCase):
 
         request_body = {
             "network": {
-                "name":"",
+                "name": "",
                 "is_admin": "True",
                 "cidr": "10.0.0.0/24"
             }
@@ -346,7 +349,6 @@ class NetworksTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         self.assertEqual(res.status_code, 202)
-
 
     def test_create_validate_exception_by_name_max_length(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
@@ -368,7 +370,7 @@ class NetworksTest(test.NoDBTestCase):
 
     def test_create_validate_exception_by_is_admin_not_boolean(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
- 
+
         request_body = {
             "network": {
                 "name": "test_network",
@@ -379,7 +381,7 @@ class NetworksTest(test.NoDBTestCase):
                 "ext_router_id": "91212048-abc3-43cc-89b3-377341426aca"
             }
         }
- 
+
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
@@ -387,7 +389,7 @@ class NetworksTest(test.NoDBTestCase):
 
     def test_create_validate_exception_by_gateway_format(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
- 
+
         request_body = {
             "network": {
                 "name": "test_network",
@@ -398,7 +400,7 @@ class NetworksTest(test.NoDBTestCase):
                 "ext_router_id": "91212048-abc3-43cc-89b3-377341426aca"
             }
         }
- 
+
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
@@ -406,7 +408,7 @@ class NetworksTest(test.NoDBTestCase):
 
     def test_create_validate_exception_by_dns_format(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
- 
+
         request_body = {
             "network": {
                 "name": "test_network",
@@ -417,7 +419,7 @@ class NetworksTest(test.NoDBTestCase):
                 "ext_router_id": "91212048-abc3-43cc-89b3-377341426aca"
             }
         }
- 
+
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
@@ -457,9 +459,9 @@ class NetworksTest(test.NoDBTestCase):
 
         self.mox.StubOutWithMock(db, "network_update")
         error_values = {"status": "ERROR"}
-        db.network_update(mox.IsA(context.RequestContext), 
-                                 NETWORK_ID1, 
-                                 error_values)
+        db.network_update(mox.IsA(context.RequestContext),
+                          NETWORK_ID1,
+                          error_values)
 
         self.mox.ReplayAll()
 
@@ -482,8 +484,8 @@ class NetworksTest(test.NoDBTestCase):
     def test_create_exception_resorceoperator_rpcapi(self):
         self.stubs.Set(db, "network_create", fake_create_db)
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
-        self.stubs.Set(resourceoperator_rpcapi.ResourceOperatorAPI, 
-                       "network_create", 
+        self.stubs.Set(resourceoperator_rpcapi.ResourceOperatorAPI,
+                       "network_create",
                        fake_raise_exception)
         request_spec = {}
         filter_properties = {}
@@ -497,9 +499,9 @@ class NetworksTest(test.NoDBTestCase):
 
         self.mox.StubOutWithMock(db, "network_update")
         error_values = {"status": "ERROR"}
-        db.network_update(mox.IsA(context.RequestContext), 
-                                 NETWORK_ID1, 
-                                 error_values)
+        db.network_update(mox.IsA(context.RequestContext),
+                          NETWORK_ID1,
+                          error_values)
         self.mox.ReplayAll()
 
         request_body = {
@@ -529,48 +531,51 @@ class NetworksTest(test.NoDBTestCase):
         body = jsonutils.loads(res.body)
         expected_body = {"networks":
                          [
-                         {
-                         "network_id": NETWORK_ID1,
-                         "neutron_network_id": None,
-                         "gid": GID,
-                         "user_id": "fake",
-                         "project_id": "fake",
-                         "name": "net-45212048-abc3-43cc-89b3-377341426ac",
-                         "is_admin": "True",
-                         "cidr": "10.0.0.0/24",
-                         "ext_router_id": "91212048-abc3-43cc-89b3-377341426aca",
-                         "status": "BUILDING"
-                         },
-                        {
-                         "network_id": NETWORK_ID2,
-                         "neutron_network_id": None,
-                         "gid": GID,
-                         "user_id": "fake",
-                         "project_id": "fake",
-                         "name": "net-13092048-abc3-43cc-89b3-377341426ac",
-                         "is_admin": "True",
-                         "cidr": "10.0.1.0/24",
-                         "ext_router_id": "91212048-abc3-43cc-89b3-377341426aca",
-                         "status": "BUILDING"
-                         }
+                             {
+                                 "network_id": NETWORK_ID1,
+                                 "neutron_network_id": None,
+                                 "gid": GID,
+                                 "user_id": "fake",
+                                 "project_id": "fake",
+                                 "name": "net-45212048-abc3-43cc-89b3-3773414"
+                                 "26ac",
+                                 "is_admin": "True",
+                                 "cidr": "10.0.0.0/24",
+                                 "ext_router_id": "91212048-abc3-43cc-89b3-37"
+                                 "7341426aca",
+                                 "status": "BUILDING"
+                             },
+                             {
+                                 "network_id": NETWORK_ID2,
+                                 "neutron_network_id": None,
+                                 "gid": GID,
+                                 "user_id": "fake",
+                                 "project_id": "fake",
+                                 "name": "net-13092048-abc3-43cc-89b3-3773414"
+                                 "26ac",
+                                 "is_admin": "True",
+                                 "cidr": "10.0.1.0/24",
+                                 "ext_router_id": "91212048-abc3-43cc-89b3-37"
+                                 "7341426aca",
+                                 "status": "BUILDING"
+                             }
                          ]
                          }
 
         self.assertEqual(body, expected_body)
         self.assertEqual(res.status_code, 200)
 
-
     def test_index_with_param(self):
         self.stubs.Set(
             db, "network_get_all", fake_network_get_all)
         param = \
-          "?network_id=" + NETWORK_ID1 + \
-          "?neutron_network_id=" + NETWORK_ID1 + \
-          "?status=" + NETWORK_ID1 + \
-          "?is_admin=" + NETWORK_ID1 + \
-          "?subnet=" + NETWORK_ID1 + \
-          "?ext_router=" + NETWORK_ID1 + \
-          "&name=test"
+            "?network_id=" + NETWORK_ID1 + \
+            "?neutron_network_id=" + NETWORK_ID1 + \
+            "?status=" + NETWORK_ID1 + \
+            "?is_admin=" + NETWORK_ID1 + \
+            "?subnet=" + NETWORK_ID1 + \
+            "?ext_router=" + NETWORK_ID1 + \
+            "&name=test"
         url = "/v1/groups/" + GID + "/networks" + param
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
@@ -588,7 +593,7 @@ class NetworksTest(test.NoDBTestCase):
 
         self.assertEqual(body, expected_body)
         self.assertEqual(res.status_code, 200)
-        
+
     def test_index_validate_exception_by_gid_format(self):
         not_uuid_gid = "aaaaa"
         url = '/v1/groups/' + not_uuid_gid + '/networks'
@@ -607,17 +612,18 @@ class NetworksTest(test.NoDBTestCase):
         body = jsonutils.loads(res.body)
 
         expected_body = {"network":
-                        {
-                         "network_id": NETWORK_ID1,
-                         "neutron_network_id": None,
-                         "gid": GID,
-                         "user_id": "fake",
-                         "project_id": "fake",
-                         "name": "net-45212048-abc3-43cc-89b3-377341426ac",
-                         "is_admin": "True",
-                         "cidr": "10.0.0.0/24",
-                         "ext_router_id": "91212048-abc3-43cc-89b3-377341426aca",
-                         "status": "BUILDING"
+                         {
+                             "network_id": NETWORK_ID1,
+                             "neutron_network_id": None,
+                             "gid": GID,
+                             "user_id": "fake",
+                             "project_id": "fake",
+                             "name": "net-45212048-abc3-43cc-89b3-377341426ac",
+                             "is_admin": "True",
+                             "cidr": "10.0.0.0/24",
+                             "ext_router_id": "91212048-abc3-43cc-89b3-377341"
+                             "426aca",
+                             "status": "BUILDING"
                          }
                          }
         self.assertEqual(body, expected_body)
@@ -701,7 +707,8 @@ class NetworksTest(test.NoDBTestCase):
         self.assertEqual(res.status_code, 404)
 
     def test_delete_exception_scheduler_rpcapi(self):
-        self.stubs.Set(db, "network_get_by_network_id", fake_network_get_by_network_id)
+        self.stubs.Set(
+            db, "network_get_by_network_id", fake_network_get_by_network_id)
         self.stubs.Set(db, "network_delete", fake_network_delete)
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
         request_spec = {}
@@ -723,10 +730,12 @@ class NetworksTest(test.NoDBTestCase):
         self.assertEqual(res.status_code, 500)
 
     def test_delete_exception_resorceoperator_rpcapi(self):
-        self.stubs.Set(db, "network_get_by_network_id", fake_network_get_by_network_id)
+        self.stubs.Set(
+            db, "network_get_by_network_id", fake_network_get_by_network_id)
         self.stubs.Set(db, "network_delete", fake_network_delete)
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
-        self.stubs.Set(resourceoperator_rpcapi.ResourceOperatorAPI, "network_delete", fake_raise_exception)
+        self.stubs.Set(resourceoperator_rpcapi.ResourceOperatorAPI,
+                       "network_delete", fake_raise_exception)
         request_spec = {}
         filter_properties = {}
         self.mox.StubOutWithMock(
@@ -747,11 +756,11 @@ class NetworksTest(test.NoDBTestCase):
 
     def test_delete_exception_inuse(self):
         self.mox.StubOutWithMock(db, "network_get_by_network_id")
-        network_process_inuse = {"processes":[{"pid":"pid"}]}
-        db.network_get_by_network_id(mox.IsA(context.RequestContext), 
-                                     GID, 
+        network_process_inuse = {"processes": [{"pid": "pid"}]}
+        db.network_get_by_network_id(mox.IsA(context.RequestContext),
+                                     GID,
                                      NETWORK_ID1)\
-                                    .AndReturn(network_process_inuse)
+            .AndReturn(network_process_inuse)
         self.mox.ReplayAll()
 
         url = '/v1/groups/' + GID + '/networks/' + NETWORK_ID1
@@ -759,4 +768,3 @@ class NetworksTest(test.NoDBTestCase):
         res = req.get_response(self.app)
 
         self.assertEqual(res.status_code, 409)
-

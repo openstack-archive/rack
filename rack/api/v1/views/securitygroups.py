@@ -20,10 +20,10 @@ LOG = logging.getLogger(__name__)
 class ViewBuilder(common.ViewBuilder):
 
     """Model a securitygroup API response as a python dictionary."""
+
     def index(self, securitygroup_list):
-        return dict(securitygroups=
-                [self._base_response(securitygroup)
-                 for securitygroup in securitygroup_list])
+        return dict(securitygroups=[self._base_response(securitygroup)
+                                    for securitygroup in securitygroup_list])
 
     def show(self, securitygroup):
         base = self._base_response(securitygroup)
@@ -40,7 +40,8 @@ class ViewBuilder(common.ViewBuilder):
     def _base_response(self, securitygroup):
         return {
             "securitygroup_id": securitygroup.get("securitygroup_id"),
-            "neutron_securitygroup_id": securitygroup.get("neutron_securitygroup_id"),
+            "neutron_securitygroup_id": securitygroup
+            .get("neutron_securitygroup_id"),
             "user_id": securitygroup.get("user_id"),
             "project_id": securitygroup.get("project_id"),
             "gid": securitygroup.get("gid"),

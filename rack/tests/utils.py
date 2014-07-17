@@ -20,8 +20,6 @@ import sys
 from oslo.config import cfg
 
 import rack.context
-import rack.db
-from rack import exception
 
 CONF = cfg.CONF
 CONF.import_opt('use_ipv6', 'rack.netconf')
@@ -29,7 +27,6 @@ CONF.import_opt('use_ipv6', 'rack.netconf')
 
 def get_test_admin_context():
     return rack.context.get_admin_context()
-
 
 
 def is_osx():

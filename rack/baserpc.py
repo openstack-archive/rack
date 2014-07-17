@@ -24,9 +24,10 @@ from rack import rpc
 
 
 CONF = cfg.CONF
-rpcapi_cap_opt = cfg.StrOpt('baseapi',
-        help='Set a version cap for messages sent to the base api in any '
-             'service')
+rpcapi_cap_opt = cfg.StrOpt(
+    'baseapi',
+    help='Set a version cap for messages sent to the base api in any '
+    'service')
 CONF.register_opt(rpcapi_cap_opt, 'upgrade_levels')
 
 _NAMESPACE = 'baseapi'

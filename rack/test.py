@@ -22,7 +22,6 @@ inline callbacks.
 import eventlet
 eventlet.monkey_patch(os=False)
 
-import copy
 import gettext
 import logging
 import os
@@ -52,7 +51,7 @@ test_opts = [
     cfg.StrOpt('sqlite_clean_db',
                default='clean.sqlite',
                help='File name of clean sqlite db'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(test_opts)
@@ -72,7 +71,7 @@ _TRUE_VALUES = ('True', 'true', '1', 'yes')
 class Database(fixtures.Fixture):
 
     def __init__(self, db_session, db_migrate, sql_connection,
-                    sqlite_db, sqlite_clean_db):
+                 sqlite_db, sqlite_clean_db):
         self.sql_connection = sql_connection
         self.sqlite_db = sqlite_db
         self.sqlite_clean_db = sqlite_clean_db
@@ -108,8 +107,8 @@ class Database(fixtures.Fixture):
                             paths.state_path_rel(self.sqlite_db))
 
 
-
 class ReplaceModule(fixtures.Fixture):
+
     """Replace a module with a fake module."""
 
     def __init__(self, name, new_value):
@@ -127,6 +126,7 @@ class ReplaceModule(fixtures.Fixture):
 
 
 class ServiceFixture(fixtures.Fixture):
+
     """Run a service as a test fixture."""
 
     def __init__(self, name, host=None, **kwargs):
@@ -144,6 +144,7 @@ class ServiceFixture(fixtures.Fixture):
 
 
 class TranslationFixture(fixtures.Fixture):
+
     """Use gettext NullTranslation objects in tests."""
 
     def setUp(self):
@@ -159,6 +160,7 @@ class TestingException(Exception):
 
 
 class TestCase(testtools.TestCase):
+
     """Test case base class for all unit tests.
 
     Due to the slowness of DB access, please consider deriving from
@@ -221,9 +223,9 @@ class TestCase(testtools.TestCase):
             global _DB_CACHE
             if not _DB_CACHE:
                 _DB_CACHE = Database(session, migration,
-                        sql_connection=CONF.database.connection,
-                        sqlite_db=CONF.database.sqlite_db,
-                        sqlite_clean_db=CONF.sqlite_clean_db)
+                                     sql_connection=CONF.database.connection,
+                                     sqlite_db=CONF.database.sqlite_db,
+                                     sqlite_clean_db=CONF.sqlite_clean_db)
 
             self.useFixture(_DB_CACHE)
 
@@ -269,6 +271,7 @@ class APICoverage(object):
 
 
 class TimeOverride(fixtures.Fixture):
+
     """Fixture to start and remove time override."""
 
     def setUp(self):
@@ -278,6 +281,7 @@ class TimeOverride(fixtures.Fixture):
 
 
 class NoDBTestCase(TestCase):
+
     """`NoDBTestCase` differs from TestCase in that DB access is not supported.
     This makes tests run significantly faster. If possible, all new tests
     should derive from this class.

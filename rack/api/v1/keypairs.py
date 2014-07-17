@@ -33,6 +33,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Controller(wsgi.Controller):
+
     """Keypair controller for RACK API."""
 
     _view_builder_class = views_keypairs.ViewBuilder
@@ -63,7 +64,7 @@ class Controller(wsgi.Controller):
         name = req.params.get('name')
         status = req.params.get('status')
         is_default = req.params.get('is_default')
-        
+
         if keypair_id:
             filters['keypair_id'] = keypair_id
         if nova_keypair_id:
@@ -74,8 +75,6 @@ class Controller(wsgi.Controller):
             filters['status'] = status
         if is_default:
             filters['is_default'] = is_default
-
-
 
         context = req.environ['rack.context']
         keypair_list = db.keypair_get_all(context, gid, filters)
@@ -117,7 +116,8 @@ class Controller(wsgi.Controller):
 
             if is_default:
                 try:
-                    is_default = strutils.bool_from_string(is_default, strict=True)
+                    is_default = strutils.bool_from_string(
+                        is_default, strict=True)
                 except ValueError:
                     msg = _("is_default must be a boolean")
                     raise exception.InvalidInput(reason=msg)
@@ -149,15 +149,15 @@ class Controller(wsgi.Controller):
             db.group_get_by_gid(context, gid)
             keypair = db.keypair_create(context, values)
             host = self.scheduler_rpcapi.select_destinations(
-                            context,
-                            request_spec={},
-                            filter_properties={})
+                context,
+                request_spec={},
+                filter_properties={})
             self.operator_rpcapi.keypair_create(
-                        context,
-                        host["host"],
-                        gid=gid,
-                        keypair_id=values["keypair_id"],
-                        name=values["display_name"])
+                context,
+                host["host"],
+                gid=gid,
+                keypair_id=values["keypair_id"],
+                name=values["display_name"])
         except exception.GroupNotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.format_message())
         except Exception:
@@ -181,7 +181,8 @@ class Controller(wsgi.Controller):
 
             if is_default:
                 try:
-                    is_default = strutils.bool_from_string(is_default, strict=True)
+                    is_default = strutils.bool_from_string(
+                        is_default, strict=True)
                 except ValueError:
                     msg = _("is_default must be a boolean")
                     raise exception.InvalidInput(reason=msg)
@@ -216,13 +217,13 @@ class Controller(wsgi.Controller):
                 raise exception.keypairInUse(keypair_id=keypair_id)
             keypair = db.keypair_delete(context, gid, keypair_id)
             host = self.scheduler_rpcapi.select_destinations(
-                            context,
-                            request_spec={},
-                            filter_properties={})
+                context,
+                request_spec={},
+                filter_properties={})
             self.operator_rpcapi.keypair_delete(
-                        context,
-                        host["host"],
-                        nova_keypair_id=keypair["nova_keypair_id"])
+                context,
+                host["host"],
+                nova_keypair_id=keypair["nova_keypair_id"])
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.format_message())
         except exception.keypairInUse as e:
@@ -230,6 +231,7 @@ class Controller(wsgi.Controller):
         except Exception as e:
             LOG.warn(e)
             raise exception.KeypairDeleteFailed()
+
 
 def create_resource():
     return wsgi.Resource(Controller())

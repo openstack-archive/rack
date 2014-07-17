@@ -35,7 +35,7 @@ cfg.set_defaults(os_client.openstack_client_opts, **CREDENTIALS)
 
 
 def fake_securitygroup():
-    return {"security_group":{"id":"neutron_securitygroup_id"}}
+    return {"security_group": {"id": "neutron_securitygroup_id"}}
 
 
 def fake_securitygrouprule():
@@ -45,10 +45,11 @@ def fake_securitygrouprule():
             "protocol": "tcp",
             "port_range_min": None,
             "port_range_max": "80"
-       }
+            }
 
 
 class SecuritygroupTestCase(test.NoDBTestCase):
+
     def setUp(self):
         super(SecuritygroupTestCase, self).setUp()
         self.securitygroup_client = securitygroups.SecuritygroupAPI()
@@ -60,41 +61,48 @@ class SecuritygroupTestCase(test.NoDBTestCase):
 
     def test_securitygroup_create(self):
         name = "securitygroup"
-        self.neutron.create_security_group({"security_group": {"name": name}}).AndReturn(fake_securitygroup())
+        self.neutron.create_security_group(
+            {"security_group": {"name": name}}).AndReturn(fake_securitygroup())
         self.mox.ReplayAll()
 
         expected = "neutron_securitygroup_id"
-        
+
         values = self.securitygroup_client.securitygroup_create(name)
-        self.assertEquals(expected, values)
+        self.assertEqual(expected, values)
 
     def test_securitygroup_create_raise_exception(self):
         name = "securitygroup"
-        self.neutron.create_security_group({"security_group": {"name": name}}).AndRaise(Exception())
+        self.neutron.create_security_group(
+            {"security_group": {"name": name}}).AndRaise(Exception())
         self.mox.ReplayAll()
- 
+
         self.assertRaises(
-                exception.SecuritygroupCreateFailed,
-                self.securitygroup_client.securitygroup_create, name)
- 
+            exception.SecuritygroupCreateFailed,
+            self.securitygroup_client.securitygroup_create, name)
+
     def test_securitygroup_delete(self):
         neutron_securitygroup_id = "fake_securitygroup"
         self.neutron.delete_security_group(neutron_securitygroup_id)
         self.mox.ReplayAll()
- 
-        self.assertIsNone(self.securitygroup_client.securitygroup_delete(neutron_securitygroup_id))
- 
+
+        self.assertIsNone(
+            self.securitygroup_client.securitygroup_delete(
+                neutron_securitygroup_id))
+
     def test_securitygroup_delete_raise_exception(self):
         neutron_securitygroup_id = "fake_securitygroup"
-        self.neutron.delete_security_group(neutron_securitygroup_id).AndRaise(Exception())
+        self.neutron.delete_security_group(
+            neutron_securitygroup_id).AndRaise(Exception())
         self.mox.ReplayAll()
- 
+
         self.assertRaises(
-                exception.SecuritygroupDeleteFailed,
-                self.securitygroup_client.securitygroup_delete, neutron_securitygroup_id)
+            exception.SecuritygroupDeleteFailed,
+            self.securitygroup_client.securitygroup_delete,
+            neutron_securitygroup_id)
 
 
 class SecuritygroupruleTestCase(test.NoDBTestCase):
+
     def setUp(self):
         super(SecuritygroupruleTestCase, self).setUp()
         self.securitygrouprule_client = securitygroups.SecuritygroupruleAPI()
@@ -105,60 +113,63 @@ class SecuritygroupruleTestCase(test.NoDBTestCase):
 
     def test_securitygrouprule_create_remote_ip_prefix(self):
         rule = fake_securitygrouprule()
-        self.neutron.create_security_group_rule({"security_group_rule": 
-                                {"direction": rule["direction"], 
-                                 "ethertype": rule["ethertype"],
-                                 "security_group_id": rule["security_group_id"],
-                                 "protocol": rule["protocol"],
-                                 "port_range_min": rule["port_range_max"],
-                                 "port_range_max": rule["port_range_max"],
-                                 "remote_ip_prefix": "192.168.1.1/32"
-                                  }})
+        self.neutron.create_security_group_rule(
+            {"security_group_rule":
+             {"direction": rule["direction"],
+              "ethertype": rule["ethertype"],
+              "security_group_id": rule["security_group_id"],
+              "protocol": rule["protocol"],
+              "port_range_min": rule["port_range_max"],
+              "port_range_max": rule["port_range_max"],
+              "remote_ip_prefix": "192.168.1.1/32"
+              }})
         self.mox.ReplayAll()
 
         self.assertIsNone(
             self.securitygrouprule_client.securitygrouprule_create(
-                                        rule["security_group_id"],
-                                        rule["protocol"],
-                                        port_range_min=rule["port_range_min"],
-                                        port_range_max=rule["port_range_max"],
-                                        remote_ip_prefix="192.168.1.1/32",
-                                        ))
+                rule["security_group_id"],
+                rule["protocol"],
+                port_range_min=rule["port_range_min"],
+                port_range_max=rule["port_range_max"],
+                remote_ip_prefix="192.168.1.1/32",
+            ))
 
     def test_securitygrouprule_create_remote_group_id(self):
         rule = fake_securitygrouprule()
-        self.neutron.create_security_group_rule({"security_group_rule": 
-                                {"direction": rule["direction"], 
-                                 "ethertype": rule["ethertype"],
-                                 "security_group_id": rule["security_group_id"],
-                                 "protocol": rule["protocol"],
-                                 "port_range_min": rule["port_range_max"],
-                                 "port_range_max": rule["port_range_max"],
-                                 "remote_group_id": "remote_neutron_securitygroup_id"
-                                  }})
+        self.neutron.create_security_group_rule(
+            {"security_group_rule":
+             {"direction": rule["direction"],
+              "ethertype": rule["ethertype"],
+              "security_group_id": rule["security_group_id"],
+              "protocol": rule["protocol"],
+              "port_range_min": rule["port_range_max"],
+              "port_range_max": rule["port_range_max"],
+              "remote_group_id": "remote_neutron_securitygroup_id"
+              }})
         self.mox.ReplayAll()
 
         self.assertIsNone(
             self.securitygrouprule_client.securitygrouprule_create(
-                                        rule["security_group_id"],
-                                        rule["protocol"],
-                                        port_range_min=rule["port_range_min"],
-                                        port_range_max=rule["port_range_max"],
-                                        remote_neutron_securitygroup_id="remote_neutron_securitygroup_id",
-                                        ))
+                rule["security_group_id"],
+                rule["protocol"],
+                port_range_min=rule["port_range_min"],
+                port_range_max=rule["port_range_max"],
+                remote_neutron_securitygroup_id="remote_neutron_securitygroup"
+                "_id",
+            ))
 
     def test_securitygrouprule_create_raise_exception(self):
         rule = fake_securitygrouprule()
         self.neutron.create_security_group_rule(mox.IgnoreArg()).\
             AndRaise(Exception())
         self.mox.ReplayAll()
-  
+
         self.assertRaises(
-                exception.SecuritygroupCreateFailed,
-                self.securitygrouprule_client.securitygrouprule_create, 
-                    rule["security_group_id"],
-                    rule["protocol"],
-                    port_range_min=rule["port_range_min"],
-                    port_range_max=rule["port_range_max"],
-                    remote_neutron_securitygroup_id="remote_neutron_securitygroup_id"
-                    )
+            exception.SecuritygroupCreateFailed,
+            self.securitygrouprule_client.securitygrouprule_create,
+            rule["security_group_id"],
+            rule["protocol"],
+            port_range_min=rule["port_range_min"],
+            port_range_max=rule["port_range_max"],
+            remote_neutron_securitygroup_id="remote_neutron_securitygroup_id"
+        )

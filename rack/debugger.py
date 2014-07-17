@@ -26,15 +26,15 @@ def register_cli_opts():
 
     cli_opts = [
         cfg.StrOpt('host',
-                    help='Debug host (IP or name) to connect. Note '
-                        'that using the remote debug option changes how '
+                   help='Debug host (IP or name) to connect. Note '
+                   'that using the remote debug option changes how '
                         'Rack uses the eventlet library to support async IO. '
                         'This could result in failures that do not occur '
                         'under normal operation. Use at your own risk.'),
 
         cfg.IntOpt('port',
-                    help='Debug port to connect. Note '
-                        'that using the remote debug option changes how '
+                   help='Debug port to connect. Note '
+                   'that using the remote debug option changes how '
                         'Rack uses the eventlet library to support async IO. '
                         'This could result in failures that do not occur '
                         'under normal operation. Use at your own risk.')

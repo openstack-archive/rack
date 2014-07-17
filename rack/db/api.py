@@ -46,6 +46,7 @@ def group_create(context, values):
 def group_update(context, values):
     return IMPL.group_update(context, values)
 
+
 def group_delete(context, gid):
     return IMPL.group_delete(context, gid)
 
@@ -144,7 +145,8 @@ def securitygroup_get_all(context, gid, filters={}):
 
 
 def securitygroup_get_by_securitygroup_id(context, gid, securitygroup_id):
-    return IMPL.securitygroup_get_by_securitygroup_id(context, gid, securitygroup_id)
+    return IMPL.securitygroup_get_by_securitygroup_id(context, gid,
+                                                      securitygroup_id)
 
 
 def securitygroup_create(context, values):
@@ -167,8 +169,13 @@ def process_get_by_pid(context, gid, pid):
     return IMPL.process_get_by_pid(context, gid, pid)
 
 
+def process_get_not_error_status_for_proxy(context, gid):
+    return IMPL.process_get_not_error_status_for_proxy(context, gid)
+
+
 def process_create(context, values, network_ids, securitygroup_ids):
-    return IMPL.process_create(context, values, network_ids, securitygroup_ids)
+    return IMPL.process_create(context, values, network_ids,
+                               securitygroup_ids)
 
 
 def process_update(context, gid, pid, values):

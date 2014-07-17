@@ -74,21 +74,27 @@ def fake_update(context, kwargs):
         "status": "ACTIVE"
     }
 
+
 def fake_delete(context, kwargs):
     return {
     }
 
+
 def fake_not_group_data_exists(context, kwargs):
-    return {"dummy-key" : "dummy-data"}
+    return {"dummy-key": "dummy-data"}
+
 
 def fake_not_group_data_not_exists(context, kwargs):
     return {}
 
+
 def fake_raise_exception(context, kwargs):
     raise Exception()
 
+
 def raise_group_not_found(context, kwargs):
     raise exception.GroupNotFound(gid=GID)
+
 
 def fake_group_get_all(context, filters):
     if not filters:
@@ -535,7 +541,11 @@ class GroupsTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         self.assertEqual(res.status_code, 404)
         self.assertRaises(
-            webob.exc.HTTPNotFound, self.controller.update, req, request_body, GID)
+            webob.exc.HTTPNotFound,
+            self.controller.update,
+            req,
+            request_body,
+            GID)
 
     def test_delete_invalid_format_gid(self):
         url = '/v1/groups/' + GID + "err"
@@ -546,10 +556,11 @@ class GroupsTest(test.NoDBTestCase):
         print(body)
 
     def test_delete(self):
-        url = '/v1/groups/'+GID
+        url = '/v1/groups/' + GID
         req = get_request(url, 'DELETE')
         self.stubs.Set(db, "keypair_get_all", fake_not_group_data_not_exists)
-        self.stubs.Set(db, "securitygroup_get_all", fake_not_group_data_not_exists)
+        self.stubs.Set(
+            db, "securitygroup_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "network_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "process_get_all", fake_not_group_data_not_exists)
         res = req.get_response(self.app)
@@ -561,7 +572,7 @@ class GroupsTest(test.NoDBTestCase):
         self.stubs.Set(db, "keypair_get_all", fake_not_group_data_exists)
         res = req.get_response(self.app)
         self.assertEqual(res.status_code, 409)
-    
+
     def test_delete_group_inuse_securitygroup(self):
         url = '/v1/groups/' + GID
         req = get_request(url, 'DELETE')
@@ -574,7 +585,8 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'DELETE')
         self.stubs.Set(db, "keypair_get_all", fake_not_group_data_not_exists)
-        self.stubs.Set(db, "securitygroup_get_all", fake_not_group_data_not_exists)
+        self.stubs.Set(
+            db, "securitygroup_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "network_get_all", fake_not_group_data_exists)
         res = req.get_response(self.app)
         self.assertEqual(res.status_code, 409)
@@ -583,12 +595,13 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'DELETE')
         self.stubs.Set(db, "keypair_get_all", fake_not_group_data_not_exists)
-        self.stubs.Set(db, "securitygroup_get_all", fake_not_group_data_not_exists)
+        self.stubs.Set(
+            db, "securitygroup_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "network_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "process_get_all", fake_not_group_data_exists)
         res = req.get_response(self.app)
         self.assertEqual(res.status_code, 409)
-        
+
     def test_delete_exception(self):
         url = '/v1/groups/' + GID
         req = get_request(url, 'DELETE')

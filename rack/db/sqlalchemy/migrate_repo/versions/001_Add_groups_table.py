@@ -21,19 +21,22 @@ LOG = logging.getLogger(__name__)
 meta = MetaData()
 
 groups = Table('groups', meta,
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('deleted', Integer),
-        Column('gid', String(length=255), primary_key=True, nullable=False),
-        Column('user_id', String(length=255)),
-        Column('project_id', String(length=255)),
-        Column('display_name', String(length=255)),
-        Column('display_description', String(length=255)),
-        Column('status', String(length=255)),
-        mysql_engine='InnoDB',
-        mysql_charset='utf8'
-    )
+               Column('created_at', DateTime),
+               Column('updated_at', DateTime),
+               Column('deleted_at', DateTime),
+               Column('deleted', Integer),
+               Column(
+                   'gid', String(length=255), primary_key=True,
+                   nullable=False),
+               Column('user_id', String(length=255)),
+               Column('project_id', String(length=255)),
+               Column('display_name', String(length=255)),
+               Column('display_description', String(length=255)),
+               Column('status', String(length=255)),
+               mysql_engine='InnoDB',
+               mysql_charset='utf8'
+               )
+
 
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
@@ -44,6 +47,7 @@ def upgrade(migrate_engine):
         LOG.info(repr(groups))
         LOG.exception(_('Exception while creating groups table.'))
         raise
+
 
 def downgrade(migrate_engine):
     meta.bind = migrate_engine

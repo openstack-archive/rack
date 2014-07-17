@@ -47,13 +47,13 @@ def build_request_spec(ctxt, image, instances, instance_type=None):
     extra_specs = db.flavor_extra_specs_get(ctxt, instance_type['flavorid'])
     instance_type['extra_specs'] = extra_specs
     request_spec = {
-            'image': image or {},
-            'instance_properties': instance,
-            'instance_type': instance_type,
-            'num_instances': len(instances),
-            # NOTE(alaski): This should be removed as logic moves from the
-            # scheduler to conductor.  Provides backwards compatibility now.
-            'instance_uuids': [inst['uuid'] for inst in instances]}
+        'image': image or {},
+        'instance_properties': instance,
+        'instance_type': instance_type,
+        'num_instances': len(instances),
+        # NOTE(alaski): This should be removed as logic moves from the
+        # scheduler to conductor.  Provides backwards compatibility now.
+        'instance_uuids': [inst['uuid'] for inst in instances]}
     return jsonutils.to_primitive(request_spec)
 
 
@@ -83,19 +83,20 @@ def set_vm_state_and_notify(context, service, method, updates, ex,
 
             # update instance state and notify on the transition
             (old_ref, new_ref) = db.instance_update_and_get_original(
-                    context, instance_uuid, updates)
+                context, instance_uuid, updates)
             notifications.send_update(context, old_ref, new_ref,
-                    service=service)
+                                      service=service)
             compute_utils.add_instance_fault_from_exc(context,
-                    conductor,
-                    new_ref, ex, sys.exc_info())
+                                                      conductor,
+                                                      new_ref, ex,
+                                                      sys.exc_info())
 
         payload = dict(request_spec=request_spec,
-                        instance_properties=properties,
-                        instance_id=instance_uuid,
-                        state=vm_state,
-                        method=method,
-                        reason=ex)
+                       instance_properties=properties,
+                       instance_id=instance_uuid,
+                       state=vm_state,
+                       method=method,
+                       reason=ex)
 
         event_type = '%s.%s' % (service, method)
         notifier.error(context, event_type, payload)
@@ -164,6 +165,6 @@ def parse_options(opts, sep='=', converter=str, name=""):
     if bad:
         LOG.warn(_("Ignoring the invalid elements of the option "
                    "%(name)s: %(options)s"),
-                {'name': name,
-                 'options': ", ".join(bad)})
+                 {'name': name,
+                  'options': ", ".join(bad)})
     return good

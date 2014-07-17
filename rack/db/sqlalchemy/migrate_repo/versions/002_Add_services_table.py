@@ -18,25 +18,28 @@ from sqlalchemy import Boolean, DateTime, Integer, String
 from rack.openstack.common.gettextutils import _
 from rack.openstack.common import log as logging
 
+
 LOG = logging.getLogger(__name__)
 
 meta = MetaData()
 
+
 services = Table('services', meta,
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('id', Integer, primary_key=True, nullable=False),
-        Column('host', String(length=255)),
-        Column('binary', String(length=255)),
-        Column('topic', String(length=255)),
-        Column('report_count', Integer, nullable=False),
-        Column('disabled', Boolean),
-        Column('deleted', Integer),
-        Column('disabled_reason', String(length=255)),
-        mysql_engine='InnoDB',
-        mysql_charset='utf8'
-    )
+                 Column('created_at', DateTime),
+                 Column('updated_at', DateTime),
+                 Column('deleted_at', DateTime),
+                 Column('id', Integer, primary_key=True, nullable=False),
+                 Column('host', String(length=255)),
+                 Column('binary', String(length=255)),
+                 Column('topic', String(length=255)),
+                 Column('report_count', Integer, nullable=False),
+                 Column('disabled', Boolean),
+                 Column('deleted', Integer),
+                 Column('disabled_reason', String(length=255)),
+                 mysql_engine='InnoDB',
+                 mysql_charset='utf8'
+                 )
+
 
 def upgrade(migrate_engine):
     meta.bind = migrate_engine

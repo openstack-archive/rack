@@ -41,8 +41,8 @@ class PolicyFixture(fixtures.Fixture):
 
     def set_rules(self, rules):
         common_policy.set_rules(common_policy.Rules(
-                dict((k, common_policy.parse_rule(v))
-                     for k, v in rules.items())))
+            dict((k, common_policy.parse_rule(v))
+                 for k, v in rules.items())))
 
 
 class RoleBasedPolicyFixture(fixtures.Fixture):
@@ -64,7 +64,7 @@ class RoleBasedPolicyFixture(fixtures.Fixture):
 
         self.policy_dir = self.useFixture(fixtures.TempDir())
         self.policy_file_name = os.path.join(self.policy_dir.path,
-                                            'policy.json')
+                                             'policy.json')
         with open(self.policy_file_name, 'w') as policy_file:
             json.dump(policy, policy_file)
         CONF.set_override('policy_file', self.policy_file_name)

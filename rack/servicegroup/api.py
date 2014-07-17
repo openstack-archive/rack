@@ -86,9 +86,9 @@ class API(object):
                        "%(service_down_time)s, report_interval: "
                        "%(report_interval)s>. Setting service_down_time to: "
                        "%(new_service_down_time)s"),
-                       {'service_down_time': CONF.service_down_time,
-                        'report_interval': report_interval,
-                        'new_service_down_time': new_service_down_time})
+                     {'service_down_time': CONF.service_down_time,
+                      'report_interval': report_interval,
+                      'new_service_down_time': new_service_down_time})
             CONF.set_override('service_down_time', new_service_down_time)
 
     def join(self, member_id, group_id, service=None):
@@ -135,6 +135,7 @@ class API(object):
 
 
 class ServiceGroupDriver(object):
+
     """Base class for ServiceGroup drivers."""
 
     def join(self, member_id, group_id, service=None):

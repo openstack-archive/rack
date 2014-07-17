@@ -21,28 +21,32 @@ LOG = logging.getLogger(__name__)
 
 
 class ProcessesAPI(object):
-    def process_create(self, 
-                        display_name, 
-                        glance_image_id, 
-                        nova_flavor_id, 
-                        nova_keypair_id, 
-                        neutron_securitygroup_ids, 
-                        neutron_network_ids, 
-                        metadata
-                        ):
+
+    def process_create(self,
+                       display_name,
+                       glance_image_id,
+                       nova_flavor_id,
+                       nova_keypair_id,
+                       neutron_securitygroup_ids,
+                       neutron_network_ids,
+                       metadata,
+                       userdata
+                       ):
         try:
             nova = os_client.get_nova_client()
             nics = []
             for network_id in neutron_network_ids:
                 nics.append({"net-id": network_id})
-            process = nova.servers.create(name=display_name,
-                                          image=glance_image_id,
-                                          flavor=nova_flavor_id,
-                                          meta=metadata,
-                                          nics=nics,
-                                          key_name=nova_keypair_id,
-                                          security_groups=neutron_securitygroup_ids
-                                          )
+            process = nova.servers.create(
+                name=display_name,
+                image=glance_image_id,
+                flavor=nova_flavor_id,
+                meta=metadata,
+                nics=nics,
+                key_name=nova_keypair_id,
+                security_groups=neutron_securitygroup_ids,
+                userdata=userdata
+            )
 
             while process.status != "ACTIVE":
                 if process.status == "ERROR":

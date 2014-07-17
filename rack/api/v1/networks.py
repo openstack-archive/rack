@@ -11,16 +11,23 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from rack import db, utils
+
+from rack import db
 from rack import exception
-from rack.api import wsgi
+from rack import utils
+
 from rack.api.v1.views import networks as views_networks
-from rack.openstack.common import log as logging, uuidutils, strutils
+from rack.api import wsgi
+
 from rack.openstack.common.gettextutils import _
+from rack.openstack.common import log as logging
+from rack.openstack.common import strutils
+from rack.openstack.common import uuidutils
+
 from rack.resourceoperator import rpcapi as ro_rpcapi
 from rack.scheduler import rpcapi as sch_rpcapi
-import uuid
 
+import uuid
 import webob
 
 
@@ -65,7 +72,8 @@ class Controller(wsgi.Controller):
                 name = "net-" + network_id
             else:
                 name = name.strip()
-                utils.check_string_length(name, 'name', min_length=1,max_length=255)
+                utils.check_string_length(
+                    name, 'name', min_length=1, max_length=255)
 
             is_admin = values.get("is_admin")
             if is_admin:
@@ -95,7 +103,8 @@ class Controller(wsgi.Controller):
                     raise exception.InvalidInput(reason=msg)
 
             ext_router = values.get("ext_router_id")
-            if ext_router is not None and not uuidutils.is_uuid_like(ext_router):
+            if ext_router is not None and not uuidutils.is_uuid_like(
+                    ext_router):
                 msg = _("ext_router must be a uuid")
                 raise exception.InvalidInput(reason=msg)
 
@@ -143,9 +152,10 @@ class Controller(wsgi.Controller):
             resourceoperator = self._get_resorceoperator(context)
             # resource operator access
             for k, v in values["opst"].items():
-                if v is not None: 
+                if v is not None:
                     network[k] = v
-            self.resourceoperator_rpcapi.network_create(context, resourceoperator["host"], network)
+            self.resourceoperator_rpcapi.network_create(
+                context, resourceoperator["host"], network)
         except Exception as e:
             LOG.exception(e)
             error_values = {"status": "ERROR"}
@@ -174,7 +184,6 @@ class Controller(wsgi.Controller):
         subnet = req.params.get('subnet')
         ext_router = req.params.get('ext_router')
 
-
         if network_id:
             filters['network_id'] = network_id
         if neutron_network_id:
@@ -189,7 +198,6 @@ class Controller(wsgi.Controller):
             filters['subnet'] = subnet
         if ext_router:
             filters['ext_router'] = ext_router
-
 
         network_list = db.network_get_all(context, gid)
 
@@ -246,7 +254,8 @@ class Controller(wsgi.Controller):
 
     def _get_resorceoperator(self, context,
                              request_spec={}, filter_properties={}):
-        resorceoperator = self.scheduler_rpcapi.select_destinations(context, request_spec, filter_properties)
+        resorceoperator = self.scheduler_rpcapi.select_destinations(
+            context, request_spec, filter_properties)
         return resorceoperator
 
 

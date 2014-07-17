@@ -25,6 +25,7 @@ from rack import utils
 
 CONF = cfg.CONF
 
+
 def main():
     config.parse_args(sys.argv)
     logging.setup("rack")

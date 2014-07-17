@@ -24,10 +24,10 @@ from rack.openstack.common import timeutils
 CONF = cfg.CONF
 
 LINKS = {
-   'v2.0': {
-       'pdf': 'http://docs.openstack.org/'
-               'api/openstack-compute/2/os-compute-devguide-2.pdf',
-       'wadl': 'http://docs.openstack.org/'
+    'v2.0': {
+        'pdf': 'http://docs.openstack.org/'
+        'api/openstack-compute/2/os-compute-devguide-2.pdf',
+        'wadl': 'http://docs.openstack.org/'
                'api/openstack-compute/2/wadl/os-compute-2.wadl'
     },
 }
@@ -65,6 +65,7 @@ VERSIONS = {
 
 
 class MediaTypesTemplateElement(xmlutil.TemplateElement):
+
     def will_render(self, datum):
         return 'media-types' in datum
 
@@ -88,6 +89,7 @@ version_nsmap = {None: xmlutil.XMLNS_COMMON_V10, 'atom': xmlutil.XMLNS_ATOM}
 
 
 class VersionTemplate(xmlutil.TemplateBuilder):
+
     def construct(self):
         root = xmlutil.TemplateElement('version', selector='version')
         make_version(root)
@@ -95,6 +97,7 @@ class VersionTemplate(xmlutil.TemplateBuilder):
 
 
 class VersionsTemplate(xmlutil.TemplateBuilder):
+
     def construct(self):
         root = xmlutil.TemplateElement('versions')
         elem = xmlutil.SubTemplateElement(root, 'version', selector='versions')
@@ -103,6 +106,7 @@ class VersionsTemplate(xmlutil.TemplateBuilder):
 
 
 class ChoicesTemplate(xmlutil.TemplateBuilder):
+
     def construct(self):
         root = xmlutil.TemplateElement('choices')
         elem = xmlutil.SubTemplateElement(root, 'version', selector='choices')
@@ -187,6 +191,7 @@ class AtomSerializer(wsgi.XMLDictSerializer):
 
 
 class VersionsAtomSerializer(AtomSerializer):
+
     def default(self, data):
         versions = data['versions']
         feed_id = self._get_base_url(versions[0]['links'][0]['href'])
@@ -195,6 +200,7 @@ class VersionsAtomSerializer(AtomSerializer):
 
 
 class VersionAtomSerializer(AtomSerializer):
+
     def default(self, data):
         version = data['version']
         feed_id = version['links'][0]['href']
@@ -203,6 +209,7 @@ class VersionAtomSerializer(AtomSerializer):
 
 
 class Versions(wsgi.Resource):
+
     def __init__(self):
         super(Versions, self).__init__(None)
 
@@ -232,6 +239,7 @@ class Versions(wsgi.Resource):
 
 
 class VersionV2(object):
+
     @wsgi.serializers(xml=VersionTemplate,
                       atom=VersionAtomSerializer)
     def show(self, req):
