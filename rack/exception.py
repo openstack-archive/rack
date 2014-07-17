@@ -1594,5 +1594,18 @@ class ProcessDeleteFailed(RackException):
 class ProcessNotFound(NotFound):
     msg_fmt = _("Process %(pid)s could not be found.")
 
+
+class ProxyCreateFailed(RackException):
+    msg_fmt = _("Unable to create Proxy")
+
+
+class ProxyDeleteFailed(RackException):
+    msg_fmt = _("Unable to delete Proxy")
+
+
+class ProxyNotFound(NotFound):
+    msg_fmt = _("Proxy instance could not be found.")
+
+
 class NoNetworksFound(NotFound):
     msg_fmt = _("No networks defined for gid %(gid)s.")

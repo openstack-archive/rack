@@ -28,7 +28,8 @@ class ProcessesAPI(object):
                         nova_keypair_id, 
                         neutron_securitygroup_ids, 
                         neutron_network_ids, 
-                        metadata
+                        metadata,
+                        userdata
                         ):
         try:
             nova = os_client.get_nova_client()
@@ -41,7 +42,8 @@ class ProcessesAPI(object):
                                           meta=metadata,
                                           nics=nics,
                                           key_name=nova_keypair_id,
-                                          security_groups=neutron_securitygroup_ids
+                                          security_groups=neutron_securitygroup_ids,
+                                          userdata=userdata
                                           )
 
             while process.status != "ACTIVE":

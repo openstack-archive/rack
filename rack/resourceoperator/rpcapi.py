@@ -94,13 +94,13 @@ class ResourceOperatorAPI(object):
     def process_create(self, ctxt, host, pid, ppid, gid, name, 
                        glance_image_id, nova_flavor_id, 
                        nova_keypair_id, neutron_securitygroup_ids, 
-                       neutron_network_ids, metadata):
+                       neutron_network_ids, metadata, userdata):
         cctxt = self.client.prepare(server=host)
         cctxt.cast(ctxt, "process_create",
                    pid=pid, ppid=ppid, gid=gid, name=name, 
                    glance_image_id=glance_image_id, nova_flavor_id=nova_flavor_id, 
                    nova_keypair_id=nova_keypair_id, neutron_securitygroup_ids=neutron_securitygroup_ids, 
-                   neutron_network_ids=neutron_network_ids, metadata=metadata)
+                   neutron_network_ids=neutron_network_ids, metadata=metadata, userdata=userdata)
 
     def process_delete(self, ctxt, host, nova_instance_id):
         cctxt = self.client.prepare(server=host)
