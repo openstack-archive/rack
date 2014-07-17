@@ -11,21 +11,22 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-import uuid
-
-import functools
-from rack import exception
-import rack.context
-from rack.db.sqlalchemy import models
-from rack.openstack.common.db import exception as db_exc
-from rack.openstack.common.db.sqlalchemy import session as db_session
-import sys
-
 from oslo.config import cfg
+
+from rack.db.sqlalchemy import models
+from rack import exception
+
 from rack.openstack.common import jsonutils
 from rack.openstack.common import log as logging
 from rack.openstack.common import timeutils
+
+from rack.openstack.common.db import exception as db_exc
+from rack.openstack.common.db.sqlalchemy import session as db_session
 from rack.openstack.common.gettextutils import _
+
+import functools
+import rack.context
+import sys
 
 LOG = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ def group_get_all(context, filters=None):
     session = get_session()
     filters = filters or {}
     query = session.query(models.Group).filter_by(user_id=context.user_id)\
-                                        .filter_by(deleted=0)
+        .filter_by(deleted=0)
     if 'project_id' in filters:
         query = query.filter_by(project_id=filters['project_id'])
     if 'name' in filters:
@@ -124,12 +125,13 @@ def group_update(context, values):
 
     return dict(group_ref)
 
+
 def group_delete(context, gid):
     session = get_session()
     group_ref = session.query(models.Group)\
-                    .filter_by(deleted=0)\
-                    .filter_by(gid=gid)\
-                    .first()
+        .filter_by(deleted=0)\
+        .filter_by(gid=gid)\
+        .first()
     if group_ref is None:
         raise exception.GroupNotFound(gid=gid)
 
@@ -142,6 +144,7 @@ def group_delete(context, gid):
     group_ref.save(session)
 
     return dict(group_ref)
+
 
 def service_model_query(context, model, *args, **kwargs):
     session = kwargs.get('session') or get_session()
@@ -317,11 +320,12 @@ def network_get_all(context, gid, filters):
     query = session.query(models.Network)\
         .filter_by(deleted=0)\
         .filter_by(gid=gid)
-        
+
     if 'network_id' in filters:
         query = query.filter_by(network_id=filters['network_id'])
     if 'neutron_network_id' in filters:
-        query = query.filter_by(neutron_network_id=filters['neutron_network_id'])
+        query = query.filter_by(
+            neutron_network_id=filters['neutron_network_id'])
     if 'display_name' in filters:
         query = query.filter_by(display_name=filters['display_name'])
     if 'status' in filters:
@@ -349,7 +353,8 @@ def network_get_by_network_id(context, gid, network_id):
         raise exception.NetworkNotFound(network_id=network_id)
 
     network_dict = dict(network)
-    network_dict.update(dict(processes=[dict(process) for process in network.processes]))
+    network_dict.update(
+        dict(processes=[dict(process) for process in network.processes]))
 
     return network_dict
 
@@ -373,8 +378,8 @@ def network_delete(context, gid, network_id):
 def keypair_get_all(context, gid, filters={}):
     session = get_session()
     query = session.query(models.Keypair)\
-                .filter_by(gid=gid)\
-                .filter_by(deleted=0)
+        .filter_by(gid=gid)\
+        .filter_by(deleted=0)
     if 'keypair_id' in filters:
         query = query.filter_by(keypair_id=filters['keypair_id'])
     if 'nova_keypair_id' in filters:
@@ -394,10 +399,10 @@ def keypair_get_all(context, gid, filters={}):
 def keypair_get_by_keypair_id(context, gid, keypair_id):
     session = get_session()
     keypair = session.query(models.Keypair)\
-                .filter_by(gid=gid)\
-                .filter_by(keypair_id=keypair_id)\
-                .filter_by(deleted=0)\
-                .first()
+        .filter_by(gid=gid)\
+        .filter_by(keypair_id=keypair_id)\
+        .filter_by(deleted=0)\
+        .first()
 
     if not keypair:
         raise exception.KeypairNotFound(keypair_id=keypair_id)
@@ -416,12 +421,12 @@ def keypair_create(context, values):
 def keypair_update(context, gid, keypair_id, values):
     session = get_session()
     keypair_ref = session.query(models.Keypair)\
-                    .filter_by(gid=gid)\
-                    .filter_by(keypair_id=keypair_id)\
-                    .filter_by(deleted=0)\
-                    .first()
+        .filter_by(gid=gid)\
+        .filter_by(keypair_id=keypair_id)\
+        .filter_by(deleted=0)\
+        .first()
     if keypair_ref is None:
-        raise exception.KeypairNotFound(keypair_id=keypair_id) 
+        raise exception.KeypairNotFound(keypair_id=keypair_id)
 
     keypair_ref.update(values)
     keypair_ref.save(session)
@@ -432,10 +437,10 @@ def keypair_update(context, gid, keypair_id, values):
 def keypair_delete(context, gid, keypair_id):
     session = get_session()
     keypair_ref = session.query(models.Keypair)\
-                    .filter_by(gid=gid)\
-                    .filter_by(keypair_id=keypair_id)\
-                    .filter_by(deleted=0)\
-                    .first()
+        .filter_by(gid=gid)\
+        .filter_by(keypair_id=keypair_id)\
+        .filter_by(deleted=0)\
+        .first()
     if keypair_ref is None:
         raise exception.KeypairNotFound(keypair_id=keypair_id)
 
@@ -453,7 +458,7 @@ def keypair_delete(context, gid, keypair_id):
 def securitygroup_get_all(context, gid, filters={}):
     session = get_session()
     query = session.query(models.Securitygroup).filter_by(gid=gid, deleted=0)
-        
+
     if 'securitygroup_id' in filters:
         query = query.filter_by(securitygroup_id=filters['securitygroup_id'])
     if 'name' in filters:
@@ -476,10 +481,12 @@ def securitygroup_get_by_securitygroup_id(context, gid, securitygroup_id):
         .first()
 
     if not securitygroup:
-        raise exception.SecuritygroupNotFound(securitygroup_id=securitygroup_id)
+        raise exception.SecuritygroupNotFound(
+            securitygroup_id=securitygroup_id)
 
     securitygroup_dict = dict(securitygroup)
-    securitygroup_dict.update(dict(processes=[dict(process) for process in securitygroup.processes]))
+    securitygroup_dict.update(
+        dict(processes=[dict(process) for process in securitygroup.processes]))
     return securitygroup_dict
 
 
@@ -500,26 +507,29 @@ def securitygroup_update(context, gid, securitygroup_id, values):
         filter_by(securitygroup_id=securitygroup_id). \
         first()
     if securitygroup_ref is None:
-        raise exception.SecuritygroupNotFound(securitygroup_id=securitygroup_id)
+        raise exception.SecuritygroupNotFound(
+            securitygroup_id=securitygroup_id)
 
     securitygroup_ref.update(values)
     securitygroup_ref.save(session)
 
     return dict(securitygroup_ref)
 
+
 def securitygroup_delete(context, gid, securitygroup_id):
     session = get_session()
     securitygroup_ref = session.query(models.Securitygroup). \
         filter_by(deleted=0). \
-        filter_by(gid = gid). \
-        filter_by(securitygroup_id = securitygroup_id). \
+        filter_by(gid=gid). \
+        filter_by(securitygroup_id=securitygroup_id). \
         first()
     if securitygroup_ref is None:
-        raise exception.SecuritygroupNotFound(securitygroup_id=securitygroup_id)
+        raise exception.SecuritygroupNotFound(
+            securitygroup_id=securitygroup_id)
 
-    securitygroup_ref.update({"deleted":1, 
-                              'deleted_at':timeutils.utcnow(), 
-                              "status":"DELETING"})
+    securitygroup_ref.update({"deleted": 1,
+                              'deleted_at': timeutils.utcnow(),
+                              "status": "DELETING"})
     securitygroup_ref.save(session)
 
     return dict(securitygroup_ref)
@@ -528,8 +538,7 @@ def securitygroup_delete(context, gid, securitygroup_id):
 def process_get_all(context, gid, filters={}):
     session = get_session()
     query = session.query(models.Process).filter_by(gid=gid, deleted=0)
-    
-        
+
     if 'pid' in filters:
         query = query.filter_by(pid=filters['pid'])
     if 'ppid' in filters:
@@ -546,19 +555,20 @@ def process_get_all(context, gid, filters={}):
         query = query.filter_by(keypair_id=filters['keypair_id'])
     if 'securitygroup_id' in filters:
         query = query.filter(
-                    models.Process.securitygroups.any(
-                        securitygroup_id=filters["securitygroup_id"]))
+            models.Process.securitygroups.any(
+                securitygroup_id=filters["securitygroup_id"]))
     if 'network_id' in filters:
         query = query.filter(
-                    models.Process.networks.any(
-                        network_id=filters["network_id"]))
+            models.Process.networks.any(
+                network_id=filters["network_id"]))
     if 'is_proxy' in filters:
         query = query.filter_by(is_proxy=filters['is_proxy'])
     if 'app_status' in filters:
         query = query.filter_by(app_status=filters['app_status'])
-        
+
     process_refs = query.all()
     return [_get_process_dict(process_ref) for process_ref in process_refs]
+
 
 def process_get_by_pid(context, gid, pid):
     session = get_session()
@@ -573,6 +583,15 @@ def process_get_by_pid(context, gid, pid):
     return _get_process_dict(process_ref)
 
 
+def process_get_not_error_status_for_proxy(context, gid):
+    session = get_session()
+    query = session.query(models.Process).filter_by(
+        gid=gid, deleted=0, is_proxy=True)
+    process_refs = query.filter(models.Process.status != 'ERROR').all()
+
+    return [_get_process_dict(process_ref) for process_ref in process_refs]
+
+
 def process_create(context, values, network_ids, securitygroup_ids):
     session = get_session()
     with session.begin():
@@ -583,31 +602,38 @@ def process_create(context, values, network_ids, securitygroup_ids):
             if network_ids:
                 for network_id in network_ids:
                     network_ref = session.query(models.Network)\
-                    .filter_by(deleted=0)\
-                    .filter_by(gid=values["gid"])\
-                    .filter_by(network_id=network_id)\
-                    .first()
+                        .filter_by(deleted=0)\
+                        .filter_by(gid=values["gid"])\
+                        .filter_by(network_id=network_id)\
+                        .first()
                     if network_ref is None:
                         raise exception.NetworkNotFound(network_id=network_id)
-                    session.add(models.ProcessNetwork(pid=values["pid"], network_id=network_ref.network_id))
+                    session.add(
+                        models.ProcessNetwork(pid=values["pid"],
+                                              network_id=network_ref
+                                              .network_id))
 
             if securitygroup_ids:
                 for securitygroup_id in securitygroup_ids:
                     securitygroup_ref = session.query(models.Securitygroup)\
-                    .filter_by(deleted=0)\
-                    .filter_by(gid=values["gid"])\
-                    .filter_by(securitygroup_id=securitygroup_id)\
-                    .first()
+                        .filter_by(deleted=0)\
+                        .filter_by(gid=values["gid"])\
+                        .filter_by(securitygroup_id=securitygroup_id)\
+                        .first()
                     if securitygroup_ref is None:
-                        raise exception.SecuritygroupNotFound(securitygroup_id=securitygroup_id)
-                    session.add(models.ProcessSecuritygroup(pid=values["pid"], securitygroup_id=securitygroup_ref.securitygroup_id))
-        
+                        raise exception.SecuritygroupNotFound(
+                            securitygroup_id=securitygroup_id)
+                    session.add(models.ProcessSecuritygroup(
+                        pid=values["pid"],
+                        securitygroup_id=securitygroup_ref.securitygroup_id))
+
             session.flush()
         except db_exc.DBDuplicateEntry:
             msg = _("securitygroup or network is duplicated")
             raise exception.InvalidInput(reason=msg)
-    
+
     return _get_process_dict(process_ref)
+
 
 def process_update(context, gid, pid, values):
     session = get_session()
@@ -624,6 +650,7 @@ def process_update(context, gid, pid, values):
 
     return dict(process_ref)
 
+
 def process_delete(context, gid, pid):
     session = get_session()
     process_ref = session.query(models.Process). \
@@ -634,18 +661,19 @@ def process_delete(context, gid, pid):
     if process_ref is None:
         raise exception.ProcessNotFound(pid=pid)
 
-    process_ref.update({"deleted":1, 
-                              'deleted_at':timeutils.utcnow(), 
-                              "status":"DELETING"})
+    process_ref.update({"deleted": 1,
+                        'deleted_at': timeutils.utcnow(),
+                        "status": "DELETING"})
     process_ref.save(session)
 
     return _get_process_dict(process_ref)
 
 
 def _get_process_dict(process_ref):
-        process_dict = dict(process_ref)
-        process_dict.update(dict(securitygroups=[dict(securitygroup) 
-                                                 for securitygroup in process_ref.securitygroups]))
-        process_dict.update(dict(networks=[dict(network) 
-                                                 for network in process_ref.networks]))
-        return process_dict
+    process_dict = dict(process_ref)
+    process_dict.update(dict(securitygroups=[dict(securitygroup)
+                                             for securitygroup in process_ref
+                                             .securitygroups]))
+    process_dict.update(dict(networks=[dict(network)
+                                       for network in process_ref.networks]))
+    return process_dict

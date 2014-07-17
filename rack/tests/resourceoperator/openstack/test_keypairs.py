@@ -39,6 +39,7 @@ class FakeKeypairModel(object):
 
 
 class KeypairTestCase(test.NoDBTestCase):
+
     def setUp(self):
         super(KeypairTestCase, self).setUp()
         self.keypair_client = keypairs.KeypairAPI()
@@ -53,11 +54,11 @@ class KeypairTestCase(test.NoDBTestCase):
         self.mox.ReplayAll()
 
         expected = {
-              "nova_keypair_id": name,
-              "private_key": "fake_private_key"
+            "nova_keypair_id": name,
+            "private_key": "fake_private_key"
         }
         values = self.keypair_client.keypair_create(name)
-        self.assertEquals(expected, values)
+        self.assertEqual(expected, values)
 
     def test_keypair_create_raise_exception(self):
         name = "fake_keypair"
@@ -65,8 +66,8 @@ class KeypairTestCase(test.NoDBTestCase):
         self.mox.ReplayAll()
 
         self.assertRaises(
-                exception.KeypairCreateFailed,
-                self.keypair_client.keypair_create, name)
+            exception.KeypairCreateFailed,
+            self.keypair_client.keypair_create, name)
 
     def test_keypair_delete(self):
         nova_keypair_id = "fake_keypair"
@@ -81,5 +82,5 @@ class KeypairTestCase(test.NoDBTestCase):
         self.mox.ReplayAll()
 
         self.assertRaises(
-                exception.KeypairDeleteFailed,
-                self.keypair_client.keypair_delete, nova_keypair_id)
+            exception.KeypairDeleteFailed,
+            self.keypair_client.keypair_delete, nova_keypair_id)

@@ -32,11 +32,13 @@ CONF = cfg.CONF
 CONF.register_opts(rpcapi_opts)
 
 rpcapi_cap_opt = cfg.StrOpt('scheduler',
-        help='Set a version cap for messages sent to scheduler services')
+                            help='Set a version cap for messages sent to '
+                            'scheduler services')
 CONF.register_opt(rpcapi_cap_opt, 'upgrade_levels')
 
 
 class SchedulerAPI(object):
+
     '''Client side of the scheduler rpc API.
 
     API version history:
@@ -60,4 +62,5 @@ class SchedulerAPI(object):
     def select_destinations(self, ctxt, request_spec, filter_properties):
         cctxt = self.client.prepare()
         return cctxt.call(ctxt, 'select_destinations',
-            request_spec=request_spec, filter_properties=filter_properties)
+                          request_spec=request_spec,
+                          filter_properties=filter_properties)

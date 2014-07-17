@@ -40,6 +40,7 @@ CIDR = "10.0.0.0/24"
 
 
 class NetworkTestCase(test.NoDBTestCase):
+
     def setUp(self):
         super(NetworkTestCase, self).setUp()
         self.network_client = networks.NetworkAPI()
@@ -47,12 +48,14 @@ class NetworkTestCase(test.NoDBTestCase):
         self.mox.StubOutWithMock(os_client, "get_neutron_client")
         os_client.get_neutron_client().AndReturn(self.neutron_mock)
 
-    def _setup_test_network_create(self, gateway=None, dns_nameservers=None, ext_router=None):
+    def _setup_test_network_create(self, gateway=None, dns_nameservers=None,
+                                   ext_router=None):
         network_id = "fake_network_id"
         create_network_response = {"network": {"id": "fake_network_id"}}
-        self.neutron_mock.create_network(mox.IsA(dict)).AndReturn(create_network_response)
+        self.neutron_mock.create_network(
+            mox.IsA(dict)).AndReturn(create_network_response)
         expected_body = {
-            "subnet":{
+            "subnet": {
                 "network_id": network_id,
                 "ip_version": 4,
                 "cidr": CIDR
@@ -63,9 +66,11 @@ class NetworkTestCase(test.NoDBTestCase):
         if dns_nameservers:
             expected_body["subnet"].update(dns_nameservers=dns_nameservers)
         create_subnet_response = {"subnet": {"id": "fake_subnet_id"}}
-        self.neutron_mock.create_subnet(expected_body).AndReturn(create_subnet_response)
+        self.neutron_mock.create_subnet(
+            expected_body).AndReturn(create_subnet_response)
         if ext_router:
-            self.neutron_mock.add_interface_router(mox.IsA(str), mox.IsA(dict))
+            self.neutron_mock.add_interface_router(mox.IsA(str),
+                                                   mox.IsA(dict))
 
     def test_network_create(self):
         self._setup_test_network_create()
@@ -88,14 +93,19 @@ class NetworkTestCase(test.NoDBTestCase):
         self.neutron_mock.create_network(mox.IsA(dict)).AndRaise(Exception())
         self.mox.ReplayAll()
 
-        self.assertRaises(exception.NetworkCreateFailed, self.network_client.network_create, "fake_name", CIDR)
+        self.assertRaises(exception.NetworkCreateFailed,
+                          self.network_client.network_create, "fake_name",
+                          CIDR)
 
     def test_network_delete(self):
         neutron_network_id = "fake_network_id"
         ext_router = "fake_router"
-        show_network_response = {"network": {"subnets":["fake_subnet1", "fake_subnet2"]}}
-        self.neutron_mock.show_network(neutron_network_id).AndReturn(show_network_response)
-        self.neutron_mock.remove_interface_router(ext_router, mox.IsA(dict)).MultipleTimes()
+        show_network_response = {
+            "network": {"subnets": ["fake_subnet1", "fake_subnet2"]}}
+        self.neutron_mock.show_network(
+            neutron_network_id).AndReturn(show_network_response)
+        self.neutron_mock.remove_interface_router(
+            ext_router, mox.IsA(dict)).MultipleTimes()
         self.neutron_mock.delete_network(neutron_network_id)
         self.mox.ReplayAll()
 
@@ -103,7 +113,10 @@ class NetworkTestCase(test.NoDBTestCase):
 
     def test_network_delete_raise_exception(self):
         neutron_network_id = "fake_network_id"
-        self.neutron_mock.delete_network(neutron_network_id).AndRaise(Exception())
+        self.neutron_mock.delete_network(
+            neutron_network_id).AndRaise(Exception())
         self.mox.ReplayAll()
 
-        self.assertRaises(exception.NetworkDeleteFailed, self.network_client.network_delete, neutron_network_id)
+        self.assertRaises(exception.NetworkDeleteFailed,
+                          self.network_client.network_delete,
+                          neutron_network_id)

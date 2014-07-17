@@ -56,7 +56,7 @@ class ZKServiceGroupTestCase(test.NoDBTestCase):
         self.servicegroup_api = servicegroup.API()
         service_id = {'topic': 'unittest', 'host': 'serviceA'}
         pulse = self.servicegroup_api.join(service_id['host'],
-                                         service_id['topic'], None)
+                                           service_id['topic'], None)
         self.assertTrue(self.servicegroup_api.service_is_up(service_id))
         pulse.stop()
         eventlet.sleep(1)

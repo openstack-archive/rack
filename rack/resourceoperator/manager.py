@@ -15,17 +15,17 @@
 ResourceOperator Service
 """
 
-from rack import db
 from oslo import messaging
-
+from rack import db
 from rack import exception
 from rack import manager
+
 from rack.openstack.common import log as logging
 
-from rack.resourceoperator.openstack import networks
 from rack.resourceoperator.openstack import keypairs
-from rack.resourceoperator.openstack import securitygroups
+from rack.resourceoperator.openstack import networks
 from rack.resourceoperator.openstack import processes
+from rack.resourceoperator.openstack import securitygroups
 
 
 LOG = logging.getLogger(__name__)
@@ -49,11 +49,11 @@ class ResourceOperatorManager(manager.Manager):
         update_values = {}
         try:
             neutron_network_id = self.network_client.network_create(
-                                    network.get("display_name"),
-                                    network.get("subnet"),
-                                    network.get("gateway"),
-                                    network.get("dns_nameservers"),
-                                    network.get("ext_router"))
+                network.get("display_name"),
+                network.get("subnet"),
+                network.get("gateway"),
+                network.get("dns_nameservers"),
+                network.get("ext_router"))
             update_values["neutron_network_id"] = neutron_network_id
             update_values["status"] = "ACTIVE"
         except Exception as e:
@@ -91,21 +91,23 @@ class ResourceOperatorManager(manager.Manager):
         except Exception as e:
             LOG.exception(e)
 
-
-    def securitygroup_create(self, context, gid, securitygroup_id, name, securitygrouprules):
+    def securitygroup_create(self, context, gid, securitygroup_id, name,
+                             securitygrouprules):
         values = {}
         try:
             values["neutron_securitygroup_id"] =\
-             self.securitygroup_client.securitygroup_create(name)
-            for securitygrouprule in securitygrouprules:                
+                self.securitygroup_client.securitygroup_create(name)
+            for securitygrouprule in securitygrouprules:
                 self.securitygrouprule_client.securitygrouprule_create(
-                                     neutron_securitygroup_id=values["neutron_securitygroup_id"],
-                                     protocol=securitygrouprule.get("protocol"),
-                                     port_range_min=securitygrouprule.get("port_range_min"),
-                                     port_range_max=securitygrouprule.get("port_range_max"),
-                                     remote_neutron_securitygroup_id=securitygrouprule.get("remote_neutron_securitygroup_id"),
-                                     remote_ip_prefix=securitygrouprule.get("remote_ip_prefix")
-                                         )
+                    neutron_securitygroup_id=values[
+                        "neutron_securitygroup_id"],
+                    protocol=securitygrouprule.get("protocol"),
+                    port_range_min=securitygrouprule.get("port_range_min"),
+                    port_range_max=securitygrouprule.get("port_range_max"),
+                    remote_neutron_securitygroup_id=securitygrouprule.get(
+                        "remote_neutron_securitygroup_id"),
+                    remote_ip_prefix=securitygrouprule.get("remote_ip_prefix")
+                )
             values["status"] = "ACTIVE"
             db.securitygroup_update(context, gid, securitygroup_id, values)
         except Exception as e:
@@ -115,35 +117,39 @@ class ResourceOperatorManager(manager.Manager):
 
     def securitygroup_delete(self, context, neutron_securitygroup_id):
         try:
-            self.securitygroup_client.securitygroup_delete(neutron_securitygroup_id)
+            self.securitygroup_client.securitygroup_delete(
+                neutron_securitygroup_id)
         except Exception as e:
             LOG.exception(e)
 
-    def process_create(self, 
-                        context, 
-                        pid, 
-                        ppid, 
-                        gid, 
-                        name, 
-                        glance_image_id, 
-                        nova_flavor_id, 
-                        nova_keypair_id, 
-                        neutron_securitygroup_ids, 
-                        neutron_network_ids, 
-                        metadata
-                        ):
+    def process_create(self,
+                       context,
+                       pid,
+                       ppid,
+                       gid,
+                       name,
+                       glance_image_id,
+                       nova_flavor_id,
+                       nova_keypair_id,
+                       neutron_securitygroup_ids,
+                       neutron_network_ids,
+                       metadata,
+                       userdata
+                       ):
         update_values = {}
         try:
             metadata["pid"] = pid
             metadata["ppid"] = ppid
             metadata["gid"] = gid
-            nova_instance_id = self.process_client.process_create(name, 
-                                                                  glance_image_id, 
-                                                                  nova_flavor_id, 
-                                                                  nova_keypair_id, 
-                                                                  neutron_securitygroup_ids, 
-                                                                  neutron_network_ids, 
-                                                                  metadata)
+            nova_instance_id = self.process_client.process_create(
+                name,
+                glance_image_id,
+                nova_flavor_id,
+                nova_keypair_id,
+                neutron_securitygroup_ids,
+                neutron_network_ids,
+                metadata,
+                userdata)
             update_values["nova_instance_id"] = nova_instance_id
             update_values["status"] = "ACTIVE"
             db.process_update(context, gid, pid, update_values)
@@ -157,4 +163,3 @@ class ResourceOperatorManager(manager.Manager):
             self.process_client.process_delete(nova_instance_id)
         except Exception as e:
             LOG.exception(e)
-

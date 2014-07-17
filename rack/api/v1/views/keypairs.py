@@ -18,12 +18,12 @@ LOG = logging.getLogger(__name__)
 
 
 class ViewBuilder(common.ViewBuilder):
+
     """Model a keypair API response as a python dictionary."""
 
     def index(self, keypair_list):
-        return dict(keypairs=
-                [self._base_response(keypair)
-                 for keypair in keypair_list])
+        return dict(keypairs=[self._base_response(keypair)
+                              for keypair in keypair_list])
 
     def show(self, keypair):
         base = self._base_response(keypair)

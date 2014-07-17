@@ -35,6 +35,7 @@ def generate_request_id():
 
 
 class RequestContext(object):
+
     """Security context and request information.
 
     Represents the user taking a given action within the system.
@@ -59,7 +60,7 @@ class RequestContext(object):
         """
         if kwargs:
             LOG.warn(_('Arguments dropped when creating context: %s') %
-                    str(kwargs))
+                     str(kwargs))
 
         self.user_id = user_id
         self.project_id = project_id
@@ -79,7 +80,11 @@ class RequestContext(object):
         if service_catalog:
             # Only include required parts of service_catalog
             self.service_catalog = [s for s in service_catalog
-                if s.get('type') in ('identity', 'image', 'network', 'compute')]
+                                    if s.get('type') in (
+                                        'identity',
+                                        'image',
+                                        'network',
+                                        'compute')]
         else:
             # if list is empty or none
             self.service_catalog = []

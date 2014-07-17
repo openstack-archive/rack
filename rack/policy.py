@@ -31,7 +31,7 @@ policy_opts = [
     cfg.StrOpt('policy_default_rule',
                default='default',
                help=_('Rule checked when requested rule is not found')),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(policy_opts)
@@ -106,7 +106,7 @@ def check_is_admin(context):
     """
     init()
 
-    #the target is user-self
+    # the target is user-self
     credentials = context.to_dict()
     target = credentials
 
@@ -115,6 +115,7 @@ def check_is_admin(context):
 
 @policy.register('is_admin')
 class IsAdminCheck(policy.Check):
+
     """An explicit check for is_admin."""
 
     def __init__(self, kind, match):

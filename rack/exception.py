@@ -35,6 +35,7 @@ CONF.register_opts(exc_log_opts)
 
 
 class ConvertedException(webob.exc.WSGIHTTPException):
+
     def __init__(self, code=0, title="", explanation=""):
         self.code = code
         self.title = title
@@ -81,6 +82,7 @@ def wrap_exception(notifier=None, get_notifier=None):
 
 
 class RackException(Exception):
+
     """Base Rack Exception
 
     To correctly use this class, inherit from it and define
@@ -147,7 +149,7 @@ class VirtualInterfaceMacAddressException(RackException):
 
 class GlanceConnectionFailed(RackException):
     msg_fmt = _("Connection to glance host %(host)s:%(port)s failed: "
-        "%(reason)s")
+                "%(reason)s")
 
 
 class NotAuthorized(RackException):
@@ -1321,6 +1323,7 @@ class ShadowTableExists(RackException):
 
 
 class InstanceFaultRollback(RackException):
+
     def __init__(self, inner_exception=None):
         message = _("Instance rollback performed due to: %s")
         self.inner_exception = inner_exception
@@ -1509,47 +1512,62 @@ class NoBlockMigrationForConfigDriveInLibVirt(RackException):
     msg_fmt = _("Block migration of instances with config drives is not "
                 "supported in libvirt.")
 
+
 class ServiceCatalogException(RackException):
     msg_fmt = _("Invalid service catalog service: %(service_type)s'")
+
 
 class GroupCreateFailed(RackException):
     msg_fmt = _("Unable to create group")
 
+
 class GroupIndexFailed(RackException):
     msg_fmt = _("Unable to index group")
+
 
 class GroupNotFound(NotFound):
     msg_fmt = _("Group %(gid)s could not be found.")
 
+
 class GroupInUse(RackException):
     msg_fmt = _("Group %(gid)s is still in use.")
-    
+
+
 class GroupDeleteFailed(RackException):
     msg_fmt = _('Unable to delete Group')
+
 
 class NetworkCreateFailed(RackException):
     msg_fmt = _("Unable to create network")
 
+
 class NetworkIndexFailed(RackException):
     msg_fmt = _("Unable to index network")
+
 
 class NetworkShowFailed(RackException):
     msg_fmt = _("Unable to show network")
 
+
 class NetworkDeleteFailed(RackException):
     msg_fmt = _("Unable to delete network")
+
 
 class KeypairNotFound(NotFound):
     msg_fmt = _("Keypair %(keypair_id)s could not be found.")
 
+
 class KeypairCreateFailed(RackException):
     msg_fmt = _("Unable to create keypair")
+
 
 class KeypairDeleteFailed(RackException):
     msg_fmt = _("Unable to delete keypair")
 
+
 class keypairInUse(RackException):
     msg_fmt = _("Keypair %(keypair_id)s is still in use.")
+
 
 class InvalidOpenStackCredential(Invalid):
     msg_fmt = _("OpenStack credential %(credential)s is required.")
@@ -1593,6 +1611,19 @@ class ProcessDeleteFailed(RackException):
 
 class ProcessNotFound(NotFound):
     msg_fmt = _("Process %(pid)s could not be found.")
+
+
+class ProxyCreateFailed(RackException):
+    msg_fmt = _("Unable to create Proxy")
+
+
+class ProxyDeleteFailed(RackException):
+    msg_fmt = _("Unable to delete Proxy")
+
+
+class ProxyNotFound(NotFound):
+    msg_fmt = _("Proxy instance could not be found.")
+
 
 class NoNetworksFound(NotFound):
     msg_fmt = _("No networks defined for gid %(gid)s.")

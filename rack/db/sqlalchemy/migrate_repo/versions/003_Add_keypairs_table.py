@@ -12,34 +12,35 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 from migrate import ForeignKeyConstraint
-from migrate.changeset import UniqueConstraint
-from sqlalchemy import Column, MetaData, Table
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
 
 from rack.openstack.common.gettextutils import _
 from rack.openstack.common import log as logging
+
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import Column, MetaData, Table
 
 LOG = logging.getLogger(__name__)
 
 meta = MetaData()
 
 keypairs = Table('keypairs', meta,
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('deleted', Integer),
-        Column('keypair_id', String(length=36), primary_key=True, nullable=False),
-        Column('gid', String(length=36), nullable=False),
-        Column('nova_keypair_id', String(length=255)),
-        Column('private_key', Text),
-        Column('display_name', String(length=255)),
-        Column('is_default', Boolean),
-        Column('user_id', String(length=255)),
-        Column('project_id', String(length=255)),
-        Column('status', String(length=255)),
-        mysql_engine='InnoDB',
-        mysql_charset='utf8'
-    )
+                 Column('created_at', DateTime),
+                 Column('updated_at', DateTime),
+                 Column('deleted_at', DateTime),
+                 Column('deleted', Integer),
+                 Column('keypair_id', String(length=36),
+                        primary_key=True, nullable=False),
+                 Column('gid', String(length=36), nullable=False),
+                 Column('nova_keypair_id', String(length=255)),
+                 Column('private_key', Text),
+                 Column('display_name', String(length=255)),
+                 Column('is_default', Boolean),
+                 Column('user_id', String(length=255)),
+                 Column('project_id', String(length=255)),
+                 Column('status', String(length=255)),
+                 mysql_engine='InnoDB',
+                 mysql_charset='utf8'
+                 )
 
 
 def upgrade(migrate_engine):

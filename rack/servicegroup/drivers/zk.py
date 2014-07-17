@@ -41,7 +41,7 @@ zk_driver_opts = [
                default=5,
                help='Number of seconds to wait until retrying to join the '
                     'session'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(zk_driver_opts, group="zookeeper")
@@ -50,6 +50,7 @@ LOG = logging.getLogger(__name__)
 
 
 class ZooKeeperDriver(api.ServiceGroupDriver):
+
     """ZooKeeper driver for the service group API."""
 
     def __init__(self, *args, **kwargs):
@@ -58,8 +59,8 @@ class ZooKeeperDriver(api.ServiceGroupDriver):
             raise ImportError('zookeeper module not found')
         null = open(os.devnull, "w")
         self._session = evzookeeper.ZKSession(CONF.zookeeper.address,
-                                              recv_timeout=
-                                                CONF.zookeeper.recv_timeout,
+                                              recv_timeout=CONF.zookeeper
+                                              .recv_timeout,
                                               zklog_fd=null)
         self._memberships = {}
         self._monitors = {}
@@ -76,7 +77,7 @@ class ZooKeeperDriver(api.ServiceGroupDriver):
         """Join the given service with its group."""
         LOG.debug(_('ZooKeeperDriver: join new member %(id)s to the '
                     '%(gr)s group, service=%(sr)s'),
-                    {'id': member_id, 'gr': group, 'sr': service})
+                  {'id': member_id, 'gr': group, 'sr': service})
         member = self._memberships.get((group, member_id), None)
         if member is None:
             # the first time to join. Generate a new object
@@ -137,9 +138,11 @@ class ZooKeeperDriver(api.ServiceGroupDriver):
 
 
 class FakeLoopingCall(loopingcall.LoopingCallBase):
+
     """The fake Looping Call implementation, created for backward
     compatibility with a membership based on DB.
     """
+
     def __init__(self, driver, host, group):
         self._driver = driver
         self._group = group

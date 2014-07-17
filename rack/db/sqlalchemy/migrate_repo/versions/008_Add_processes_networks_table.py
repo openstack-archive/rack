@@ -24,11 +24,15 @@ meta = MetaData()
 
 
 processes_networks = Table('processes_networks', meta,
-        Column('pid', String(length=36), nullable=False, primary_key=True),
-        Column('network_id', String(length=36), nullable=False, primary_key=True),
-        mysql_engine='InnoDB',
-        mysql_charset='utf8'
-    )
+                           Column(
+                               'pid', String(length=36), nullable=False,
+                               primary_key=True),
+                           Column(
+                               'network_id', String(length=36),
+                               nullable=False, primary_key=True),
+                           mysql_engine='InnoDB',
+                           mysql_charset='utf8'
+                           )
 
 
 def upgrade(migrate_engine):
@@ -44,9 +48,9 @@ def upgrade(migrate_engine):
         raise
 
     ForeignKeyConstraint(columns=[processes_networks.c.pid],
-                                 refcolumns=[processes.c.pid]).create()
+                         refcolumns=[processes.c.pid]).create()
     ForeignKeyConstraint(columns=[processes_networks.c.network_id],
-                                 refcolumns=[networks.c.network_id]).create()
+                         refcolumns=[networks.c.network_id]).create()
 
 
 def downgrade(migrate_engine):

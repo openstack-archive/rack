@@ -11,23 +11,21 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from oslo.config import cfg
-import routes
-import stevedore
-import webob.dec
-import webob.exc
-
 from rack.api import wsgi
-from rack import exception
 from rack.openstack.common import gettextutils
 from rack.openstack.common.gettextutils import _
 from rack.openstack.common import log as logging
 from rack import utils
 from rack import wsgi as base_wsgi
+import webob.dec
+import webob.exc
+
 
 LOG = logging.getLogger(__name__)
 
+
 class FaultWrapper(base_wsgi.Middleware):
+
     """Calls down the middleware stack, making exceptions into faults."""
 
     _status_to_type = {}
@@ -38,7 +36,7 @@ class FaultWrapper(base_wsgi.Middleware):
             for clazz in utils.walk_class_hierarchy(webob.exc.HTTPError):
                 FaultWrapper._status_to_type[clazz.code] = clazz
         return FaultWrapper._status_to_type.get(
-                                  status, webob.exc.HTTPInternalServerError)()
+            status, webob.exc.HTTPInternalServerError)()
 
     def _error(self, inner, req):
         LOG.exception(_("Caught error: %s"), unicode(inner))
@@ -65,7 +63,7 @@ class FaultWrapper(base_wsgi.Middleware):
             if isinstance(inner.msg_fmt, gettextutils.Message):
                 user_locale = req.best_match_language()
                 inner_msg = gettextutils.translate(
-                        inner.msg_fmt, user_locale)
+                    inner.msg_fmt, user_locale)
             else:
                 inner_msg = unicode(inner)
             outer.explanation = '%s: %s' % (inner.__class__.__name__,

@@ -51,7 +51,6 @@ VALID_NAME_REGEX = re.compile("^(?! )[\w. _-]+(?<! )$", re.UNICODE)
 XML_NS_V11 = 'http://docs.openstack.org/compute/api/v1.1'
 
 
-
 def get_pagination_params(request):
     """Return marker, limit tuple from request.
 
@@ -252,6 +251,7 @@ def raise_http_conflict_for_instance_invalid_state(exc, action):
 
 
 class MetadataDeserializer(wsgi.MetadataXMLDeserializer):
+
     def deserialize(self, text):
         dom = xmlutil.safe_minidom_parse_string(text)
         metadata_node = self.find_first_child_named(dom, "metadata")
@@ -260,6 +260,7 @@ class MetadataDeserializer(wsgi.MetadataXMLDeserializer):
 
 
 class MetaItemDeserializer(wsgi.MetadataXMLDeserializer):
+
     def deserialize(self, text):
         dom = xmlutil.safe_minidom_parse_string(text)
         metadata_item = self.extract_metadata(dom)
@@ -300,6 +301,7 @@ metadata_nsmap = {None: xmlutil.XMLNS_V11}
 
 
 class MetaItemTemplate(xmlutil.TemplateBuilder):
+
     def construct(self):
         sel = xmlutil.Selector('meta', xmlutil.get_items, 0)
         root = xmlutil.TemplateElement('meta', selector=sel)
@@ -309,11 +311,13 @@ class MetaItemTemplate(xmlutil.TemplateBuilder):
 
 
 class MetadataTemplateElement(xmlutil.TemplateElement):
+
     def will_render(self, datum):
         return True
 
 
 class MetadataTemplate(xmlutil.TemplateBuilder):
+
     def construct(self):
         root = MetadataTemplateElement('metadata', selector='metadata')
         elem = xmlutil.SubTemplateElement(root, 'meta',
@@ -336,6 +340,7 @@ def check_snapshots_enabled(f):
 
 
 class ViewBuilder(object):
+
     """Model API responses as dictionaries."""
 
     def _get_project_id(self, request):
@@ -348,16 +353,18 @@ class ViewBuilder(object):
         return ''
 
     def _get_links(self, request, identifier, collection_name):
-        return [{
-            "rel": "self",
-            "href": self._get_href_link(request, identifier, collection_name),
-        },
-        {
-            "rel": "bookmark",
-            "href": self._get_bookmark_link(request,
-                                            identifier,
+        return [
+            {
+                "rel": "self",
+                "href": self._get_href_link(request, identifier,
                                             collection_name),
-        }]
+            },
+            {
+                "rel": "bookmark",
+                "href": self._get_bookmark_link(request,
+                                                identifier,
+                                                collection_name),
+            }]
 
     def _get_next_link(self, request, identifier, collection_name):
         """Return href string with proper limit and marker params."""

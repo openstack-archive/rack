@@ -54,9 +54,9 @@ monkey_patch_opts = [
                 help='Whether to log monkey patching'),
     cfg.ListOpt('monkey_patch_modules',
                 default=[
-                  'rack.api.ec2.cloud:%s' % (notify_decorator),
-                  'rack.compute.api:%s' % (notify_decorator)
-                  ],
+                    'rack.api.ec2.cloud:%s' % (notify_decorator),
+                    'rack.compute.api:%s' % (notify_decorator)
+                ],
                 help='List of modules/decorators to monkey patch'),
 ]
 utils_opts = [
@@ -153,14 +153,14 @@ def _get_root_helper():
 
 def execute(*cmd, **kwargs):
     """Convenience wrapper around oslo's execute() method."""
-    if 'run_as_root' in kwargs and not 'root_helper' in kwargs:
+    if 'run_as_root' in kwargs and 'root_helper' not in kwargs:
         kwargs['root_helper'] = _get_root_helper()
     return processutils.execute(*cmd, **kwargs)
 
 
 def trycmd(*args, **kwargs):
     """Convenience wrapper around oslo's trycmd() method."""
-    if 'run_as_root' in kwargs and not 'root_helper' in kwargs:
+    if 'run_as_root' in kwargs and 'root_helper' not in kwargs:
         kwargs['root_helper'] = _get_root_helper()
     return processutils.trycmd(*args, **kwargs)
 
@@ -261,9 +261,9 @@ def last_completed_audit_period(unit=None, before=None):
 
     elif unit == 'day':
         end = datetime.datetime(hour=offset,
-                               day=rightnow.day,
-                               month=rightnow.month,
-                               year=rightnow.year)
+                                day=rightnow.day,
+                                month=rightnow.month,
+                                year=rightnow.year)
         if end >= rightnow:
             end = end - datetime.timedelta(days=1)
         begin = end - datetime.timedelta(days=1)
@@ -332,7 +332,7 @@ def get_my_ipv4_address():
         # Find the right subnet for the gateway/interface for
         # the default route
         route = ('(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/(\d{1,2})'
-              '\s*dev\s*(\w*)\s*')
+                 '\s*dev\s*(\w*)\s*')
         for match in re.finditer(route, out[0]):
             subnet = netaddr.IPNetwork(match.group(1) + "/" + match.group(2))
             if (match.group(3) == iface and
@@ -385,6 +385,7 @@ def get_my_linklocal(interface):
 
 
 class LazyPluggable(object):
+
     """A pluggable backend loaded lazily based on some value."""
 
     def __init__(self, pivot, config_group=None, **backends):
@@ -484,8 +485,10 @@ def is_int_like(val):
     except Exception:
         return False
 
+
 def is_valid_protocol(protocol):
     return protocol in ["tcp", "udp", "icmp"]
+
 
 def is_valid_ipv4(address):
     """Verify that address represents a valid IPv4 address."""
@@ -594,13 +597,15 @@ def monkey_patch():
             if isinstance(module_data[key], pyclbr.Class):
                 clz = importutils.import_class("%s.%s" % (module, key))
                 for method, func in inspect.getmembers(clz, inspect.ismethod):
-                    setattr(clz, method,
+                    setattr(
+                        clz,
+                        method,
                         decorator("%s.%s.%s" % (module, key, method), func))
             # set the decorator for the function
             if isinstance(module_data[key], pyclbr.Function):
                 func = importutils.import_class("%s.%s" % (module, key))
                 setattr(sys.modules[module], key,
-                    decorator("%s.%s" % (module, key), func))
+                        decorator("%s.%s" % (module, key), func))
 
 
 def convert_to_list_dict(lst, label):
@@ -797,9 +802,11 @@ def walk_class_hierarchy(clazz, encountered=None):
 
 
 class UndoManager(object):
+
     """Provides a mechanism to facilitate rolling back a series of actions
     when an exception is raised.
     """
+
     def __init__(self):
         self.undo_stack = []
 
@@ -835,7 +842,7 @@ def mkfs(fs, path, label=None, run_as_root=False):
         args = ['mkswap']
     else:
         args = ['mkfs', '-t', fs]
-    #add -F to force no interactive execute on non-block device.
+    # add -F to force no interactive execute on non-block device.
     if fs in ('ext3', 'ext4', 'ntfs'):
         args.extend(['-F'])
     if label:
@@ -943,6 +950,7 @@ def expects_func_args(*args):
 
 
 class ExceptionHelper(object):
+
     """Class to wrap another and translate the ClientExceptions raised by its
     function calls to the actual ones.
     """
@@ -1073,6 +1081,7 @@ def is_neutron():
 
     return _IS_NEUTRON
 '''
+
 
 def reset_is_neutron():
     global _IS_NEUTRON

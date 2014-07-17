@@ -19,18 +19,18 @@ LOG = logging.getLogger(__name__)
 
 
 class SecuritygroupAPI(object):
+
     def securitygroup_create(self, name):
         try:
             neutron = os_client.get_neutron_client()
-            res = neutron.create_security_group({"security_group": 
-                                           {"name": name}})
+            res = neutron.create_security_group({"security_group":
+                                                 {"name": name}})
             neutron_securitygroup_id = res['security_group']['id']
         except Exception as e:
             LOG.exception(e)
             raise exception.SecuritygroupCreateFailed()
 
         return neutron_securitygroup_id
-
 
     def securitygroup_delete(self, neutron_securitygroup_id):
         try:
@@ -42,32 +42,36 @@ class SecuritygroupAPI(object):
 
 
 class SecuritygroupruleAPI(object):
+
     def securitygrouprule_create(self, neutron_securitygroup_id, protocol,
-               port_range_min=None, port_range_max=None, 
-               remote_neutron_securitygroup_id=None, remote_ip_prefix=None, 
-               direction="ingress", ethertype="IPv4"):
+                                 port_range_min=None, port_range_max=None,
+                                 remote_neutron_securitygroup_id=None,
+                                 remote_ip_prefix=None,
+                                 direction="ingress", ethertype="IPv4"):
         try:
             self.neutron = os_client.get_neutron_client()
             if remote_neutron_securitygroup_id:
-                self.neutron.create_security_group_rule({"security_group_rule": 
-                                {"direction": direction, 
-                                 "ethertype": ethertype,
-                                 "security_group_id": neutron_securitygroup_id,
-                                 "protocol": protocol,
-                                 "port_range_min": port_range_min or port_range_max,
-                                 "port_range_max": port_range_max,
-                                 "remote_group_id": remote_neutron_securitygroup_id,
-                                  }})
+                self.neutron.create_security_group_rule(
+                    {"security_group_rule":
+                     {"direction": direction,
+                      "ethertype": ethertype,
+                      "security_group_id": neutron_securitygroup_id,
+                      "protocol": protocol,
+                      "port_range_min": port_range_min or port_range_max,
+                      "port_range_max": port_range_max,
+                      "remote_group_id": remote_neutron_securitygroup_id,
+                      }})
             elif remote_ip_prefix:
-                self.neutron.create_security_group_rule({"security_group_rule": 
-                                 {"direction": direction, 
-                                  "ethertype": ethertype,
-                                  "security_group_id": neutron_securitygroup_id,
-                                  "protocol": protocol,
-                                  "port_range_min": port_range_min or port_range_max,
-                                  "port_range_max": port_range_max,
-                                  "remote_ip_prefix": remote_ip_prefix,
-                                  }})
+                self.neutron.create_security_group_rule(
+                    {"security_group_rule":
+                     {"direction": direction,
+                      "ethertype": ethertype,
+                      "security_group_id": neutron_securitygroup_id,
+                      "protocol": protocol,
+                      "port_range_min": port_range_min or port_range_max,
+                      "port_range_max": port_range_max,
+                      "remote_ip_prefix": remote_ip_prefix,
+                      }})
         except Exception as e:
             LOG.exception(e)
             raise exception.SecuritygroupCreateFailed()

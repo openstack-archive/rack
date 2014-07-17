@@ -17,15 +17,14 @@ Common Auth Middleware.
 """
 
 from oslo.config import cfg
-import webob.dec
-import webob.exc
-
-from rack import context
 from rack.api import wsgi
+from rack import context
 from rack.openstack.common.gettextutils import _
 from rack.openstack.common import jsonutils
 from rack.openstack.common import log as logging
 from rack import wsgi as base_wsgi
+import webob.dec
+import webob.exc
 
 
 auth_opts = [
@@ -67,6 +66,7 @@ def pipeline_factory(loader, global_conf, **local_conf):
 
 
 class InjectContext(base_wsgi.Middleware):
+
     """Add a 'rack.context' to WSGI environ."""
 
     def __init__(self, context, *args, **kwargs):
@@ -80,6 +80,7 @@ class InjectContext(base_wsgi.Middleware):
 
 
 class RackKeystoneContext(base_wsgi.Middleware):
+
     """Make a request context from keystone headers."""
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
@@ -117,7 +118,7 @@ class RackKeystoneContext(base_wsgi.Middleware):
                 service_catalog = jsonutils.loads(catalog_header)
             except ValueError:
                 raise webob.exc.HTTPInternalServerError(
-                          _('Invalid service catalog json.'))
+                    _('Invalid service catalog json.'))
 
         ctx = context.RequestContext(user_id,
                                      project_id,
@@ -146,6 +147,7 @@ class RackKeystoneContext(base_wsgi.Middleware):
 
 
 class NoAuthMiddlewareBase(base_wsgi.Middleware):
+
     """Return a fake token if one isn't specified."""
 
     def base_call(self, req, project_id_in_path):
@@ -182,6 +184,7 @@ class NoAuthMiddlewareBase(base_wsgi.Middleware):
 
 
 class NoAuthMiddleware(NoAuthMiddlewareBase):
+
     """Return a fake token if one isn't specified."""
     @webob.dec.wsgify(RequestClass=wsgi.Request)
     def __call__(self, req):

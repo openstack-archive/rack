@@ -44,24 +44,28 @@ test_service_opts = [
     cfg.IntOpt("test_service_listen_port",
                default=0,
                help="Port number to bind test service to"),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(test_service_opts)
 
 
 class FakeManager(manager.Manager):
+
     """Fake manager for tests."""
+
     def test_method(self):
         return 'manager'
 
 
 class ExtendedService(service.Service):
+
     def test_method(self):
         return 'service'
 
 
 class ServiceManagerTestCase(test.TestCase):
+
     """Test cases for Services."""
 
     def test_message_gets_to_manager(self):
@@ -92,6 +96,7 @@ class ServiceManagerTestCase(test.TestCase):
 
 
 class ServiceFlagsTestCase(test.TestCase):
+
     def test_service_enabled_on_create_based_on_flag(self):
         self.flags(enable_new_services=True)
         host = 'foo'
@@ -116,6 +121,7 @@ class ServiceFlagsTestCase(test.TestCase):
 
 
 class ServiceTestCase(test.TestCase):
+
     """Test cases for Services."""
 
     def setUp(self):
@@ -128,7 +134,7 @@ class ServiceTestCase(test.TestCase):
 
     def test_create(self):
         app = service.Service.create(host=self.host, binary=self.binary,
-                topic=self.topic)
+                                     topic=self.topic)
 
         self.assertTrue(app)
 
@@ -138,21 +144,22 @@ class ServiceTestCase(test.TestCase):
                           'topic': self.topic,
                           'report_count': 0}
         service_ref = {'host': self.host,
-                          'binary': self.binary,
-                          'topic': self.topic,
-                          'report_count': 0,
-                          'id': 1}
+                       'binary': self.binary,
+                       'topic': self.topic,
+                       'report_count': 0,
+                       'id': 1}
 
         db.service_get_by_args(mox.IgnoreArg(),
-                self.host, self.binary).AndRaise(exception.NotFound())
+                               self.host, self.binary)\
+            .AndRaise(exception.NotFound())
         db.service_create(mox.IgnoreArg(),
-                service_create).AndReturn(service_ref)
+                          service_create).AndReturn(service_ref)
         return service_ref
 
     def test_init_and_start_hooks(self):
         self.manager_mock = self.mox.CreateMock(FakeManager)
         self.mox.StubOutWithMock(sys.modules[__name__],
-                'FakeManager', use_mock_anything=True)
+                                 'FakeManager', use_mock_anything=True)
         self.mox.StubOutWithMock(self.manager_mock, 'init_host')
         self.mox.StubOutWithMock(self.manager_mock, 'pre_start_hook')
         self.mox.StubOutWithMock(self.manager_mock, 'post_start_hook')
@@ -215,7 +222,7 @@ class ServiceTestCase(test.TestCase):
     def test_parent_graceful_shutdown(self):
         self.manager_mock = self.mox.CreateMock(FakeManager)
         self.mox.StubOutWithMock(sys.modules[__name__],
-                'FakeManager', use_mock_anything=True)
+                                 'FakeManager', use_mock_anything=True)
         self.mox.StubOutWithMock(self.manager_mock, 'init_host')
         self.mox.StubOutWithMock(self.manager_mock, 'pre_start_hook')
         self.mox.StubOutWithMock(self.manager_mock, 'post_start_hook')

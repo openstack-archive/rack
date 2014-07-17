@@ -18,12 +18,10 @@ from rack.api import auth
 from rack.api import v1
 from rack.api import versions
 from rack import context
-from rack.resourceoperator import rpcapi as operator_rpcapi
-from rack.scheduler import rpcapi as scheduler_rpcapi
 
 
 def wsgi_app(inner_app_v1=None, fake_auth_context=None,
-        use_no_auth=False):
+             use_no_auth=False):
     if not inner_app_v1:
         inner_app_v1 = v1.APIRouter()
 

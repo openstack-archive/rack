@@ -13,7 +13,7 @@
 #    limitations under the License.
 from migrate import ForeignKeyConstraint
 from sqlalchemy import Column, MetaData, Table
-from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 
 from rack.openstack.common.gettextutils import _
 from rack.openstack.common import log as logging
@@ -24,29 +24,34 @@ meta = MetaData()
 
 
 processes = Table('processes', meta,
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('deleted', Integer, nullable=False),
-        Column('gid', String(length=36), nullable=False),
-        Column('keypair_id', String(length=36)),
-        Column('pid', String(length=36), primary_key=True, nullable=False),
-        Column('ppid', String(length=36)),
-        Column('nova_instance_id', String(length=36)),
-        Column('glance_image_id', String(length=36), nullable=False),
-        Column('nova_flavor_id', Integer, nullable=False),
-        Column('user_id', String(length=255), nullable=False),
-        Column('project_id', String(length=255), nullable=False),
-        Column('display_name', String(length=255), nullable=False),
-        Column('status', String(length=255), nullable=False),
-        Column('app_status', String(length=255)),
-        Column('is_proxy', Boolean),
-        Column('shm_endpoint', String(length=255)),
-        Column('ipc_endpoint', String(length=255)),
-        Column('fs_endpoint', String(length=255)),
-        mysql_engine='InnoDB',
-        mysql_charset='utf8'
-    )
+                  Column('created_at', DateTime),
+                  Column('updated_at', DateTime),
+                  Column('deleted_at', DateTime),
+                  Column('deleted', Integer, nullable=False),
+                  Column('gid', String(length=36), nullable=False),
+                  Column('keypair_id', String(length=36)),
+                  Column(
+                      'pid', String(length=36), primary_key=True,
+                      nullable=False),
+                  Column('ppid', String(length=36)),
+                  Column('nova_instance_id', String(length=36)),
+                  Column('glance_image_id', String(length=36),
+                         nullable=False),
+                  Column('nova_flavor_id', Integer, nullable=False),
+                  Column('user_id', String(length=255), nullable=False),
+                  Column('project_id', String(length=255), nullable=False),
+                  Column('display_name', String(length=255), nullable=False),
+                  Column('status', String(length=255), nullable=False),
+                  Column('app_status', String(length=255)),
+                  Column('is_proxy', Boolean),
+                  Column('shm_endpoint', String(length=255)),
+                  Column('ipc_endpoint', String(length=255)),
+                  Column('fs_endpoint', String(length=255)),
+                  Column('args', Text),
+                  Column('userdata', Text),
+                  mysql_engine='InnoDB',
+                  mysql_charset='utf8'
+                  )
 
 
 def upgrade(migrate_engine):
@@ -62,13 +67,14 @@ def upgrade(migrate_engine):
         raise
 
     ForeignKeyConstraint(columns=[processes.c.gid],
-                                 refcolumns=[groups.c.gid]).create()
+                         refcolumns=[groups.c.gid]).create()
 
     ForeignKeyConstraint(columns=[processes.c.keypair_id],
-                                 refcolumns=[keypairs.c.keypair_id]).create()
+                         refcolumns=[keypairs.c.keypair_id]).create()
 
     ForeignKeyConstraint(columns=[processes.c.ppid],
-                                 refcolumns=[processes.c.pid]).create()
+                         refcolumns=[processes.c.pid]).create()
+
 
 def downgrade(migrate_engine):
     meta.bind = migrate_engine

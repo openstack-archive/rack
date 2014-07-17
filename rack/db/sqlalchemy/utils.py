@@ -56,6 +56,7 @@ def get_table(engine, name):
 
 
 class InsertFromSelect(UpdateBase):
+
     def __init__(self, table, select):
         self.table = table
         self.select = select
@@ -69,6 +70,7 @@ def visit_insert_from_select(element, compiler, **kw):
 
 
 class DeleteFromSelect(UpdateBase):
+
     def __init__(self, table, select, column):
         self.table = table
         self.select = select
@@ -149,8 +151,8 @@ def _drop_unique_constraint_in_sqlite(migrate_engine, table_name, uc_name,
     table.constraints.update(uniques)
 
     constraints = [constraint for constraint in table.constraints
-                    if not constraint.name == uc_name and
-                    not isinstance(constraint, schema.ForeignKeyConstraint)]
+                   if not constraint.name == uc_name and
+                   not isinstance(constraint, schema.ForeignKeyConstraint)]
 
     new_table = Table(table_name + "__tmp__", meta, *(columns + constraints))
     new_table.create()
@@ -166,7 +168,8 @@ def _drop_unique_constraint_in_sqlite(migrate_engine, table_name, uc_name,
         refcolumns = [fk['referred_table'] + '.' + col
                       for col in fk['referred_columns']]
         f_keys.append(ForeignKeyConstraint(fk['constrained_columns'],
-                      refcolumns, table=new_table, name=fk['name']))
+                                           refcolumns, table=new_table,
+                                           name=fk['name']))
 
     ins = InsertFromSelect(new_table, table.select())
     migrate_engine.execute(ins)
@@ -240,12 +243,12 @@ def drop_old_duplicate_entries_from_table(migrate_engine, table_name,
 
         if use_soft_delete:
             delete_statement = table.update().\
-                    where(delete_condition).\
-                    values({
-                        'deleted': literal_column('id'),
-                        'updated_at': literal_column('updated_at'),
-                        'deleted_at': timeutils.utcnow()
-                    })
+                where(delete_condition).\
+                values({
+                    'deleted': literal_column('id'),
+                    'updated_at': literal_column('updated_at'),
+                    'deleted_at': timeutils.utcnow()
+                })
         else:
             delete_statement = table.delete().where(delete_condition)
         migrate_engine.execute(delete_statement)
@@ -269,22 +272,22 @@ def check_shadow_table(migrate_engine, table_name):
         if name not in shadow_columns:
             raise exception.RackException(
                 _("Missing column %(table)s.%(column)s in shadow table")
-                        % {'column': name, 'table': shadow_table.name})
+                % {'column': name, 'table': shadow_table.name})
         shadow_column = shadow_columns[name]
 
         if not isinstance(shadow_column.type, type(column.type)):
             raise exception.RackException(
                 _("Different types in %(table)s.%(column)s and shadow table: "
                   "%(c_type)s %(shadow_c_type)s")
-                        % {'column': name, 'table': table.name,
-                           'c_type': column.type,
-                           'shadow_c_type': shadow_column.type})
+                % {'column': name, 'table': table.name,
+                   'c_type': column.type,
+                   'shadow_c_type': shadow_column.type})
 
     for name, column in shadow_columns.iteritems():
         if name not in columns:
             raise exception.RackException(
                 _("Extra column %(table)s.%(column)s in shadow table")
-                        % {'column': name, 'table': shadow_table.name})
+                % {'column': name, 'table': shadow_table.name})
     return True
 
 
@@ -351,7 +354,7 @@ def _restore_indexes_on_deleted_columns(migrate_engine, table_name, indexes):
     insp = reflection.Inspector.from_engine(migrate_engine)
     real_indexes = insp.get_indexes(table_name)
     existing_index_names = dict([(index['name'], index['column_names'])
-                                  for index in real_indexes])
+                                 for index in real_indexes])
 
     # NOTE(boris-42): Restore indexes on `deleted` column
     for index in indexes:
@@ -371,9 +374,10 @@ def _restore_indexes_on_deleted_columns(migrate_engine, table_name, indexes):
 def change_deleted_column_type_to_boolean(migrate_engine, table_name,
                                           **col_name_col_instance):
     if migrate_engine.name == "sqlite":
-        return _change_deleted_column_type_to_boolean_sqlite(migrate_engine,
-                                                    table_name,
-                                                    **col_name_col_instance)
+        return _change_deleted_column_type_to_boolean_sqlite(
+            migrate_engine,
+            table_name,
+            **col_name_col_instance)
     insp = reflection.Inspector.from_engine(migrate_engine)
     indexes = insp.get_indexes(table_name)
 
@@ -383,9 +387,9 @@ def change_deleted_column_type_to_boolean(migrate_engine, table_name,
     old_deleted.create(table, populate_default=False)
 
     table.update().\
-            where(table.c.deleted == table.c.id).\
-            values(old_deleted=True).\
-            execute()
+        where(table.c.deleted == table.c.id).\
+        values(old_deleted=True).\
+        execute()
 
     table.c.deleted.drop()
     table.c.old_deleted.alter(name="deleted")
@@ -447,9 +451,10 @@ def _change_deleted_column_type_to_boolean_sqlite(migrate_engine, table_name,
 def change_deleted_column_type_to_id_type(migrate_engine, table_name,
                                           **col_name_col_instance):
     if migrate_engine.name == "sqlite":
-        return _change_deleted_column_type_to_id_type_sqlite(migrate_engine,
-                                                    table_name,
-                                                    **col_name_col_instance)
+        return _change_deleted_column_type_to_id_type_sqlite(
+            migrate_engine,
+            table_name,
+            **col_name_col_instance)
     insp = reflection.Inspector.from_engine(migrate_engine)
     indexes = insp.get_indexes(table_name)
 
@@ -460,9 +465,9 @@ def change_deleted_column_type_to_id_type(migrate_engine, table_name,
     new_deleted.create(table, populate_default=True)
 
     table.update().\
-            where(table.c.deleted == True).\
-            values(new_deleted=table.c.id).\
-            execute()
+        where(table.c.deleted).\
+        values(new_deleted=table.c.id).\
+        execute()
     table.c.deleted.drop()
     table.c.new_deleted.alter(name="deleted")
 
@@ -540,13 +545,13 @@ def _change_deleted_column_type_to_id_type_sqlite(migrate_engine, table_name,
 
     new_table.rename(table_name)
     new_table.update().\
-        where(new_table.c.deleted == True).\
+        where(new_table.c.deleted).\
         values(deleted=new_table.c.id).\
         execute()
 
     # NOTE(boris-42): Fix value of deleted column: False -> "" or 0.
     new_table.update().\
-        where(new_table.c.deleted == False).\
+        where(not new_table.c.deleted).\
         values(deleted=default_deleted_value).\
         execute()
 

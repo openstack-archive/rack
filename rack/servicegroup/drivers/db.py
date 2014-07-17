@@ -39,11 +39,12 @@ class DbDriver(api.ServiceGroupDriver):
         """Join the given service with it's group."""
 
         msg = _('DB_Driver: join new ServiceGroup member %(member_id)s to '
-                    'the %(group_id)s group, service = %(service)s')
+                'the %(group_id)s group, service = %(service)s')
         LOG.debug(msg, {'member_id': member_id, 'group_id': group_id,
                         'service': service})
         if service is None:
-            raise RuntimeError(_('service is a mandatory argument for DB based'
+            raise RuntimeError(_('service is a mandatory argument for DB '
+                                 'based'
                                  ' ServiceGroup driver'))
         report_interval = service.report_interval
         if report_interval:
@@ -88,7 +89,8 @@ class DbDriver(api.ServiceGroupDriver):
             state_catalog['report_count'] = report_count
 
             service.service_ref = db.service_update(ctxt,
-                    service.service_ref['id'], state_catalog)
+                                                    service.service_ref['id'],
+                                                    state_catalog)
 
             if getattr(service, 'model_disconnected', False):
                 service.model_disconnected = False

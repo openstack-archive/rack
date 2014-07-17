@@ -18,12 +18,12 @@ LOG = logging.getLogger(__name__)
 
 
 class ViewBuilder(common.ViewBuilder):
+
     """Model a group API response as a python dictionary."""
 
     def index(self, group_list):
-        return dict(groups=
-                [self._base_response(group)
-                 for group in group_list])
+        return dict(groups=[self._base_response(group)
+                            for group in group_list])
 
     def show(self, group):
         base = self._base_response(group)
@@ -46,4 +46,3 @@ class ViewBuilder(common.ViewBuilder):
             "description": group["display_description"],
             "status": group["status"]
         }
-

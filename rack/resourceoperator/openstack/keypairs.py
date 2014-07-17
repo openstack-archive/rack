@@ -11,10 +11,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from oslo.config import cfg
-
 from rack import exception
-from rack.openstack.common.gettextutils import _
 from rack.openstack.common import log as logging
 from rack.resourceoperator import openstack as os_client
 
@@ -22,6 +19,7 @@ LOG = logging.getLogger(__name__)
 
 
 class KeypairAPI(object):
+
     def __init__(self):
         super(KeypairAPI, self).__init__()
 

@@ -25,25 +25,28 @@ from rack import servicegroup
 LOG = logging.getLogger(__name__)
 
 scheduler_driver_opts = [
-    # TODO: If we use intelligent scheduler driver like filter_scheduler, use this.
-    #cfg.StrOpt('scheduler_host_manager',
+    # If we use intelligent scheduler driver like filter_scheduler,
+    #       use this.
+    # cfg.StrOpt('scheduler_host_manager',
     #           default='rack.scheduler.host_manager.HostManager',
     #           help='The scheduler host manager class to use'),
     cfg.IntOpt('scheduler_max_attempts',
                default=3,
                help='Maximum number of attempts to schedule an instance'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(scheduler_driver_opts)
 
 
 class Scheduler(object):
+
     """The base class that all Scheduler classes should inherit from."""
 
     def __init__(self):
-        # TODO: If we use intelligent scheduler driver like filter_scheduler, use this.
-        #self.host_manager = importutils.import_object(
+        # If we use intelligent scheduler driver like filter_scheduler,
+        #       use this.
+        # self.host_manager = importutils.import_object(
         #        CONF.scheduler_host_manager)
         self.servicegroup_api = servicegroup.API()
 

@@ -15,7 +15,6 @@ import collections
 import copy
 import functools
 
-import netaddr
 from oslo import messaging
 import six
 
@@ -25,6 +24,7 @@ from rack.openstack.common.gettextutils import _
 from rack.openstack.common import log as logging
 from rack.openstack.common import versionutils
 
+#from nova.objects.base import ObjectListBase
 
 LOG = logging.getLogger('object')
 
@@ -74,6 +74,7 @@ def make_class_properties(cls):
 
 
 class RackObjectMetaclass(type):
+
     """Metaclass that allows tracking of object classes."""
 
     # NOTE(danms): This is what controls whether object operations are
@@ -139,6 +140,7 @@ def remotable(fn):
 
 @six.add_metaclass(RackObjectMetaclass)
 class RackObject(object):
+
     """Base class and object factory.
 
     This forms the base of all objects that can be remoted or instantiated
@@ -399,7 +401,7 @@ class RackObject(object):
         """
         if key not in self.obj_fields:
             raise AttributeError("'%s' object has no attribute '%s'" % (
-                    self.__class__, key))
+                self.__class__, key))
         if value != NotSpecifiedSentinel and not self.obj_attr_is_set(key):
             return value
         else:
@@ -426,20 +428,20 @@ class RackObject(object):
         """List length."""
         return len(self.objects)
 
-    def __getitem__(self, index):
-        """List index access."""
-        if isinstance(index, slice):
-            new_obj = self.__class__()
-            new_obj.objects = self.objects[index]
-            # NOTE(danms): We must be mixed in with a RackObject!
-            new_obj.obj_reset_changes()
-            new_obj._context = self._context
-            return new_obj
-        return self.objects[index]
+#     def __getitem__(self, index):
+#         """List index access."""
+#         if isinstance(index, slice):
+#             new_obj = self.__class__()
+#             new_obj.objects = self.objects[index]
+# NOTE(danms): We must be mixed in with a RackObject!
+#             new_obj.obj_reset_changes()
+#             new_obj._context = self._context
+#             return new_obj
+#         return self.objects[index]
 
-    def __contains__(self, value):
-        """List membership test."""
-        return value in self.objects
+#     def __contains__(self, value):
+#         """List membership test."""
+#         return value in self.objects
 
     def count(self, value):
         """List count of value occurrences."""
@@ -464,21 +466,21 @@ class RackObject(object):
             objects.append(obj)
         return objects
 
-    def obj_make_compatible(self, primitive, target_version):
-        primitives = primitive['objects']
-        child_target_version = self.child_versions.get(target_version, '1.0')
-        for index, item in enumerate(self.objects):
-            self.objects[index].obj_make_compatible(
-                primitives[index]['rack_object.data'],
-                child_target_version)
-            primitives[index]['rack_object.version'] = child_target_version
+#     def obj_make_compatible(self, primitive, target_version):
+#         primitives = primitive['objects']
+#         child_target_version = self.child_versions.get(target_version, '1.0')
+#         for index, item in enumerate(self.objects):
+#             self.objects[index].obj_make_compatible(
+#                 primitives[index]['rack_object.data'],
+#                 child_target_version)
+#             primitives[index]['rack_object.version'] = child_target_version
 
-    def obj_what_changed(self):
-        changes = set(self._changed_fields)
-        for child in self.objects:
-            if child.obj_what_changed():
-                changes.add('objects')
-        return changes
+#     def obj_what_changed(self):
+#         changes = set(self._changed_fields)
+#         for child in self.objects:
+#             if child.obj_what_changed():
+#                 changes.add('objects')
+#         return changes
 
 
 class RackObjectSerializer(messaging.NoOpSerializer):
@@ -525,25 +527,25 @@ class RackObjectSerializer(messaging.NoOpSerializer):
         return entity
 
 
-def obj_to_primitive(obj):
-    """Recursively turn an object into a python primitive.
-
-    A RackObject becomes a dict, and anything that implements ObjectListBase
-    becomes a list.
-    """
-    if isinstance(obj, ObjectListBase):
-        return [obj_to_primitive(x) for x in obj]
-    elif isinstance(obj, RackObject):
-        result = {}
-        for key, value in obj.iteritems():
-            result[key] = obj_to_primitive(value)
-        return result
-    elif isinstance(obj, netaddr.IPAddress):
-        return str(obj)
-    elif isinstance(obj, netaddr.IPNetwork):
-        return str(obj)
-    else:
-        return obj
+# def obj_to_primitive(obj):
+#     """Recursively turn an object into a python primitive.
+#
+#     A RackObject becomes a dict, and anything that implements ObjectListBase
+#     becomes a list.
+#     """
+#     if isinstance(obj, ObjectListBase):
+#         return [obj_to_primitive(x) for x in obj]
+#     elif isinstance(obj, RackObject):
+#         result = {}
+#         for key, value in obj.iteritems():
+#             result[key] = obj_to_primitive(value)
+#         return result
+#     elif isinstance(obj, netaddr.IPAddress):
+#         return str(obj)
+#     elif isinstance(obj, netaddr.IPNetwork):
+#         return str(obj)
+#     else:
+#         return obj
 
 
 def obj_make_list(context, list_obj, item_cls, db_list, **extra_args):

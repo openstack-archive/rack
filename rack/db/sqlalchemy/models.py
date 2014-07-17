@@ -13,17 +13,19 @@
 #    limitations under the License.
 from rack.openstack.common.db.sqlalchemy import models
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, schema
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Text, schema
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
+
 class Group(models.SoftDeleteMixin,
-              models.TimestampMixin,
-              models.ModelBase,
-              Base):
-    
+            models.TimestampMixin,
+            models.ModelBase,
+            Base):
+
     __tablename__ = 'groups'
     securitygroups = relationship("Securitygroup")
     processes = relationship("Process")
@@ -40,6 +42,7 @@ class Service(models.SoftDeleteMixin,
               models.TimestampMixin,
               models.ModelBase,
               Base):
+
     """Represents a running service on a host."""
 
     __tablename__ = 'services'
@@ -63,9 +66,9 @@ class Network(models.SoftDeleteMixin,
               models.TimestampMixin,
               models.ModelBase,
               Base):
-    
+
     __tablename__ = 'networks'
-    
+
     network_id = Column(String(255), primary_key=True)
     gid = Column(String(255))
     neutron_network_id = Column(String(255))
@@ -97,9 +100,9 @@ class Keypair(models.SoftDeleteMixin,
 
 
 class Securitygroup(models.SoftDeleteMixin,
-              models.TimestampMixin,
-              models.ModelBase,
-              Base):
+                    models.TimestampMixin,
+                    models.ModelBase,
+                    Base):
 
     __tablename__ = 'securitygroups'
 
@@ -114,11 +117,11 @@ class Securitygroup(models.SoftDeleteMixin,
     status = Column(String(255))
 
     group = relationship("Group",
-                            foreign_keys=gid,
-                            primaryjoin='and_('
-                                'Securitygroup.gid == Group.gid,'
-                                'Securitygroup.deleted == 0,'
-                                'Group.deleted == 0)')
+                         foreign_keys=gid,
+                         primaryjoin='and_('
+                         'Securitygroup.gid == Group.gid,'
+                         'Securitygroup.deleted == 0,'
+                         'Group.deleted == 0)')
 
 
 class Process(models.SoftDeleteMixin,
@@ -127,7 +130,6 @@ class Process(models.SoftDeleteMixin,
               Base):
 
     __tablename__ = 'processes'
-
 
     deleted = Column(Integer, nullable=False, default=0)
     gid = Column(String(36), ForeignKey('groups.gid'), nullable=False)
@@ -141,44 +143,58 @@ class Process(models.SoftDeleteMixin,
     project_id = Column(String(255), nullable=False)
     display_name = Column(String(255), nullable=False)
     status = Column(String(255), nullable=False)
+    is_proxy = Column(Boolean(), nullable=False)
+    shm_endpoint = Column(String(255), nullable=True)
+    ipc_endpoint = Column(String(255), nullable=True)
+    fs_endpoint = Column(String(255), nullable=True)
+    args = Column(Text, nullable=True)
+    userdata = Column(Text, nullable=True)
+    app_status = Column(String(255), nullable=True)
 
     group = relationship("Group",
-                            foreign_keys=gid,
-                            primaryjoin='and_('
-                                'Process.gid == Group.gid,'
-                                'Process.deleted == 0,'
-                                'Group.deleted == 0)')
+                         foreign_keys=gid,
+                         primaryjoin='and_('
+                         'Process.gid == Group.gid,'
+                         'Process.deleted == 0,'
+                         'Group.deleted == 0)')
 
     securitygroups = relationship("Securitygroup",
-                    secondary="processes_securitygroups",
-                    primaryjoin='and_('
-                                'Process.pid == ProcessSecuritygroup.pid,'
-                                'Process.deleted == 0)',
-                    secondaryjoin='and_('
-                                'Securitygroup.securitygroup_id == ProcessSecuritygroup.securitygroup_id,'
-                                'Securitygroup.deleted == 0)',
-                    backref="processes")
+                                  secondary="processes_securitygroups",
+                                  primaryjoin='and_('
+                                  'Process.pid == ProcessSecuritygroup.pid,'
+                                  'Process.deleted == 0)',
+                                  secondaryjoin='and_('
+                                  'Securitygroup.securitygroup_id == '
+                                  'ProcessSecuritygroup.securitygroup_id,'
+                                  'Securitygroup.deleted == 0)',
+                                  backref="processes")
 
     networks = relationship("Network",
-                    secondary="processes_networks",
-                    primaryjoin='and_('
-                                'Process.pid == ProcessNetwork.pid,'
-                                'Process.deleted == 0)',
-                    secondaryjoin='and_('
-                                'Network.network_id == ProcessNetwork.network_id,'
-                                'Network.deleted == 0)',
-                    backref="processes")
+                            secondary="processes_networks",
+                            primaryjoin='and_('
+                            'Process.pid == ProcessNetwork.pid,'
+                            'Process.deleted == 0)',
+                            secondaryjoin='and_('
+                            'Network.network_id == ProcessNetwork.network_id,'
+                            'Network.deleted == 0)',
+                            backref="processes")
 
-class ProcessSecuritygroup(models.ModelBase,Base):
+
+class ProcessSecuritygroup(models.ModelBase, Base):
 
     __tablename__ = 'processes_securitygroups'
 
-    pid = Column(String(36), ForeignKey('processes.pid'), nullable=False, primary_key=True)
-    securitygroup_id = Column(String(36), ForeignKey('securitygroups.securitygroup_id'), nullable=False, primary_key=True)
+    pid = Column(String(36), ForeignKey(
+        'processes.pid'), nullable=False, primary_key=True)
+    securitygroup_id = Column(String(36), ForeignKey(
+        'securitygroups.securitygroup_id'), nullable=False, primary_key=True)
 
-class ProcessNetwork(models.ModelBase,Base):
+
+class ProcessNetwork(models.ModelBase, Base):
 
     __tablename__ = 'processes_networks'
 
-    pid = Column(String(36), ForeignKey('processes.pid'), nullable=False, primary_key=True)
-    network_id = Column(String(36), ForeignKey('networks.network_id'), nullable=False, primary_key=True)
+    pid = Column(String(36), ForeignKey(
+        'processes.pid'), nullable=False, primary_key=True)
+    network_id = Column(String(36), ForeignKey(
+        'networks.network_id'), nullable=False, primary_key=True)

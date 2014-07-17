@@ -12,9 +12,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 from rack import exception
-from rack.resourceoperator import openstack as os_client
 from rack.openstack.common import log as logging
-from rack.openstack.common.gettextutils import _
+from rack.resourceoperator import openstack as os_client
 
 
 LOG = logging.getLogger(__name__)
@@ -22,7 +21,8 @@ LOG = logging.getLogger(__name__)
 
 class NetworkAPI(object):
 
-    def network_create(self, name, cidr, gateway=None, dns_nameservers=None, ext_router=None):
+    def network_create(self, name, cidr, gateway=None, dns_nameservers=None,
+                       ext_router=None):
         neutron = os_client.get_neutron_client()
 
         try:
@@ -30,7 +30,7 @@ class NetworkAPI(object):
             network = neutron.create_network(create_network_body)["network"]
 
             create_subnet_body = {
-                "subnet":{
+                "subnet": {
                     "network_id": network["id"],
                     "ip_version": 4,
                     "cidr": cidr}
@@ -38,12 +38,14 @@ class NetworkAPI(object):
             if gateway:
                 create_subnet_body["subnet"]["gateway_ip"] = gateway
             if dns_nameservers:
-                create_subnet_body["subnet"]["dns_nameservers"] = dns_nameservers
+                create_subnet_body["subnet"][
+                    "dns_nameservers"] = dns_nameservers
             subnet = neutron.create_subnet(create_subnet_body)["subnet"]
 
             if ext_router:
                 add_interface_router_body = {"subnet_id": subnet["id"]}
-                neutron.add_interface_router(ext_router, add_interface_router_body)
+                neutron.add_interface_router(
+                    ext_router, add_interface_router_body)
 
         except Exception as e:
             LOG.exception(e)
@@ -59,7 +61,8 @@ class NetworkAPI(object):
                 network = neutron.show_network(neutron_network_id)["network"]
                 subnets = network["subnets"]
                 for subnet in subnets:
-                    neutron.remove_interface_router(ext_router, {"subnet_id": subnet})
+                    neutron.remove_interface_router(
+                        ext_router, {"subnet_id": subnet})
 
             neutron.delete_network(neutron_network_id)
 

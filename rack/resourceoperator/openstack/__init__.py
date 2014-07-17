@@ -12,8 +12,9 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 from oslo.config import cfg
-from novaclient.v1_1 import client as nova_client
+
 from neutronclient.v2_0 import client as neutron_client
+from novaclient.v1_1 import client as nova_client
 
 from rack import exception
 from rack.openstack.common import log as logging
@@ -41,7 +42,7 @@ def get_nova_client():
         "api_key": CONF.os_password,
         "project_id": CONF.os_tenant_name,
         "auth_url": CONF.os_auth_url
-        }
+    }
 
     for key, value in credentials.items():
         if not value:
@@ -56,7 +57,7 @@ def get_neutron_client():
         "password": CONF.os_password,
         "tenant_name": CONF.os_tenant_name,
         "auth_url": CONF.os_auth_url
-        }
+    }
 
     for key, value in credentials.items():
         if not value:

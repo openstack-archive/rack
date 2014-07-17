@@ -44,8 +44,8 @@ service_opts = [
                default=10,
                help='Seconds between nodes reporting state to datastore'),
     cfg.BoolOpt('periodic_enable',
-               default=True,
-               help='Enable periodic tasks'),
+                default=True,
+                help='Enable periodic tasks'),
     cfg.IntOpt('periodic_fuzzy_delay',
                default=60,
                help='Range of seconds to randomly delay when starting the'
@@ -75,7 +75,7 @@ service_opts = [
     cfg.IntOpt('service_down_time',
                default=60,
                help='Maximum time since last check-in for up service'),
-    ]
+]
 
 CONF = cfg.CONF
 CONF.register_opts(service_opts)
@@ -83,6 +83,7 @@ CONF.import_opt('host', 'rack.netconf')
 
 
 class Service(service.Service):
+
     """Service object for binaries running on hosts.
 
     A service takes a manager and enables rpc by listening to queues based
@@ -120,14 +121,16 @@ class Service(service.Service):
         ctxt = context.get_admin_context()
         try:
             self.service_ref = db.service_get_by_args(ctxt,
-                    self.host, self.binary)
+                                                      self.host,
+                                                      self.binary)
             self.service_id = self.service_ref['id']
         except exception.NotFound:
             try:
                 self.service_ref = self._create_service_ref(ctxt)
             except exception.ServiceTopicExists:
                 self.service_ref = db.service_get_by_args(ctxt,
-                    self.host, self.binary)
+                                                          self.host,
+                                                          self.binary)
 
         self.manager.pre_start_hook()
 
@@ -161,10 +164,10 @@ class Service(service.Service):
             else:
                 initial_delay = None
 
-            self.tg.add_dynamic_timer(self.periodic_tasks,
-                                     initial_delay=initial_delay,
-                                     periodic_interval_max=
-                                        self.periodic_interval_max)
+            self.tg.add_dynamic_timer(
+                self.periodic_tasks,
+                initial_delay=initial_delay,
+                periodic_interval_max=self.periodic_interval_max)
 
     def _create_service_ref(self, context):
         svc_values = {
@@ -262,6 +265,7 @@ class Service(service.Service):
 
 
 class WSGIService(object):
+
     """Provides ability to launch API from a 'paste' configuration."""
 
     def __init__(self, name, loader=None, use_ssl=False, max_url_len=None):

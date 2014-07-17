@@ -28,6 +28,7 @@ CONF.import_opt('resourceoperator_topic', 'rack.resourceoperator.rpcapi')
 
 
 class ChanceScheduler(driver.Scheduler):
+
     """Implements Scheduler as a random node selector."""
 
     def __init__(self, *args, **kwargs):
@@ -59,7 +60,7 @@ class ChanceScheduler(driver.Scheduler):
     def select_destinations(self, context, request_spec, filter_properties):
         """Selects random destinations."""
         host = self._schedule(context, CONF.resourceoperator_topic,
-                    request_spec, filter_properties)
+                              request_spec, filter_properties)
         host_state = dict(host=host, nodename=None, limits=None)
 
         return host_state

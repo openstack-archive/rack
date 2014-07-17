@@ -11,7 +11,6 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from migrate.changeset import UniqueConstraint
 from migrate import ForeignKeyConstraint
 from sqlalchemy import Column, MetaData, Table
 from sqlalchemy import Boolean, DateTime, Integer, String
@@ -25,21 +24,25 @@ meta = MetaData()
 
 
 securitygroups = Table('securitygroups', meta,
-        Column('created_at', DateTime),
-        Column('updated_at', DateTime),
-        Column('deleted_at', DateTime),
-        Column('deleted', Integer, nullable=False),
-        Column('securitygroup_id', String(length=36), primary_key=True, nullable=False),
-        Column('gid', String(length=36), nullable=False),
-        Column('neutron_securitygroup_id', String(length=36)),
-        Column('is_default', Boolean, nullable=False),
-        Column('user_id', String(length=255), nullable=False),
-        Column('project_id', String(length=255), nullable=False),
-        Column('display_name', String(length=255), nullable=False),
-        Column('status', String(length=255), nullable=False),
-        mysql_engine='InnoDB',
-        mysql_charset='utf8'
-    )
+                       Column('created_at', DateTime),
+                       Column('updated_at', DateTime),
+                       Column('deleted_at', DateTime),
+                       Column('deleted', Integer, nullable=False),
+                       Column('securitygroup_id', String(length=36),
+                              primary_key=True, nullable=False),
+                       Column('gid', String(length=36), nullable=False),
+                       Column('neutron_securitygroup_id', String(length=36)),
+                       Column('is_default', Boolean, nullable=False),
+                       Column('user_id', String(length=255), nullable=False),
+                       Column(
+                           'project_id', String(length=255), nullable=False),
+                       Column(
+                           'display_name', String(length=255), nullable=False),
+                       Column('status', String(length=255), nullable=False),
+                       mysql_engine='InnoDB',
+                       mysql_charset='utf8'
+                       )
+
 
 def upgrade(migrate_engine):
     meta.bind = migrate_engine
@@ -53,7 +56,7 @@ def upgrade(migrate_engine):
         raise
 
     ForeignKeyConstraint(columns=[securitygroups.c.gid],
-                                 refcolumns=[groups.c.gid]).create()
+                         refcolumns=[groups.c.gid]).create()
 
 
 def downgrade(migrate_engine):

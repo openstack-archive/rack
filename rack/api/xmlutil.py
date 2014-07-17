@@ -45,6 +45,7 @@ def validate_schema(xml, schema_name, version='v1.1'):
 
 
 class Selector(object):
+
     """Selects datum to operate on from an object."""
 
     def __init__(self, *chain):
@@ -110,7 +111,9 @@ def get_items_without_dict(obj):
 
 
 class EmptyStringSelector(Selector):
+
     """Returns the empty string if Selector would return None."""
+
     def __call__(self, obj, do_raise=False):
         """Returns empty string if the selected value does not exist."""
 
@@ -121,6 +124,7 @@ class EmptyStringSelector(Selector):
 
 
 class ConstantSelector(object):
+
     """Returns a constant."""
 
     def __init__(self, value):
@@ -147,6 +151,7 @@ class ConstantSelector(object):
 
 
 class TemplateElement(object):
+
     """Represent an element in the template."""
 
     def __init__(self, tag, attrib=None, selector=None, subselector=None,
@@ -541,6 +546,7 @@ def SubTemplateElement(parent, tag, attrib=None, selector=None,
 
 
 class Template(object):
+
     """Represent a template."""
 
     def __init__(self, root, nsmap=None):
@@ -691,6 +697,7 @@ class Template(object):
 
 
 class MasterTemplate(Template):
+
     """Represent a master template.
 
     Master templates are versioned derivatives of templates that
@@ -786,6 +793,7 @@ class MasterTemplate(Template):
 
 
 class SlaveTemplate(Template):
+
     """Represent a slave template.
 
     Slave templates are versioned derivatives of templates.  Each
@@ -840,6 +848,7 @@ class SlaveTemplate(Template):
 
 
 class TemplateBuilder(object):
+
     """Template builder.
 
     This class exists to allow templates to be lazily built without
@@ -938,6 +947,7 @@ def make_flat_dict(name, selector=None, subselector=None,
 
 
 class ProtectedExpatParser(expatreader.ExpatParser):
+
     """An expat parser which disables DTD's and entities by default."""
 
     def __init__(self, forbid_dtd=True, forbid_entities=True,
@@ -987,7 +997,7 @@ def safe_minidom_parse_string(xml_string):
         return minidom.parseString(xml_string, parser=ProtectedExpatParser())
     except (sax.SAXParseException, ValueError,
             expat.ExpatError, LookupError) as e:
-        #NOTE(Vijaya Erukala): XML input such as
+        # NOTE(Vijaya Erukala): XML input such as
         #                      <?xml version="1.0" encoding="TF-8"?>
         #                      raises LookupError: unknown encoding: TF-8
         raise exception.MalformedRequestBody(reason=str(e))

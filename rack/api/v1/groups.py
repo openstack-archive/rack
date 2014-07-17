@@ -171,15 +171,15 @@ class Controller(wsgi.Controller):
 
     @wsgi.response(204)
     def delete(self, req, gid):
-        
+
         def _validate(gid):
             if not uuidutils.is_uuid_like(gid):
-                raise exception.GroupNotFound(gid=gid) 
+                raise exception.GroupNotFound(gid=gid)
         try:
             _validate(gid)
 
             context = req.environ['rack.context']
-            
+
             keypairs = db.keypair_get_all(context, gid)
             if keypairs:
                 raise exception.GroupInUse(gid=gid)
@@ -187,7 +187,7 @@ class Controller(wsgi.Controller):
             securitygroups = db.securitygroup_get_all(context, gid)
             if securitygroups:
                 raise exception.GroupInUse(gid=gid)
-                  
+
             networks = db.network_get_all(context, gid)
             if networks:
                 raise exception.GroupInUse(gid=gid)
@@ -200,13 +200,14 @@ class Controller(wsgi.Controller):
 
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.format_message())
-       
+
         except exception.GroupInUse as e:
             raise webob.exc.HTTPConflict(explanation=e.format_message())
-        
+
         except Exception as e:
             LOG.warn(e)
             raise exception.GroupDeleteFailed()
+
 
 def create_resource():
     return wsgi.Resource(Controller())
