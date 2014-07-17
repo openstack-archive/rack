@@ -572,6 +572,12 @@ def process_get_by_pid(context, gid, pid):
         raise exception.ProcessNotFound(pid=pid)
     return _get_process_dict(process_ref)
 
+def process_get_not_error_status_for_proxy(context, gid):
+    session = get_session()
+    query = session.query(models.Process).filter_by(gid=gid, deleted=0, is_proxy=True)
+    process_refs = query.filter(models.Process.status!='ERROR').all()        
+    
+    return [_get_process_dict(process_ref) for process_ref in process_refs]
 
 def process_create(context, values, network_ids, securitygroup_ids):
     session = get_session()
