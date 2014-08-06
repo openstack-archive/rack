@@ -1,24 +1,27 @@
 [frontend]
-testsrv03
+testsrv06
 
 [controller]
-testsrv03
+testsrv06
 
 [sql_backend]
-testsrv03
+testsrv06
 
 [amqp_backend]
-testsrv03
+testsrv06
 
 [volume_backend]
-testsrv03
+testsrv06
 
 [network_gateway]
-testsrv03
+testsrv06
 
 [compute_backend]
-testsrv04
-testsrv06
 testsrv07
 testsrv08
 
+[ceilometer_db_backend]
+testsrv06
+
+[ceilometer_controller]
+testsrv06

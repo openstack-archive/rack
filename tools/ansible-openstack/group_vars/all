@@ -1,11 +1,11 @@
 ---
 ######################### system settings #########################
 openstack_kernel: kernel-2.6.32-358.123.2.openstack.el6.x86_64
-latest_dnsmasq: ftp://fr2.rpmfind.net/linux/dag/redhat/el6/en/x86_64/extras/RPMS/dnsmasq-2.65-1.el6.rfx.x86_64.rpm
-ntp_server: 192.168.100.254
-use_your_own_repository: false
+latest_dnsmasq: http://pkgs.repoforge.org/dnsmasq/dnsmasq-2.65-1.el6.rfx.x86_64.rpm
+ntp_server: ntp.nict.jp
+use_your_own_repository: true
 
-# IP mapping.
+# IP mapping. Will be used for HA in the future
 frontend_int_ip: "{{ hostvars[groups['frontend'][0]]['my_int_ip'] }}"
 frontend_ext_ip: "{{ hostvars[groups['frontend'][0]]['my_ext_ip'] }}"
 amqp_host: "{{ hostvars[groups['amqp_backend'][0]]['my_int_ip'] }}"
@@ -14,13 +14,15 @@ glance_registry_host: "{{ hostvars[groups['controller'][0]]['my_int_ip'] }}"
 cinder_volume_host: "{{ hostvars[groups['volume_backend'][0]]['my_int_ip'] }}"
 nova_metadata_host: "{{ hostvars[groups['frontend'][0]]['my_int_ip'] }}"
 vnc_host: "{{ hostvars[groups['controller'][0]]['my_ext_ip'] }}"
-
+ceilometer_db_host: "{{ hostvars[groups['ceilometer_db_backend'][0]]['my_int_ip'] }}"
+ceilometer_controller_host: "{{ hostvars[groups['ceilometer_controller'][0]]['my_int_ip'] }}"
 
 
 ######################### OpenStack settings #########################
+
+#--------- Log Level ---------#
 log_debug: False
 log_verbose: True
-
 
 
 #--------- AMQP ---------#
@@ -53,6 +55,11 @@ nova_admin_url: http://{{ frontend_int_ip }}:8774/v2/%(tenant_id)s
 ec2_public_url: http://{{ frontend_ext_ip }}:8773/services/Cloud
 ec2_internal_url: http://{{ frontend_int_ip }}:8773/services/Cloud
 ec2_admin_url: http://{{ frontend_int_ip }}:8773/services/Admin
+ceilometer_public_url: http://{{ frontend_ext_ip }}:8777
+ceilometer_internal_url: http://{{ frontend_int_ip }}:8777
+ceilometer_admin_url: http://{{ frontend_int_ip }}:8777
+
+
 
 # passwords
 heartbeat_secret_key: PASSWORD
@@ -68,6 +75,8 @@ ec2_identity_password: PASSWORD
 swift_identity_password: PASSWORD
 neutron_identity_password: PASSWORD
 cinder_identity_password: PASSWORD
+ceilometer_identity_password: PASSWORD
+
 
 # Admin settings
 openstack_region: RegionOne
@@ -83,9 +92,10 @@ glance_images:
     - name: cirros-0.3.0-x86_64
       url: https://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-disk.img
       disk_format: qcow2
-    - name: cent6.5-20140606
-      url: http://192.168.100.253/norarepo/misc/openstack-images/CentOS-6.5.x86_64-ci-heat-20140606.qcow2
-      disk_format: qcow2
+#additional image
+#    - name: cent6.5-20140606
+#      url: http://192.168.100.253/norarepo/misc/openstack-images/CentOS-6.5.x86_64-ci-heat-20140606.qcow2
+#      disk_format: qcow2
 
 #--------- Cinder ---------#
 cinder_volume_dev: /dev/loop0
@@ -98,7 +108,7 @@ network_gateway: 192.168.100.254
 network_dns: 192.168.100.254
 
 # network setting (LinuxBridge, ML2)
-VLAN_RANGE: '701:799'
+VLAN_RANGE: '701:749'
 
 # provider network
 provider_nw_name: publicNW
@@ -107,20 +117,15 @@ provider_network_type: flat
 # provider subnetwork
 provider_subnet_name: publicSubNet
 provider_gateway_ip: 192.168.100.254
-provider_allocation_pool_start: 192.168.100.130
-provider_allocation_pool_end: 192.168.100.139
+provider_allocation_pool_start: 192.168.100.140
+provider_allocation_pool_end: 192.168.100.149
 provider_cidr: 192.168.100.0/24
 provider_enable_dhcp: 0
 
 #--------- Nova ---------#
 virt_type: kvm
 
-# set below if you use multiple frontend/controller
-mcast_address_controller: 239.0.0.1
-mcast_address_frontend: 239.0.0.2
 
 
-
-# Automatically generated variables
 
 

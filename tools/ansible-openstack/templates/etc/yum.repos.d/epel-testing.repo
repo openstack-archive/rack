@@ -2,7 +2,7 @@
 name=Extra Packages for Enterprise Linux 6 - Testing - $basearch
 #baseurl=http://download.fedoraproject.org/pub/epel/testing/6/$basearch
 #mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=testing-epel6&arch=$basearch
-baseurl=http://192.168.100.253/norarepo/epel/testing/6/$basearch
+baseurl=http://192.168.100.253/norarepo/repository/epel/testing/6/$basearch
 failovermethod=priority
 enabled=0
 gpgcheck=0
