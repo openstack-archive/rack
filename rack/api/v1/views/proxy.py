@@ -11,6 +11,9 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
+
+import json
+
 from rack.api import common
 from rack.openstack.common import log as logging
 
@@ -40,6 +43,7 @@ class ViewBuilder(common.ViewBuilder):
         return dict(proxy=self._base_response(proxy))
 
     def _base_response(self, proxy):
+
         return {
             "gid": proxy.get("gid"),
             "pid": proxy.get("pid"),
@@ -51,10 +55,10 @@ class ViewBuilder(common.ViewBuilder):
             "nova_flavor_id": proxy.get("nova_flavor_id"),
             "status": proxy.get("status"),
             "keypair_id": proxy.get("keypair_id"),
-            "shm_endpoint": proxy.get("shm_endpoint"),
-            "ipc_endpoint": proxy.get("ipc_endpoint"),
+            "shm_endpoint": json.loads(proxy.get("ipc_endpoint")),
+            "ipc_endpoint": json.loads(proxy.get("shm_endpoint")),
             "fs_endpoint": proxy.get("fs_endpoint"),
             "app_status": proxy.get("app_status"),
             "userdata": proxy.get("userdata"),
-            "args": proxy.get("args")
+            "args": json.loads(proxy.get("args"))
         }
