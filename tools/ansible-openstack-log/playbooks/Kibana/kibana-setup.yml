@@ -1,0 +1,68 @@
+---
+- name: Install Kibana
+  hosts: Kibana
+  gather_facts: yes
+  sudo: yes
+  tasks:
+    - name: ensure Apache and java are installed
+      yum: name={{item}} state=latest
+      with_items:
+        - java
+        - httpd
+      notify:
+        - ensure apache is restarted 
+    
+    - name: ensure httpd.conf is configured
+      lineinfile: >
+       dest=/etc/httpd/conf/httpd.conf
+       state=present
+       line="ServerName {{ ansible_hostname }}:80"
+       insertafter='#ServerName www.example.com:80'
+      notify:
+        - ensure apache is restarted 
+        
+    - name: download Kibana binary
+      get_url: 
+        url: "{{ Kibana_url }}"
+        dest: /tmp/kibana.tar.gz
+        mode: 0666
+        
+    - name: unarchive Kibana 
+      shell:
+        /bin/tar zxf /tmp/kibana.tar.gz -C /var/www/html
+                
+    # Kibana reverse Proxy
+    - name: Ensure Kibana redirects to itsself with /es for reverse proxy
+      lineinfile: 
+        dest: /var/www/html/{{ Kibana_version }}/config.js
+        regexp: "elasticsearch:"
+        line: "elasticsearch: 'http://{{ Kibana_public_url }}/es/', "
+    
+    - name: Ensure httpd virtual host file is created for reverse proxy
+      template: src="templates/etc/httpd/conf.d/vhosts.conf" dest="/etc/httpd/conf.d/vhosts.conf" owner=root group=root mode=0644
+      notify:
+        - ensure apache is restarted 
+      
+        
+    - name: ensure httpd port 80 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=80
+      
+    - name: ensure httpd port 443 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=443
+        
+    - name: ensure apache automatically starts after reboot
+      service: name={{item}} state=started enabled=yes
+      with_items:
+        - httpd        
+        
+  handlers:
+    - include: ../reusables/handlers.yml
+
+    - name: ensure apache is restarted 
+      service: name={{ item }} state=restarted
+      with_items:
+        - httpd
+    
+
+
+  

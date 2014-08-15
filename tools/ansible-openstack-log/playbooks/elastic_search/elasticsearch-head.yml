@@ -1,0 +1,14 @@
+---
+- name: setup elasticsearch-head
+  hosts: elasticsearch
+  gather_facts: yes
+  sudo: yes
+  tasks:
+    - name: install elasticsearch-head(not yet idempotent)
+      command: /usr/share/elasticsearch/bin/plugin -install mobz/elasticsearch-head
+      ignore_errors: yes
+        
+  handlers:
+
+
+  

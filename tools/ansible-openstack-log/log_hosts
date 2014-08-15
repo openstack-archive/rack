@@ -1,0 +1,16 @@
+[elasticsearch]
+fluentd
+
+[fluentd_collector]
+fluentd
+
+[Kibana]
+fluentd
+
+[openstack]
+testsrv06
+testsrv07
+testsrv08
+
+
+

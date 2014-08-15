@@ -1,0 +1,39 @@
+---
+- name: td-agent(fluentd) parameters
+  hosts: openstack:fluentd_collector
+  gather_facts: yes
+  sudo: yes
+  tasks:
+    # http://docs.fluentd.org/articles/before-install
+    - name: Increase Max # of File Descriptors (soft)
+      lineinfile: 
+        dest: /etc/security/limits.conf
+        regexp: ^root soft nofile
+        line: root soft nofile 65536
+        
+    - name: Increase Max # of File Descriptors (hard)
+      lineinfile: 
+        dest: /etc/security/limits.conf
+        regexp: ^root hard nofile
+        line: root hard nofile 65536
+        
+
+    # - name: set net.ipv4.tcp_tw_recycle one
+      # sysctl: name=net.ipv4.tcp_tw_recycle value=1 state=present reload=yes sysctl_set=yes
+        
+    # - name: set net.ipv4.tcp_tw_reuse one
+      # sysctl: name=net.ipv4.tcp_tw_reuse value=1 state=present reload=yes sysctl_set=yes
+        
+    # - name: set net.ipv4.ip_local_port_range
+      # sysctl: name=net.ipv4.ip_local_port_range value="10240 65536" state=present reload=yes sysctl_set=yes
+        
+
+
+        
+  handlers:
+
+
+
+
+
+  

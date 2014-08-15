@@ -1,0 +1,3 @@
+- include: elasticsearch.yml
+- include: elasticsearch-head.yml
+
