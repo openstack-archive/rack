@@ -1,0 +1,7 @@
+---
+# handlers here
+
+  - name: restart iptables
+    service: name=iptables state=restarted
+
+

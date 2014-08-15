@@ -1,0 +1,5 @@
+---
+- include: determine_openstack_network.yml
+- include: determine_network.yml
+
+

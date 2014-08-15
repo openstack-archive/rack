@@ -1,0 +1,12 @@
+{
+  "tempalte_dmesg" : {
+    "template" : "logstash*",
+    "mappings" : {
+      "dmesg" : {
+        "properties" : {
+          "hostname": { "type": "string", "index":"not_analyzed" }
+      }
+    }
+  }
+}
+

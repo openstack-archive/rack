@@ -1,0 +1,24 @@
+---
+
+# Please change here at your discretion
+ntp_server: ntp.nict.jp
+use_your_own_repository: false
+elasticsearch_cluster_name: myCluster
+Kibana_public_url: kibana.example.com
+
+#### You don't have to change from here usually ####
+
+# ip address mapping.
+fluentd_collector_ip: "{{ hostvars[groups['fluentd_collector'][0]]['my_int_ip'] }}"
+elasticsearch_ip: "{{ hostvars[groups['elasticsearch'][0]]['my_int_ip'] }}"
+
+# fluentd port. 
+fluentd_collector_port: 29001
+fluentd_server_port: 9200
+
+# Kibana url
+Kibana_url: https://download.elasticsearch.org/kibana/kibana/kibana-3.1.0.tar.gz
+Kibana_version: kibana-3.1.0
+
+
+

@@ -1,0 +1,5 @@
+- include: fluentd-parameters.yml
+- include: fluentd-packages.yml
+- include: fluentd-collector-installation.yml
+- include: fluentd-agent-installation.yml
+

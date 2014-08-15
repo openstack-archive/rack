@@ -1,0 +1,86 @@
+---
+- name: setup elasticsearch
+  hosts: elasticsearch
+  gather_facts: yes
+  sudo: yes
+  tasks:
+    - name: gpg key import
+      rpm_key: state=present key=http://packages.elasticsearch.org/GPG-KEY-elasticsearch
+
+    - name: ensure repository file for elasticsearch is in place.
+      copy: 
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items: 
+        - { src: templates/etc/yum.repos.d/elasticsearch.repo, dest: /etc/yum.repos.d/elasticsearch.repo }
+    
+    - name: yum clean all
+      command: /usr/bin/yum clean all
+    
+    - name: ensure elasticsearch and java are installed
+      yum: name={{item}} state=latest
+      with_items:
+        - java
+        - elasticsearch
+      notify:
+        - ensure elasticsearch is restarted 
+    
+    - name: ensure elasticsearch listner ports are opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port="9200:9300"
+
+    - name: ensure elasticsearch node communication ports are opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port="9300:9400"
+
+    - name: ensure multicast transmission is enabled
+      include: ../reusables/open_firewall_line.yml oneline="-A INPUT -s 224.0.0.0/4 -j ACCEPT"
+      
+    - name: ensure multicast transmission is enabled
+      include: ../reusables/open_firewall_line.yml oneline="-A INPUT -d 224.0.0.0/4 -j ACCEPT"
+      
+    - name: ensure multicast transmission is enabled
+      include: ../reusables/open_firewall_line.yml oneline="-A INPUT -s 240.0.0.0/5 -j ACCEPT"
+      
+    - name: ensure multicast transmission is enabled
+      include: ../reusables/open_firewall_line.yml oneline="-A INPUT -m pkttype --pkt-type multicast -j ACCEPT"
+      
+    - name: ensure multicast transmission is enabled
+      include: ../reusables/open_firewall_line.yml oneline="-A INPUT -m pkttype --pkt-type broadcast -j ACCEPT"
+
+    - name: ensure elasticsearch cluster name is set
+      lineinfile: 
+        dest: /etc/elasticsearch/elasticsearch.yml
+        regexp: "^cluster.name:"
+        line: "cluster.name: {{ elasticsearch_cluster_name }}"
+      notify:
+        - ensure elasticsearch is restarted 
+
+    - name: ensure elasticsearch tempalte directory is made
+      file: path=/etc/elasticsearch/templates owner=root group=root mode=0755 state=directory
+        
+    - name: ensure mapping templates are installed
+      copy: src="{{ item.src }}" dest="{{ item.dest }}" owner=root group=root mode=0644
+      with_items:
+        - { src: templates/etc/elasticsearch/templates/tempalte_openstack.json, dest: /etc/elasticsearch/templates/tempalte_openstack.json }
+        - { src: templates/etc/elasticsearch/templates/tempalte_dmesg.json, dest: /etc/elasticsearch/templates/tempalte_dmesg.json }
+        
+    - name: ensure elasticsearch automatically starts after reboot
+      service: name={{item}} enabled=yes
+      with_items:
+        - elasticsearch      
+        
+        
+  handlers:
+    - include: ../reusables/handlers.yml
+  
+    - name: ensure elasticsearch is restarted 
+      service: name={{ item }} state=restarted
+      with_items:
+        - elasticsearch
+
+
+
+
+  
