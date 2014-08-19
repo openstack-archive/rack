@@ -912,9 +912,9 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "deleted": 0,
             "is_proxy": False,
             "app_status": "BUILDING",
-            "shm_endpoint": None,
-            "ipc_endpoint": None,
-            "fs_endpoint": None,
+            "shm_endpoint": "shm_data_original",
+            "ipc_endpoint": "ipc_data_original",
+            "fs_endpoint": "fs_data_original",
             "args": None,
             "userdata": None
         }
@@ -1060,11 +1060,15 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
         values = {
             "display_name": "test",
             "status": "ACTIVE",
+            "fs_endpoint": "fs_data_update"
         }
         process_after = db.process_update(
             self.user_ctxt, self.gid, process["pid"], values)
         self.assertEqual(process_after["display_name"], "test")
         self.assertEqual(process_after["status"], "ACTIVE")
+        self.assertEqual(process_after["fs_endpoint"], "fs_data_update")
+        self.assertEqual(process_after["shm_endpoint"], "shm_data_original")
+        self.assertEqual(process_after["ipc_endpoint"], "ipc_data_original")
 
     def test_process_update_process_not_found(self):
         self.assertRaises(exception.ProcessNotFound,
