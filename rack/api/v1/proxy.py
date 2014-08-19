@@ -190,7 +190,6 @@ class Controller(wsgi.Controller):
             userdata = valid_values.get("userdata")
             args = _validate_metadata(body["proxy"].get("args"))
             metadata = dict(args)
-            metadata.update({"proxy_ip": cfg.CONF.my_ip})
             metadata.update(_get_proxy_conf())
 
             values["deleted"] = 0
@@ -276,9 +275,12 @@ class Controller(wsgi.Controller):
                 raise exception.InvalidInput(reason=msg)
 
             valid_values = {}
-            valid_values["shm_endpoint"] = values.get("shm_endpoint")
-            valid_values["ipc_endpoint"] = values.get("ipc_endpoint")
-            valid_values["fs_endpoint"] = values.get("fs_endpoint")
+            if values.get("shm_endpoint"):
+                valid_values["shm_endpoint"] = values.get("shm_endpoint")
+            if values.get("ipc_endpoint"):
+                valid_values["ipc_endpoint"] = values.get("ipc_endpoint")
+            if values.get("fs_endpoint"):
+                valid_values["fs_endpoint"] = values.get("fs_endpoint")
             valid_values["app_status"] = app_status
             valid_values["pid"] = proxy[0]["pid"]
             valid_values
