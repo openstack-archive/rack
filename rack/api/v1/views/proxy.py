@@ -55,9 +55,12 @@ class ViewBuilder(common.ViewBuilder):
             "nova_flavor_id": proxy.get("nova_flavor_id"),
             "status": proxy.get("status"),
             "keypair_id": proxy.get("keypair_id"),
-            "shm_endpoint": json.loads(proxy.get("shm_endpoint")),
-            "ipc_endpoint": json.loads(proxy.get("ipc_endpoint")),
-            "fs_endpoint": proxy.get("fs_endpoint"),
+            "shm_endpoint": json.loads(proxy.get("shm_endpoint"))
+            if proxy.get("shm_endpoint") else "null",
+            "ipc_endpoint": json.loads(proxy.get("ipc_endpoint"))
+            if proxy.get("ipc_endpoint") else "null",
+            "fs_endpoint": json.loads(proxy.get("fs_endpoint"))
+            if proxy.get("fs_endpoint") else "null",
             "app_status": proxy.get("app_status"),
             "userdata": proxy.get("userdata"),
             "args": json.loads(proxy.get("args"))
