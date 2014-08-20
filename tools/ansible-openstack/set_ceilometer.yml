@@ -1,0 +1,4 @@
+- include: playbooks/pre_action/main.yml
+- include: playbooks/ceilometer/main.yml
+
+

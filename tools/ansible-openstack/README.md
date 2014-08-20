@@ -8,7 +8,7 @@ These playbooks will..
 * install MySQL, AMQP
 * install Keystone, Glance, Cinder
 * install Neutron (with linunxbridge, vlan, ml2 configuration)
-* install Nova, Horizon
+* install Nova, Horizon, Heat
 * setup provider network
 * install Ceilometer(separate yml)
 
@@ -59,6 +59,7 @@ Determine the role of each OpenStack nodes in openstack_hosts file
  * [sql_backend]: used for mySql
  * [amqp_backend]: used for AMQP
  * [compute_backend]: nova-compute, neutron-agent and KVM
+ * [heat_engine_backend]: openstack-heat-engine
  * [ceilometer_db_backend]: MongoDB node for Ceilometer
  * [ceilometer_controller]: ceilometer central, collector, notifier and other tools.
 
@@ -73,10 +74,14 @@ In default, eth1 for internal NW, eth2 for External network and eth3 for Managem
 
 
 # How to run
-Go to the directory where set_openstack.yml is located, and `ansible-playbook set_openstack.yml`
+Go to the directory where `set_openstack.yml` is located, and `ansible-playbook set_openstack.yml`
 Or you can use Jenkins to kick playbook with following shell script.
 
     /usr/bin/ansible-playbook $WORKSPACE/set_openstack.yml
+
+After set_openstack.yml is completed, you can install ceilometer additionally.
+
+    /usr/bin/ansible-playbook $WORKSPACE/set_ceilometer.yml
 
 ***
 ## Tips: faster installation

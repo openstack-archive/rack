@@ -2,6 +2,7 @@
 - include: compute.yml
 - include: gateway.yml
 - include: controller.yml
+- include: heat_engine_backend.yml
 - include: frontend.yml
 - include: post-prepareProviderNW.yml
 

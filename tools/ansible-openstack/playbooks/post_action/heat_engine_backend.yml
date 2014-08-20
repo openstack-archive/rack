@@ -1,0 +1,16 @@
+---
+- name: restart services(heat_engine)
+  hosts: heat_engine_backend
+  serial: 1
+  sudo: yes
+  gather_facts: no
+
+  tasks:
+    - name: ensure HEAT services are restarted
+      service: name={{ item }} state=restarted
+      with_items: 
+        - openstack-heat-engine
+
+
+        
+

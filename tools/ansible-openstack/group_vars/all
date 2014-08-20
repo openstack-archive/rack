@@ -58,7 +58,12 @@ ec2_admin_url: http://{{ frontend_int_ip }}:8773/services/Admin
 ceilometer_public_url: http://{{ frontend_ext_ip }}:8777
 ceilometer_internal_url: http://{{ frontend_int_ip }}:8777
 ceilometer_admin_url: http://{{ frontend_int_ip }}:8777
-
+heat_public_url: http://{{ frontend_ext_ip }}:8004/v1/%(tenant_id)s
+heat_internal_url: http://{{ frontend_int_ip }}:8004/v1/%(tenant_id)s
+heat_admin_url: http://{{ frontend_int_ip }}:8004/v1/%(tenant_id)s
+heat_cfn_public_url: http://{{ frontend_ext_ip }}:8000/v1
+heat_cfn_internal_url: http://{{ frontend_int_ip }}:8000/v1
+heat_cfn_admin_url: http://{{ frontend_int_ip }}:8000/v1
 
 
 # passwords
@@ -69,6 +74,7 @@ glance_db_password: PASSWORD
 nova_db_password: PASSWORD
 neutron_db_password: PASSWORD
 cinder_db_password: PASSWORD
+heat_db_password: PASSWORD
 glance_identity_password: PASSWORD
 nova_identity_password: PASSWORD
 ec2_identity_password: PASSWORD
@@ -76,7 +82,7 @@ swift_identity_password: PASSWORD
 neutron_identity_password: PASSWORD
 cinder_identity_password: PASSWORD
 ceilometer_identity_password: PASSWORD
-
+heat_identity_password: PASSWORD
 
 # Admin settings
 openstack_region: RegionOne

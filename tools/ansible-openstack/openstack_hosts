@@ -20,6 +20,9 @@ testsrv06
 testsrv07
 testsrv08
 
+[heat_engine_backend]
+testsrv06
+
 [ceilometer_db_backend]
 testsrv06
 

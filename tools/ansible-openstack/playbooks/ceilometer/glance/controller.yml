@@ -1,0 +1,19 @@
+---
+- name: Enable notification to ceilometer(Glance for Controller)
+  hosts: controller
+  sudo: yes
+  tasks:
+    - name: ensure glance to send notification
+      ini_file: 
+        dest: /etc/glance/glance.conf 
+        section: "{{ item.section }}" 
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+      with_items:
+        - { section: DEFAULT, option: notification_driver, value: rabbit }
+
+  handlers:
+    - name: restart glance-registry
+      service: name=openstack-glance-registry state=restarted
+    
+    
