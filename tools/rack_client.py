@@ -565,7 +565,7 @@ def group_init(args, headers):
     name = config.get(section, "name") if "name" in options else None
     is_admin = config.get(section, "is_admin") if "is_admin" in options else None
     gateway = config.get(section, "gateway") if "gateway" in options else None
-    dns_nameservers = config.get(section, "dns_nameservers") if "dns_nameservers" in options else None
+    dns_nameservers = config.get(section, "dns_nameservers").split() if "dns_nameservers" in options else None
     ext_router_id = config.get(section, "ext_router_id") if "ext_router_id" in options else None
     args.cidr = cidr
     args.name = name
