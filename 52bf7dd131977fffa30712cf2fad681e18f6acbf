@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: nob <nobuteru.nishida@ctc-g.co.jp>
+Workflow+1: nob <nobuteru.nishida@ctc-g.co.jp>
+Submitted-by: Jenkins
+Submitted-at: Thu, 21 Aug 2014 02:51:04 +0000
+Reviewed-on: https://review.openstack.org/115577
+Project: stackforge/rack
+Branch: refs/heads/master
