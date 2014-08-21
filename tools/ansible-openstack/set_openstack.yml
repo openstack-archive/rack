@@ -9,6 +9,7 @@
 - include: playbooks/cinder/main.yml
 - include: playbooks/neutron/main.yml
 - include: playbooks/nova/main.yml
+- include: playbooks/heat/main.yml
 - include: playbooks/horizon/main.yml
 - include: playbooks/post_action/main.yml
 

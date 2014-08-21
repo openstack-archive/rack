@@ -1,0 +1,50 @@
+---
+- name: OpenStack Telemetry (ceilometer_controller)
+  hosts: ceilometer_controller
+  sudo: yes
+
+  tasks:
+ 
+    - name: ensure Ceilometer-related packages are installed
+      yum: name={{item}}  state=latest
+      with_items:
+        - openstack-ceilometer-central
+        - openstack-ceilometer-collector
+        - openstack-ceilometer-alarm
+        - openstack-ceilometer-notification
+        - python-ceilometer
+        - openstack-selinux
+      notify:
+       - restart ceilometer services
+
+    - name: ensure ceilometer.conf file is configured
+      template: >
+        src=templates/etc/ceilometer/ceilometer.conf
+        dest=/etc/ceilometer/ceilometer.conf
+        owner=root group=ceilometer mode=0640 backup=no
+      notify:
+       - restart ceilometer services
+    
+    - name: ensure ceilometer collector port 4952 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=4952
+
+    - name: ensure ceilometer services are started
+      service: name={{ item }} state=started enabled=yes
+      with_items: 
+        - openstack-ceilometer-central
+        - openstack-ceilometer-collector
+        - openstack-ceilometer-alarm-evaluator
+        - openstack-ceilometer-alarm-notifier
+        - openstack-ceilometer-notification
+      
+
+  handlers:
+    - include: ../reusables/handlers.yml
+    - name: restart ceilometer services
+      service: name={{ item }} state=restarted
+      with_items: 
+        - openstack-ceilometer-central
+        - openstack-ceilometer-collector
+        - openstack-ceilometer-alarm-evaluator
+        - openstack-ceilometer-alarm-notifier
+        - openstack-ceilometer-notification

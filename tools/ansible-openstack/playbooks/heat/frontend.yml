@@ -1,0 +1,58 @@
+---
+- name: OpenStack Orchestration Serivce (Frontend)
+  hosts: frontend
+  sudo: yes
+
+  
+  tasks:
+    - name: ensure heat is installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - openstack-heat-api
+        - openstack-heat-api-cfn
+        - openstack-selinux 
+      notify:
+      - restart heat-api
+
+    
+    - name: ensure heat-api.conf file is configured
+      template: >
+          src=templates/etc/heat/heat.conf
+          dest=/etc/heat/heat.conf
+          owner=root
+          group=heat
+          mode=0640
+          backup=no
+      notify:
+      - restart heat-api
+
+      # heat_manager cannot be used due to the lack of heat.db.sqlalchemy.migration.py
+    - name: ensure heat database is synchronized
+      command: su heat -s /bin/sh -c "heat-manage db_sync"
+      #heat_manage: action=dbsync
+      notify:
+         - restart heat-api    
+         
+    - name: ensure heat-api port 8004 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=8004
+ 
+    - name: ensure heat-api-cfn port 8000 is opened
+      include: ../reusables/open_firewall_port.yml protocol=tcp port=8000
+ 
+    - name: ensure heat-api automatically boots after reboot
+      service: name=openstack-heat-api enabled=yes
+
+  
+
+  handlers:
+    - include: ../reusables/handlers.yml
+      
+    - name: restart heat-api
+      service: name={{ item }} state=restarted
+      with_items:
+        - openstack-heat-api
+        - openstack-heat-api-cfn
+
+
+
+    

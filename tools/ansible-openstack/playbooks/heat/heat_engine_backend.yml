@@ -1,0 +1,45 @@
+---
+- name: OpenStack Orchestration Serivce (heat_engine_backend)
+  hosts: heat_engine_backend
+  sudo: yes
+
+  
+  tasks:
+    - name: ensure heat is installed
+      yum: name={{ item }} state=latest
+      with_items:
+        - openstack-heat-engine
+        - openstack-selinux 
+      notify:
+      - restart heat-engine
+
+    
+    - name: ensure heat.conf file is configured
+      template: >
+          src=templates/etc/heat/heat.conf
+          dest=/etc/heat/heat.conf
+          owner=root
+          group=heat
+          mode=0640
+          backup=no
+      notify:
+      - restart heat-engine
+
+         
+ 
+    - name: ensure heat-engine automatically boots after reboot
+      service: name=openstack-heat-engine enabled=yes
+
+  
+
+  handlers:
+    - include: ../reusables/handlers.yml
+      
+    - name: restart heat-engine
+      service: name={{ item }} state=restarted
+      with_items:
+        - openstack-heat-engine
+
+
+
+    
