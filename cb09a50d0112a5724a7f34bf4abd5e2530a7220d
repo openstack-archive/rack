@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: takehirokaneko <takehiro.kaneko@ctc-g.co.jp>
+Workflow+1: takehirokaneko <takehiro.kaneko@ctc-g.co.jp>
+Submitted-by: Jenkins
+Submitted-at: Thu, 21 Aug 2014 05:19:39 +0000
+Reviewed-on: https://review.openstack.org/115864
+Project: stackforge/rack
+Branch: refs/heads/master
