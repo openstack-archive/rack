@@ -27,6 +27,8 @@ its parent (the receptor process) via IPC provided by RACK, and then the parent 
 
 Fluentd, watcher process and receptor process are all in one process (VM) in the following.
 
+![architecture](architecture.png "architecture")
+
 
 ## Execution Procedure
 
@@ -63,7 +65,7 @@ Fill in the following variables in `imagebuild.sh`.
 Now execute `imagebuild.sh`.
 
 ```
-# cd rack/tools/sampleapps/tweet-analyzer
+# cd rack/tools/sample-apps/tweet-analyzer
 # ./imagebuild.sh
 ```
 
@@ -74,12 +76,12 @@ When it finished, shutdown the VM and save snapshot.
 Before deploying our application, you have to deploy RACK Proxy.
 It's easy because we provide a useful shell `rack-client` to deploy Proxy automatically.
 We assume that RACK API is ready for access.
-Refer to [Deploy RACK](http://xxx.com) to deploy RACK API.
+Refer to [How to work RACK](https://github.com/stackforge/rack/tree/master/tools/setup) to deploy RACK API.
 
-Now let's log in to RACK API and create group-init.conf that is a configuration file of `rack-client` shell like below.
+Now let's log in to RACK API and create `group-init.conf` that is a configuration file of `rack-client` shell like below.
 Fill in the blanks according to your environment.
 
-group-init.conf
+**group-init.conf**
 ```
 [group]
 # Any group name you like
@@ -109,13 +111,16 @@ is_default = True
 [proxy]
 # Nova flavor ID
 nova_flavor_id =
-# Glance image ID of the binary created at last section
+# Glance image ID of the rack image
 glance_image_id =
 ```
 
 Then execute the following command.
+
 Note that variables, OS_USERNAME and OS_TENANT_NAME, will be registered on RACK database as someone who executed command.
 It's not related to OpenStack username and tenant name.
+Here you don't need to care and execute it as it is.
+
 
 ```
 # export OS_USERNAME=demo_user
@@ -129,11 +134,12 @@ pid: f08d3e1b-5b51-4fd6-849a-5b7983f35c0d
 ```
 
 Note values above and give it to the following commands as option.
+
 Now you can see that a new VM has launched on your OpenStack environment.
 Check if Proxy is deployed successfully by executing the following command.
 
 ```
-# rack_client --url {proxy's IP address} proxy-show --gid 8612d17d-737e-4050-be93-cd49b1574e1e
+# rack_client --url http://{proxy's IP address}:8088/v1/ proxy-show --gid 8612d17d-737e-4050-be93-cd49b1574e1e
 {"proxy": {"status": "ACTIVE", "userdata": null, "ppid": null, "user_id": "demo_user","name": "pro-f08d3e1b-5b51-4fd6-849a-5b7983f35c0d", "ipc_endpoint": {"host": "10.0.50.2", "port": "8888"}, "app_status": "ACTIVE", "pid": "f08d3e1b-5b51-4fd6-849a-5b7983f35c0d", "args": {"roles": "ipc/shm/api/proxy"}, "fs_endpoint": null, "gid": "8612d17d-737e-4050-be93-cd49b1574e1e", "keypair_id": "da6bde2d-1753-410a-9f2a-3a99c88584f6", "nova_flavor_id": 3, "shm_endpoint":{"host": "10.0.50.2", "port": "6379"}, "project_id": "demo_user", "glance_image_id": "1725f6c0-264a-4202-8886-7998dfe4457b"}}
 ```
 
@@ -149,9 +155,8 @@ Please resister your credentials to Proxy by executing the following commands.
 # OS_PASSWORD={openstack password}
 # OS_TENANT_NAME={openstack tenant name}
 # OS_AUTH_URL={openstack keystone endpoint}
-# rack_client --url {proxy's IP address} proxy-update --gid 8612d17d-737e-4050-be93-cd49b1574e1e \
-  --fs_endpoint {\"os_username\":\"$OS_USERNAME\"\,\"os_password\":\"$OS_PASSWORD\"\,\"os_tenant_name\":\"$OS_TENANT_NAME\"\, \
-  \"os_auth_url\":\"$OS_AUTH_URL\"} --app_status ACTIVE
+# rack_client --url http://{proxy's IP address}:8088/v1/ proxy-update --gid 8612d17d-737e-4050-be93-cd49b1574e1e \
+  --fs_endpoint {\"os_username\":\"$OS_USERNAME\"\,\"os_password\":\"$OS_PASSWORD\"\,\"os_tenant_name\":\"$OS_TENANT_NAME\"\,\"os_auth_url\":\"$OS_AUTH_URL\"} --app_status ACTIVE
 ```
 
 And you also need to create a Swift container with the name of `gid` value,
@@ -163,7 +168,7 @@ It's easy to deploy our application because the application binary has setup to 
 What you need to do is just executing the following command.
 
 ```
-# rack-client --url {proxy's IP address} process-create --gid 8612d17d-737e-4050-be93-cd49b1574e1e \
+# rack_client --url http://{proxy's IP address}:8088/v1/ process-create --gid 8612d17d-737e-4050-be93-cd49b1574e1e \
   --keypair_id da6bde2d-1753-410a-9f2a-3a99c88584f6 --securitygroup_ids 1cd37c45-f38e-4407-9bd6-cb2222ad928d \
   --nova_flavor_id {Flavor ID} --glance_image_id {Glance image ID of the binary} --name parent
 ```
@@ -177,3 +182,4 @@ and you can see log output in each window.
 
 Web application in `parent` provides a simple web interface to see the result of analysis.
 Browse `http://{parent's IP address}` and you will see a simple form interface.
+
