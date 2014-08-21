@@ -15,16 +15,19 @@ This text explains how to create "Rack" Image.
 
 ### 2. Clone "Rack" In Your VM From Github
 
+```
     [SSH:]   git clone git@github.com:stackforge/rack.git
     [HTTPS:] git clone https://github.com/stackforge/rack.git
+```
 
 ### 3. Execute "Rack" Image Build Tool(imagebuid.sh)  
 
 * __System commands run in this process.__  
   __You should consider any other application compatibility before running.__  
 
-
+```
     /your/rack/path/tools/setup/imagebuild.sh  
+```
  
 ### 4. Shutdown VM and Create Snapshot of VM image
 
@@ -35,7 +38,7 @@ This text explains how to create "Rack" Image.
 
 * Execute command below.  
 
-
+```
     nova boot \  
     --image ${RACK_GRANCE_IMAGE_ID} \  
     --flavor ${FLAVLOR_ID_THAT_HAS_AT_LEAST_2GB_MEMORY} \  
@@ -50,14 +53,15 @@ This text explains how to create "Rack" Image.
     --meta "rabbit_host=localhost" \  
     --meta "rabbit_userid=guest" \  
     rack-api
+```
 
 * Add inbound SecurityGroupRule below 
 
-
+```
     8088:TCP API
     3306:TCP mysql
     5672:TCP rabbitmq
-
+```
 
 ### 6. Test API
 
@@ -66,9 +70,9 @@ This text explains how to create "Rack" Image.
 * Login to VM and Use RackClientTool to test API.  
   If you succeed, you renspond group data in json body. 
 
+```
     export OS_USERNAME="demo_user"
     export OS_TENANT_NAME="demo_user"
     rack_client group-create --name=test
-
-
+```
 
