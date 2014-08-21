@@ -1,4 +1,4 @@
-# How To Build Rack Image
+# How to work RACK
 
 ## Overview
 
@@ -10,14 +10,14 @@ This text explains how to create "Rack" Image.
 ### 1. Install RPM based Linux Operation System
 
 * setup RPM based Linux like Fedora/CentOS in your OpenStack environment to create "Rack" image.  
-  (In advance, we try this workflow at CentOS 6.5. We recommend to use same OS version to avoid any problems.)  
+  (In advance, we did this workflow at CentOS 6.5. We recommend to use same OS version to avoid any problems.)  
 * you need to install Git for cloning "Rack" image building tool and connect to the internet.  
 
 ### 2. Clone "Rack" In Your VM From Github
 
 ```
-    [SSH:]   git clone git@github.com:stackforge/rack.git
-    [HTTPS:] git clone https://github.com/stackforge/rack.git
+    [SSH:]   git clone?git@github.com:stackforge/rack.git
+    [HTTPS:] git clone?https://github.com/stackforge/rack.git
 ```
 
 ### 3. Execute "Rack" Image Build Tool(imagebuid.sh)  
@@ -76,3 +76,6 @@ This text explains how to create "Rack" Image.
     rack_client group-create --name=test
 ```
 
+### 7. Experience Rack Application
+[pi-montecarlo] (https://github.com/stackforge/rack/tree/master/tools/sample-apps/pi-montecarlo)
+[tweet-analyzer] (https://github.com/stackforge/rack/tree/master/tools/sample-apps/tweet-analyzer)
