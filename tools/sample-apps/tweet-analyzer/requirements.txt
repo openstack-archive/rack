@@ -1,0 +1,7 @@
+flask-restful
+flask
+psycopg2
+sqlalchemy
+watchdog
+eventlet
+websocket_client
