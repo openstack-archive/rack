@@ -17,22 +17,13 @@ import rack.api
 from rack.api import auth
 from rack.api import v1
 from rack.api import versions
-from rack import context
 
 
-def wsgi_app(inner_app_v1=None, fake_auth_context=None,
-             use_no_auth=False):
+def wsgi_app(inner_app_v1=None):
     if not inner_app_v1:
         inner_app_v1 = v1.APIRouter()
 
-    if use_no_auth:
-        api_v1 = rack.api.FaultWrapper(auth.NoAuthMiddleware(inner_app_v1))
-    else:
-        if fake_auth_context is not None:
-            ctxt = fake_auth_context
-        else:
-            ctxt = context.RequestContext('fake', 'fake', auth_token=True)
-        api_v1 = rack.api.FaultWrapper(auth.InjectContext(ctxt, inner_app_v1))
+    api_v1 = rack.api.FaultWrapper(auth.NoAuthMiddleware(inner_app_v1))
 
     mapper = paste.urlmap.URLMap()
     mapper['/v1'] = api_v1

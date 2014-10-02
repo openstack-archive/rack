@@ -17,10 +17,12 @@ Unit Tests for rack.resourceoperator.openstack.keypairs
 
 from oslo.config import cfg
 
-from rack import exception
 from rack.resourceoperator import openstack as os_client
 from rack.resourceoperator.openstack import keypairs
 from rack import test
+
+import uuid
+
 
 CONF = cfg.CONF
 
@@ -34,6 +36,7 @@ cfg.set_defaults(os_client.openstack_client_opts, **CREDENTIALS)
 
 
 class FakeKeypairModel(object):
+    id = uuid.uuid4()
     name = "fake_keypair"
     private_key = "fake_private_key"
 
@@ -48,39 +51,39 @@ class KeypairTestCase(test.NoDBTestCase):
         self.mox.StubOutWithMock(os_client, "get_nova_client")
         os_client.get_nova_client().AndReturn(self.nova)
 
+    def test_keypair_list(self):
+        fake_keypar1 = FakeKeypairModel()
+        fake_keypar2 = FakeKeypairModel()
+        self.nova.keypairs.list().AndReturn([fake_keypar1,
+                                            fake_keypar2])
+        self.mox.ReplayAll()
+
+        keypair_ids = self.keypair_client.keypair_list()
+        self.assertEqual(keypair_ids[0], fake_keypar1.id)
+        self.assertEqual(keypair_ids[1], fake_keypar2.id)
+
+    def test_keypair_show(self):
+        fake_keypar1 = FakeKeypairModel()
+        self.nova.keypairs.get(fake_keypar1.id)\
+            .AndReturn(fake_keypar1)
+        self.mox.ReplayAll()
+
+        keypair = self.keypair_client.keypair_show(fake_keypar1.id)
+        self.assertEqual(keypair, fake_keypar1)
+
     def test_keypair_create(self):
-        name = "fake_keypair"
-        self.nova.keypairs.create(name).AndReturn(FakeKeypairModel())
+        fake_keypar1 = FakeKeypairModel()
+        self.nova.keypairs.create(fake_keypar1.name)\
+            .AndReturn(fake_keypar1)
         self.mox.ReplayAll()
 
-        expected = {
-            "nova_keypair_id": name,
-            "private_key": "fake_private_key"
-        }
-        values = self.keypair_client.keypair_create(name)
-        self.assertEqual(expected, values)
-
-    def test_keypair_create_raise_exception(self):
-        name = "fake_keypair"
-        self.nova.keypairs.create(name).AndRaise(Exception())
-        self.mox.ReplayAll()
-
-        self.assertRaises(
-            exception.KeypairCreateFailed,
-            self.keypair_client.keypair_create, name)
+        keypair = self.keypair_client.keypair_create(fake_keypar1.name)
+        self.assertEqual(keypair["nova_keypair_id"], fake_keypar1.name)
+        self.assertEqual(keypair["private_key"], fake_keypar1.private_key)
 
     def test_keypair_delete(self):
-        nova_keypair_id = "fake_keypair"
-        self.nova.keypairs.delete(nova_keypair_id)
+        fake_keypar1 = FakeKeypairModel()
+        self.nova.keypairs.delete(fake_keypar1.id)
         self.mox.ReplayAll()
 
-        self.keypair_client.keypair_delete(nova_keypair_id)
-
-    def test_keypair_delete_raise_exception(self):
-        nova_keypair_id = "fake_keypair"
-        self.nova.keypairs.delete(nova_keypair_id).AndRaise(Exception())
-        self.mox.ReplayAll()
-
-        self.assertRaises(
-            exception.KeypairDeleteFailed,
-            self.keypair_client.keypair_delete, nova_keypair_id)
+        self.keypair_client.keypair_delete(fake_keypar1.id)

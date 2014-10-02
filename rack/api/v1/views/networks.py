@@ -30,18 +30,19 @@ class ViewBuilder(common.ViewBuilder):
 
     def create(self, network):
         base = self._base_response(network)
+        base.pop("status")
         return dict(network=base)
 
     def _base_response(self, network):
         return {
-            "network_id": network["network_id"],
-            "neutron_network_id": network["neutron_network_id"],
-            "gid": network["gid"],
-            "user_id": network["user_id"],
-            "project_id": network["project_id"],
-            "name": network["display_name"],
-            "is_admin": network["is_admin"],
-            "cidr": network["subnet"],
-            "ext_router_id": network["ext_router"],
-            "status": network["status"]
+            "network_id": network.get("network_id"),
+            "neutron_network_id": network.get("neutron_network_id"),
+            "gid": network.get("gid"),
+            "user_id": network.get("user_id"),
+            "project_id": network.get("project_id"),
+            "name": network.get("display_name"),
+            "is_admin": network.get("is_admin"),
+            "cidr": network.get("cidr"),
+            "ext_router_id": network.get("ext_router"),
+            "status": network.get("status")
         }

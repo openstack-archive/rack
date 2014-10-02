@@ -73,12 +73,11 @@ class Network(models.SoftDeleteMixin,
     gid = Column(String(255))
     neutron_network_id = Column(String(255))
     is_admin = Column(Boolean, default=False)
-    subnet = Column(String(255))
+    cidr = Column(String(255))
     ext_router = Column(String(255))
     user_id = Column(String(255))
     project_id = Column(String(255))
     display_name = Column(String(255))
-    status = Column(String(255))
 
 
 class Keypair(models.SoftDeleteMixin,
@@ -96,7 +95,6 @@ class Keypair(models.SoftDeleteMixin,
     private_key = Column(Text)
     display_name = Column(String(255))
     is_default = Column(Boolean, default=False)
-    status = Column(String(255))
 
 
 class Securitygroup(models.SoftDeleteMixin,
@@ -114,7 +112,6 @@ class Securitygroup(models.SoftDeleteMixin,
     user_id = Column(String(255))
     project_id = Column(String(255))
     display_name = Column(String(255))
-    status = Column(String(255))
 
     group = relationship("Group",
                          foreign_keys=gid,
@@ -137,19 +134,18 @@ class Process(models.SoftDeleteMixin,
     pid = Column(String(36), primary_key=True)
     ppid = Column(String(36), ForeignKey('processes.pid'))
     nova_instance_id = Column(String(36))
-    glance_image_id = Column(String(36), nullable=False)
-    nova_flavor_id = Column(Integer, nullable=False)
-    user_id = Column(String(255), nullable=False)
-    project_id = Column(String(255), nullable=False)
-    display_name = Column(String(255), nullable=False)
-    status = Column(String(255), nullable=False)
-    is_proxy = Column(Boolean(), nullable=False)
-    shm_endpoint = Column(String(255), nullable=True)
-    ipc_endpoint = Column(String(255), nullable=True)
-    fs_endpoint = Column(String(255), nullable=True)
-    args = Column(Text, nullable=True)
-    userdata = Column(Text, nullable=True)
-    app_status = Column(String(255), nullable=True)
+    glance_image_id = Column(String(36))
+    nova_flavor_id = Column(Integer)
+    user_id = Column(String(255))
+    project_id = Column(String(255))
+    display_name = Column(String(255))
+    is_proxy = Column(Boolean(), default=False)
+    shm_endpoint = Column(Text)
+    ipc_endpoint = Column(Text)
+    fs_endpoint = Column(Text)
+    args = Column(Text)
+    userdata = Column(Text)
+    app_status = Column(Text)
 
     group = relationship("Group",
                          foreign_keys=gid,
