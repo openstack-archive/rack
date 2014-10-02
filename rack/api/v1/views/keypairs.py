@@ -31,21 +31,23 @@ class ViewBuilder(common.ViewBuilder):
 
     def create(self, keypair):
         base = self._base_response(keypair)
+        base.pop('status')
         return dict(keypair=base)
 
     def update(self, keypair):
         base = self._base_response(keypair)
+        base.pop("status")
         return dict(keypair=base)
 
     def _base_response(self, keypair):
         return {
-            "keypair_id": keypair.get("keypair_id", ""),
-            "nova_keypair_id": keypair.get("nova_keypair_id", ""),
-            "user_id": keypair.get("user_id", ""),
-            "project_id": keypair.get("project_id", ""),
-            "gid": keypair.get("gid", ""),
-            "name": keypair.get("display_name", ""),
-            "private_key": keypair.get("private_key", ""),
-            "is_default": keypair.get("is_default", ""),
-            "status": keypair.get("status", "")
+            "keypair_id": keypair.get("keypair_id"),
+            "nova_keypair_id": keypair.get("nova_keypair_id"),
+            "user_id": keypair.get("user_id"),
+            "project_id": keypair.get("project_id"),
+            "gid": keypair.get("gid"),
+            "name": keypair.get("display_name"),
+            "private_key": keypair.get("private_key"),
+            "is_default": keypair.get("is_default"),
+            "status": keypair.get("status")
         }

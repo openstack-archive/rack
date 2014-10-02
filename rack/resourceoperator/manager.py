@@ -15,10 +15,7 @@
 ResourceOperator Service
 """
 
-from oslo import messaging
-from rack import db
 from rack import exception
-from rack import manager
 
 from rack.openstack.common import log as logging
 
@@ -31,135 +28,208 @@ from rack.resourceoperator.openstack import securitygroups
 LOG = logging.getLogger(__name__)
 
 
-class ResourceOperatorManager(manager.Manager):
+class ResourceOperator(object):
 
-    target = messaging.Target(version='1.0')
-
-    def __init__(self, scheduler_driver=None, *args, **kwargs):
-        super(ResourceOperatorManager, self).__init__(
-            service_name='resourceoperator',
-            *args, **kwargs)
-        self.network_client = networks.NetworkAPI()
+    def __init__(self):
         self.keypair_client = keypairs.KeypairAPI()
         self.securitygroup_client = securitygroups.SecuritygroupAPI()
-        self.securitygrouprule_client = securitygroups.SecuritygroupruleAPI()
+        self.network_client = networks.NetworkAPI()
         self.process_client = processes.ProcessesAPI()
 
-    def network_create(self, context, network):
-        update_values = {}
+    def keypair_list(self, context, keypairs):
         try:
-            neutron_network_id = self.network_client.network_create(
-                network.get("display_name"),
-                network.get("subnet"),
-                network.get("gateway"),
-                network.get("dns_nameservers"),
-                network.get("ext_router"))
-            update_values["neutron_network_id"] = neutron_network_id
-            update_values["status"] = "ACTIVE"
+            ids = self.keypair_client.keypair_list()
         except Exception as e:
             LOG.exception(e)
-            update_values["status"] = "ERROR"
-        try:
-            db.network_update(context, network["network_id"], update_values)
-        except Exception as e:
-            LOG.exception(e)
+            raise exception.OpenStackException(e.code, e.message)
 
-    def network_delete(self, context, neutron_network_id, ext_router):
-        try:
-            self.network_client.network_delete(neutron_network_id, ext_router)
-        except Exception as e:
-            LOG.exception(e)
+        for keypair in keypairs:
+            if keypair["nova_keypair_id"] in ids:
+                keypair["status"] = "Exist"
+            else:
+                keypair["status"] = "NotExist"
+        return keypairs
 
-    def keypair_create(self, context, gid, keypair_id, name):
+    def keypair_show(self, context, keypair):
         try:
-            values = self.keypair_client.keypair_create(name)
-            values["status"] = "ACTIVE"
+            self.keypair_client.keypair_show(keypair["nova_keypair_id"])
+            keypair["status"] = "Exist"
         except Exception as e:
             LOG.exception(e)
-            values = {"status": "ERROR"}
+            if e.code == 404:
+                keypair["status"] = "NotExist"
+                return
+            raise exception.OpenStackException(e.code, e.message)
+
+    def keypair_create(self, context, name):
         try:
-            db.keypair_update(context, gid, keypair_id, values)
+            return self.keypair_client.keypair_create(name)
         except Exception as e:
             LOG.exception(e)
+            raise exception.OpenStackException(e.code, e.message)
 
     def keypair_delete(self, context, nova_keypair_id):
         try:
             self.keypair_client.keypair_delete(nova_keypair_id)
-        except (exception.KeypairDeleteFailed,
-                exception.InvalidOpenStackCredential) as e:
-            LOG.exception(e)
         except Exception as e:
             LOG.exception(e)
+            if e.code == 404:
+                return
+            raise exception.OpenStackException(e.code, e.message)
 
-    def securitygroup_create(self, context, gid, securitygroup_id, name,
-                             securitygrouprules):
-        values = {}
+    def securitygroup_list(self, context, securitygroups):
         try:
-            values["neutron_securitygroup_id"] =\
-                self.securitygroup_client.securitygroup_create(name)
-            for securitygrouprule in securitygrouprules:
-                self.securitygrouprule_client.securitygrouprule_create(
-                    neutron_securitygroup_id=values[
-                        "neutron_securitygroup_id"],
-                    protocol=securitygrouprule.get("protocol"),
-                    port_range_min=securitygrouprule.get("port_range_min"),
-                    port_range_max=securitygrouprule.get("port_range_max"),
-                    remote_neutron_securitygroup_id=securitygrouprule.get(
-                        "remote_neutron_securitygroup_id"),
-                    remote_ip_prefix=securitygrouprule.get("remote_ip_prefix")
-                )
-            values["status"] = "ACTIVE"
-            db.securitygroup_update(context, gid, securitygroup_id, values)
+            neutron_securitygroup_ids = self.securitygroup_client.\
+                securitygroup_list()
         except Exception as e:
-            values["status"] = "ERROR"
-            db.securitygroup_update(context, gid, securitygroup_id, values)
-            LOG.exception(e)
+            raise exception.OpenStackException(e.status_code, e.message)
+        for securitygroup in securitygroups:
+            if securitygroup["neutron_securitygroup_id"] in\
+                    neutron_securitygroup_ids:
+                securitygroup["status"] = "Exist"
+            else:
+                securitygroup["status"] = "NotExist"
+        return securitygroups
+
+    def securitygroup_show(self, context, securitygroup):
+        try:
+            self.securitygroup_client.securitygroup_get(
+                securitygroup['neutron_securitygroup_id'])
+            securitygroup["status"] = "Exist"
+        except Exception as e:
+            if e.status_code == 404:
+                securitygroup["status"] = "NotExist"
+            else:
+                raise exception.OpenStackException(e.status_code, e.message)
+        return securitygroup
+
+    def securitygroup_create(self, context, name, securitygrouprules):
+        try:
+            return self.securitygroup_client.securitygroup_create(
+                name, securitygrouprules)
+        except Exception as e:
+            raise exception.OpenStackException(e.status_code, e.message)
 
     def securitygroup_delete(self, context, neutron_securitygroup_id):
         try:
             self.securitygroup_client.securitygroup_delete(
                 neutron_securitygroup_id)
         except Exception as e:
-            LOG.exception(e)
+            if e.status_code == 404:
+                pass
+            else:
+                LOG.exception(e)
+                raise exception.OpenStackException(e.status_code, e.message)
 
-    def process_create(self,
-                       context,
-                       pid,
-                       ppid,
-                       gid,
-                       name,
-                       glance_image_id,
-                       nova_flavor_id,
-                       nova_keypair_id,
-                       neutron_securitygroup_ids,
-                       neutron_network_ids,
-                       metadata,
-                       userdata
-                       ):
-        update_values = {}
+    def network_list(self, context, networks):
         try:
-            metadata["pid"] = pid
-            metadata["ppid"] = ppid
-            metadata["gid"] = gid
-            nova_instance_id = self.process_client.process_create(
-                name,
-                glance_image_id,
-                nova_flavor_id,
-                nova_keypair_id,
-                neutron_securitygroup_ids,
-                neutron_network_ids,
-                metadata,
-                userdata)
-            update_values["nova_instance_id"] = nova_instance_id
-            update_values["status"] = "ACTIVE"
-            db.process_update(context, gid, pid, update_values)
+            ids = self.network_client.network_list()
         except Exception as e:
-            update_values["status"] = "ERROR"
-            db.process_update(context, gid, pid, update_values)
             LOG.exception(e)
+            raise exception.OpenStackException(e.status_code, e.message)
+
+        for network in networks:
+            if network["neutron_network_id"] in ids:
+                network["status"] = "Exist"
+            else:
+                network["status"] = "NotExist"
+        return networks
+
+    def network_show(self, context, network):
+        try:
+            self.network_client.network_show(network["neutron_network_id"])
+            network["status"] = "Exist"
+        except Exception as e:
+            LOG.exception(e)
+            if e.status_code == 404:
+                network["status"] = "NotExist"
+                return
+            raise exception.OpenStackException(e.status_code, e.message)
+
+    def network_create(self, context, name, cidr, gateway, ext_router,
+                       dns_nameservers):
+        try:
+            return self.network_client.network_create(
+                name, cidr, gateway, ext_router, dns_nameservers)
+        except Exception as e:
+            LOG.exception(e)
+            raise exception.OpenStackException(e.status_code, e.message)
+
+    def network_delete(self, context, neutron_network_id, ext_router):
+        try:
+            self.network_client.network_delete(neutron_network_id, ext_router)
+        except Exception as e:
+            LOG.exception(e)
+            if e.status_code == 404:
+                return
+            raise exception.OpenStackException(e.status_code, e.message)
+
+    def process_list(self, context, processes):
+        try:
+            nova_process_list = self.process_client.process_list()
+        except Exception as e:
+            LOG.exception(e)
+            raise exception.OpenStackException(e.code, e.message)
+
+        for process in processes:
+            is_exist = False
+            for nova_process in nova_process_list:
+                if process["nova_instance_id"] ==\
+                        nova_process["nova_instance_id"]:
+                    is_exist = True
+                    process["status"] = nova_process["status"]
+                    for nova_network in nova_process["networks"]:
+                        for network in process["networks"]:
+                            if(nova_network["display_name"] ==
+                                    network["display_name"]):
+                                network.update(nova_network)
+                    break
+            if not is_exist:
+                process["status"] = "NotExist"
+
+        return processes
+
+    def process_show(self, context, process):
+        try:
+            nova_process = self.process_client.process_show(
+                process["nova_instance_id"])
+            process["status"] = nova_process["status"]
+            for nova_network in nova_process["networks"]:
+                for network in process["networks"]:
+                    if(nova_network["display_name"] ==
+                            network["display_name"]):
+                        network.update(nova_network)
+
+        except Exception as e:
+            LOG.exception(e)
+            if e.code == 404:
+                process["status"] = "NotExist"
+                return
+            raise exception.OpenStackException(e.code, e.message)
+
+    def process_create(self, context, name, key_name,
+                       security_groups, image, flavor,
+                       userdata, meta, nics):
+        try:
+            return self.process_client.process_create(
+                name, key_name, security_groups, image, flavor,
+                userdata, meta, nics)
+        except Exception as e:
+            LOG.exception(e)
+            raise exception.OpenStackException(e.code, e.message)
 
     def process_delete(self, context, nova_instance_id):
         try:
             self.process_client.process_delete(nova_instance_id)
         except Exception as e:
             LOG.exception(e)
+            if e.code == 404:
+                return
+            raise exception.OpenStackException(e.code, e.message)
+
+    def get_process_address(self, context, nova_instance_id):
+        try:
+            return self.process_client.get_process_address(nova_instance_id)
+        except Exception as e:
+            LOG.exception(e)
+            raise exception.OpenStackException(e.code, e.message)

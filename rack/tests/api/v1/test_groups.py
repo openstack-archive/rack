@@ -220,8 +220,8 @@ class GroupsTest(test.NoDBTestCase):
         expected = {
             "group": {
                 "gid": GID,
-                "user_id": "fake",
-                "project_id": "fake",
+                "user_id": "noauth",
+                "project_id": "noauth",
                 "name": name,
                 "description": description,
                 "status": "ACTIVE"
@@ -259,8 +259,8 @@ class GroupsTest(test.NoDBTestCase):
         expected = {
             "group": {
                 "gid": GID,
-                "user_id": "fake",
-                "project_id": "fake",
+                "user_id": "noauth",
+                "project_id": "noauth",
                 "name": "test_group",
                 "description": "This is test group",
                 "status": "ACTIVE"
@@ -296,8 +296,8 @@ class GroupsTest(test.NoDBTestCase):
         expected = {
             "group": {
                 "gid": GID,
-                "user_id": "fake",
-                "project_id": "fake",
+                "user_id": "noauth",
+                "project_id": "noauth",
                 "name": "test_group",
                 "status": "ACTIVE"
             }
@@ -359,8 +359,8 @@ class GroupsTest(test.NoDBTestCase):
         expected = {
             "group": {
                 "gid": GID,
-                "user_id": "fake",
-                "project_id": "fake",
+                "user_id": "noauth",
+                "project_id": "noauth",
                 "name": "test_group",
                 "description": "",
                 "status": "ACTIVE"

@@ -31,10 +31,12 @@ class ViewBuilder(common.ViewBuilder):
 
     def create(self, securitygroup):
         base = self._base_response(securitygroup)
+        base.pop('status')
         return dict(securitygroup=base)
 
     def update(self, securitygroup):
         base = self._base_response(securitygroup)
+        base.pop("status")
         return dict(securitygroup=base)
 
     def _base_response(self, securitygroup):
