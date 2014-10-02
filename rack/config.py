@@ -17,7 +17,6 @@ from oslo.config import cfg
 from rack import debugger
 from rack.openstack.common.db import options
 from rack import paths
-from rack import rpc
 from rack import version
 
 _DEFAULT_SQL_CONNECTION = 'sqlite:///' + paths.state_path_def('rack.sqlite')
@@ -26,10 +25,8 @@ _DEFAULT_SQL_CONNECTION = 'sqlite:///' + paths.state_path_def('rack.sqlite')
 def parse_args(argv, default_config_files=None):
     options.set_defaults(sql_connection=_DEFAULT_SQL_CONNECTION,
                          sqlite_db='rack.sqlite')
-    rpc.set_defaults(control_exchange='rack')
     debugger.register_cli_opts()
     cfg.CONF(argv[1:],
              project='rack',
              version=version.version_string(),
              default_config_files=default_config_files)
-    rpc.init(cfg.CONF)

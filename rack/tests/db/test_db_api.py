@@ -434,12 +434,11 @@ class NetworksTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "gid": self.gid,
             "neutron_network_id": "",
             "is_admin": True,
-            "subnet": "10.0.0.0/24",
+            "cidr": "10.0.0.0/24",
             "ext_router": "",
             "user_id": "user",
             "project_id": "user",
             "display_name": "net-" + self.network_id,
-            "status": "BUILDING",
             "deleted": 0
         }
         network = db.network_create(self.ctxt, values)
@@ -456,12 +455,11 @@ class NetworksTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "gid": self.gid,
             "neutron_network_id": "",
             "is_admin": True,
-            "subnet": "10.0.0.0/24",
+            "cidr": "10.0.0.0/24",
             "ext_router": "",
             "user_id": "user",
             "project_id": "user",
             "display_name": "net-" + self.network_id,
-            "status": "BUILDING",
             "deleted": 0
         }
         for i in range(1 - 5):
@@ -482,12 +480,11 @@ class NetworksTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "gid": self.gid,
             "neutron_network_id": "",
             "is_admin": True,
-            "subnet": "10.0.0.0/24",
+            "cidr": "10.0.0.0/24",
             "ext_router": "",
             "user_id": "user",
             "project_id": "user",
             "display_name": "net-" + self.network_id,
-            "status": "BUILDING",
             "deleted": 0
         }
         for i in range(1 - 5):
@@ -506,12 +503,11 @@ class NetworksTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "gid": self.gid,
             "neutron_network_id": "",
             "is_admin": True,
-            "subnet": "10.0.0.0/24",
+            "cidr": "10.0.0.0/24",
             "ext_router": "",
             "user_id": "user",
             "project_id": "user",
             "display_name": "net-" + self.network_id,
-            "status": "BUILDING",
             "deleted": 0
         }
         for i in range(1 - 5):
@@ -530,19 +526,18 @@ class NetworksTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "gid": self.gid,
             "neutron_network_id": "",
             "is_admin": True,
-            "subnet": "10.0.0.0/24",
+            "cidr": "10.0.0.0/24",
             "ext_router": "",
             "user_id": "user",
             "project_id": "user",
             "display_name": "net-" + self.network_id,
-            "status": "BUILDING",
             "deleted": 0
         }
         create_network = db.network_create(self.ctxt, create_values)
-        create_network["status"] = "ACTIVE"
+        create_network["cidr"] = "10.0.1.0/24"
 
         update_values = {
-            "status": "ACTIVE"
+            "cidr": "10.0.1.0/24"
         }
         db.network_update(self.ctxt, self.network_id, update_values)
 
@@ -561,12 +556,11 @@ class NetworksTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "gid": self.gid,
             "neutron_network_id": "",
             "is_admin": True,
-            "subnet": "10.0.0.0/24",
+            "cidr": "10.0.0.0/24",
             "ext_router": "",
             "user_id": "user",
             "project_id": "user",
             "display_name": "net-" + self.network_id,
-            "status": "BUILDING",
             "deleted": 0
         }
         db.network_create(self.ctxt, create_values)
@@ -636,8 +630,7 @@ class KeypairTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "nova_keypair_id": "nova-test-keypair",
             "private_key": PRIVATE_KEY,
             "display_name": "test_keypair",
-            "is_default": True,
-            "status": "BUILDING"
+            "is_default": True
         }
 
     def _create_group(self, gid):
@@ -647,8 +640,7 @@ class KeypairTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "project_id": self.user_ctxt.project_id,
             "display_name": "test_group",
             "dsplay_description": "This is test group.",
-            "is_default": False,
-            "status": "ACTIVE"
+            "is_default": False
         }
         return db.group_create(self.user_ctxt, values)
 
@@ -711,13 +703,11 @@ class KeypairTestCase(test.TestCase, ModelsObjectComparatorMixin):
         values_before = self._get_base_values(gid)
         keypair = db.keypair_create(self.user_ctxt, values_before)
         values = {
-            "is_default": False,
-            "status": "ACTIVE",
+            "is_default": False
         }
         keypair_after = db.keypair_update(
             self.user_ctxt, gid, keypair["keypair_id"], values)
         self.assertEqual(keypair_after["is_default"], False)
-        self.assertEqual(keypair_after["status"], "ACTIVE")
 
     def test_keypair_update_keypair_not_found(self):
         gid = "12345678-1234-5678-9123-123456789012"
@@ -736,7 +726,6 @@ class KeypairTestCase(test.TestCase, ModelsObjectComparatorMixin):
         keypair = db.keypair_create(self.user_ctxt, values_before)
         keypair_after = db.keypair_delete(
             self.user_ctxt, gid, keypair["keypair_id"])
-        self.assertEqual("DELETING", keypair_after["status"])
         self.assertEqual(1, keypair_after["deleted"])
         self.assertIsNotNone(keypair_after.get("deleted_at"))
 
@@ -767,7 +756,6 @@ class SecuritygroupTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "securitygroup",
             "display_name": "test_securitygroup",
             "is_default": True,
-            "status": "BUILDING",
             "deleted": 0
         }
 
@@ -779,7 +767,6 @@ class SecuritygroupTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "display_name": "test_group",
             "dsplay_description": "This is test group.",
             "is_default": False,
-            "status": "ACTIVE",
             "deleted": 0
         }
         return db.group_create(self.user_ctxt, values)
@@ -846,13 +833,11 @@ class SecuritygroupTestCase(test.TestCase, ModelsObjectComparatorMixin):
         values_before = self._get_base_values(gid)
         securitygroup = db.securitygroup_create(self.user_ctxt, values_before)
         values = {
-            "is_default": False,
-            "status": "ACTIVE",
+            "is_default": False
         }
         securitygroup_after = db.securitygroup_update(
             self.user_ctxt, gid, securitygroup["securitygroup_id"], values)
         self.assertEqual(securitygroup_after["is_default"], False)
-        self.assertEqual(securitygroup_after["status"], "ACTIVE")
 
     def test_securitygroup_update_securitygroup_not_found(self):
         gid = "12345678-1234-5678-9123-123456789012"
@@ -871,7 +856,6 @@ class SecuritygroupTestCase(test.TestCase, ModelsObjectComparatorMixin):
         securitygroup = db.securitygroup_create(self.user_ctxt, values_before)
         securitygroup_after = db.securitygroup_delete(
             self.user_ctxt, gid, securitygroup["securitygroup_id"])
-        self.assertEqual("DELETING", securitygroup_after["status"])
         self.assertEqual(1, securitygroup_after["deleted"])
         self.assertIsNotNone(securitygroup_after.get("deleted_at"))
 
@@ -908,7 +892,6 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "user_id": self.user_ctxt.user_id,
             "project_id": self.user_ctxt.project_id,
             "display_name": "test_process",
-            "status": "BUILDING",
             "deleted": 0,
             "is_proxy": False,
             "app_status": "BUILDING",
@@ -927,7 +910,6 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "display_name": "test_group",
             "dsplay_description": "This is test group.",
             "is_default": False,
-            "status": "ACTIVE",
             "deleted": 0
         }
         return db.group_create(self.user_ctxt, values)
@@ -937,12 +919,11 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "gid": gid,
             "network_id": unicode(uuid.uuid4()),
             "ext_router": unicode(uuid.uuid4()),
-            "subnet": "10.0.0.1/24",
+            "cidr": "10.0.0.1/24",
             "user_id": self.user_ctxt.user_id,
             "project_id": self.user_ctxt.project_id,
             "display_name": "test_network",
             "is_admin": False,
-            "status": "ACTIVE",
             "deleted": 0
         }
         return db.network_create(self.user_ctxt, values)
@@ -956,7 +937,6 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "project_id": self.user_ctxt.project_id,
             "display_name": "test_keypair",
             "is_default": False,
-            "status": "ACTIVE",
             "deleted": 0
         }
         return db.keypair_create(self.user_ctxt, values)
@@ -969,7 +949,6 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
             "project_id": self.user_ctxt.project_id,
             "display_name": "test_securitygroup",
             "is_default": False,
-            "status": "ACTIVE",
             "deleted": 0
         }
         return db.securitygroup_create(self.user_ctxt, values)
@@ -980,6 +959,19 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
             process = db.process_create(
                 self.user_ctxt,
                 self._get_base_values(),
+                [self.network["network_id"]],
+                [self.securitygroup["securitygroup_id"]])
+            processes.append(process)
+        return processes
+
+    def _create_process_deleted(self, gid, create_count):
+        processes = []
+        process_base_value = self._get_base_values()
+        process_base_value["deleted"] = 1
+        for i in range(0, create_count):
+            process = db.process_create(
+                self.user_ctxt,
+                process_base_value,
                 [self.network["network_id"]],
                 [self.securitygroup["securitygroup_id"]])
             processes.append(process)
@@ -1001,6 +993,13 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
 
     def test_process_get_by_pid(self):
         processes = self._create_process(self.gid, 3)
+        res_process = db.process_get_by_pid(
+            self.user_ctxt, self.gid, processes[0]["pid"])
+        ignored_keys = ['deleted_at', 'updated_at', 'created_at']
+        self._assertEqualObjects(res_process, processes[0], ignored_keys)
+
+    def test_process_get_by_pid_get_deleted(self):
+        processes = self._create_process_deleted(self.gid, 1)
         res_process = db.process_get_by_pid(
             self.user_ctxt, self.gid, processes[0]["pid"])
         ignored_keys = ['deleted_at', 'updated_at', 'created_at']
@@ -1059,13 +1058,11 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
                                     [self.securitygroup["securitygroup_id"]])
         values = {
             "display_name": "test",
-            "status": "ACTIVE",
             "fs_endpoint": "fs_data_update"
         }
         process_after = db.process_update(
             self.user_ctxt, self.gid, process["pid"], values)
         self.assertEqual(process_after["display_name"], "test")
-        self.assertEqual(process_after["status"], "ACTIVE")
         self.assertEqual(process_after["fs_endpoint"], "fs_data_update")
         self.assertEqual(process_after["shm_endpoint"], "shm_data_original")
         self.assertEqual(process_after["ipc_endpoint"], "ipc_data_original")
@@ -1086,7 +1083,6 @@ class ProcessTestCase(test.TestCase, ModelsObjectComparatorMixin):
                                     [self.securitygroup["securitygroup_id"]])
         process_after = db.process_delete(
             self.user_ctxt, self.gid, process["pid"])
-        self.assertEqual("DELETING", process_after["status"])
         self.assertEqual(1, process_after["deleted"])
         self.assertIsNotNone(process_after.get("deleted_at"))
 

@@ -1627,3 +1627,10 @@ class ProxyNotFound(NotFound):
 
 class NoNetworksFound(NotFound):
     msg_fmt = _("No networks defined for gid %(gid)s.")
+
+
+class OpenStackException(RackException):
+    def __init__(self, code, message):
+        super(RackException, self).__init__(message)
+        self.code = code
+        self.msg_fmt = message

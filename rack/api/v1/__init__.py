@@ -22,7 +22,6 @@ from rack.api.v1 import groups
 from rack.api.v1 import keypairs
 from rack.api.v1 import networks
 from rack.api.v1 import processes
-from rack.api.v1 import proxy
 from rack.api.v1 import securitygroups
 from rack.api import versions
 from rack.openstack.common import log as logging
@@ -192,16 +191,16 @@ class APIRouter(base_wsgi.Router):
                        action="delete",
                        conditions={"method": ["DELETE"]})
 
-        proxy_resource = proxy.create_resource()
+        # RACK proxy resources
         mapper.connect("/groups/{gid}/proxy",
-                       controller=proxy_resource,
-                       action="show",
+                       controller=processes_resource,
+                       action="show_proxy",
                        conditions={"method": ["GET"]})
         mapper.connect("/groups/{gid}/proxy",
-                       controller=proxy_resource,
-                       action="create",
+                       controller=processes_resource,
+                       action="create_proxy",
                        conditions={"method": ["POST"]})
         mapper.connect("/groups/{gid}/proxy",
-                       controller=proxy_resource,
-                       action="update",
+                       controller=processes_resource,
+                       action="update_proxy",
                        conditions={"method": ["PUT"]})

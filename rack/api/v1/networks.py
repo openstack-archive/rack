@@ -14,7 +14,6 @@
 
 from rack import db
 from rack import exception
-from rack import utils
 
 from rack.api.v1.views import networks as views_networks
 from rack.api import wsgi
@@ -24,8 +23,7 @@ from rack.openstack.common import log as logging
 from rack.openstack.common import strutils
 from rack.openstack.common import uuidutils
 
-from rack.resourceoperator import rpcapi as ro_rpcapi
-from rack.scheduler import rpcapi as sch_rpcapi
+from rack.resourceoperator import manager
 
 import uuid
 import webob
@@ -41,39 +39,55 @@ class Controller(wsgi.Controller):
     _view_builder_class = views_networks.ViewBuilder
 
     def __init__(self):
-        self.scheduler_rpcapi = sch_rpcapi.SchedulerAPI()
-        self.resourceoperator_rpcapi = ro_rpcapi.ResourceOperatorAPI()
         super(Controller, self).__init__()
+        self.manager = manager.ResourceOperator()
 
-    @wsgi.response(202)
+    def _uuid_check(self, gid=None, network_id=None):
+        if gid:
+            if not uuidutils.is_uuid_like(gid):
+                raise exception.GroupNotFound(gid=gid)
+        if network_id:
+            if not uuidutils.is_uuid_like(network_id):
+                raise exception.NetworkNotFound(network_id=network_id)
+
+    @wsgi.response(200)
+    def index(self, req, gid):
+        try:
+            self._uuid_check(gid)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
+
+        context = req.environ['rack.context']
+        network_list = db.network_get_all(context, gid)
+        network_list = self.manager.network_list(context, network_list)
+
+        return self._view_builder.index(network_list)
+
+    @wsgi.response(200)
+    def show(self, req, gid, network_id):
+        context = req.environ['rack.context']
+        try:
+            self._uuid_check(gid, network_id)
+            network = db.network_get_by_network_id(context, gid, network_id)
+            self.manager.network_show(context, network)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
+
+        return self._view_builder.show(network)
+
+    @wsgi.response(201)
     def create(self, req, gid, body):
 
         def _validate(context, body, gid):
-            # validation checks
+            self._uuid_check(gid)
             if not self.is_valid_body(body, "network"):
                 msg = _("Invalid request body")
                 raise exception.InvalidInput(reason=msg)
 
             values = body.get("network")
 
-            # Required item
-            subnet = values.get("cidr")
-            if subnet is None:
-                msg = _("Ntwork cidr is required")
-                raise exception.InvalidInput(reason=msg)
-            if not utils.is_valid_cidr(subnet):
-                msg = _("cidr must be a CIDR")
-                raise exception.InvalidInput(reason=msg)
-
-            # Non-essential items
-            network_id = unicode(uuid.uuid4())
+            cidr = values.get("cidr")
             name = values.get("name")
-            if name is None or not name:
-                name = "net-" + network_id
-            else:
-                name = name.strip()
-                utils.check_string_length(
-                    name, 'name', min_length=1, max_length=255)
 
             is_admin = values.get("is_admin")
             if is_admin:
@@ -87,176 +101,67 @@ class Controller(wsgi.Controller):
                 is_admin = False
 
             gateway = values.get("gateway")
-            if gateway is not None and not utils.is_valid_ip_address(gateway):
-                msg = _("Invalid gateway")
-                raise exception.InvalidInput(reason=msg)
-
-            dns_nameservers = values.get("dns_nameservers")
-            if dns_nameservers is not None:
-                if isinstance(dns_nameservers, list):
-                    for dns in dns_nameservers:
-                        if dns == "" or not utils.is_valid_ip_address(dns):
-                            msg = _("Invalid dns_nameservers")
-                            raise exception.InvalidInput(reason=msg)
-                else:
-                    msg = _("dns_nameservers must be list format")
-                    raise exception.InvalidInput(reason=msg)
-
             ext_router = values.get("ext_router_id")
-            if ext_router is not None and not uuidutils.is_uuid_like(
-                    ext_router):
-                msg = _("ext_router must be a uuid")
+            dns_nameservers = values.get("dns_nameservers")
+            if dns_nameservers is not None and not isinstance(
+                    dns_nameservers, list):
+                msg = _("dns_nameservers must be a list")
                 raise exception.InvalidInput(reason=msg)
-
-            valid_values1 = {}
-            valid_values1["network_id"] = network_id
-            valid_values1["gid"] = gid
-            valid_values1["neutron_network_id"] = None
-            valid_values1["is_admin"] = is_admin
-            valid_values1["subnet"] = subnet
-            valid_values1["ext_router"] = ext_router
-            valid_values1["user_id"] = context.user_id
-            valid_values1["project_id"] = context.project_id
-            valid_values1["display_name"] = name
-            valid_values1["status"] = "BUILDING"
-            valid_values1["deleted"] = 0
-
-            valid_values2 = {}
-            valid_values2["gateway"] = gateway
-            valid_values2["dns_nameservers"] = dns_nameservers
 
             valid_values = {}
-            valid_values["db"] = valid_values1
-            valid_values["opst"] = valid_values2
+            valid_values["gid"] = gid
+            valid_values["network_id"] = unicode(uuid.uuid4())
+            if not name:
+                name = "network-" + valid_values["network_id"]
+            valid_values["display_name"] = name
+            valid_values["cidr"] = cidr
+            valid_values["is_admin"] = is_admin
+            valid_values["gateway"] = gateway
+            valid_values["ext_router"] = ext_router
+            valid_values["dns_nameservers"] = dns_nameservers
 
-            return valid_values
+            network_values = {}
+            network_values["name"] = name
+            network_values["cidr"] = cidr
+            network_values["gateway"] = gateway
+            network_values["ext_router"] = ext_router
+            network_values["dns_nameservers"] = dns_nameservers
+
+            return valid_values, network_values
 
         try:
             context = req.environ['rack.context']
-            values = _validate(context, body, gid)
+            values, network_values = _validate(context, body, gid)
+            db.group_get_by_gid(context, gid)
+            result_value = self.manager.network_create(
+                context, **network_values)
+            values.update(result_value)
+            values["user_id"] = context.user_id
+            values["project_id"] = context.project_id
+            network = db.network_create(context, values)
         except exception.InvalidInput as e:
             raise webob.exc.HTTPBadRequest(explanation=e.format_message())
-
-        try:
-            # db access
-            self._check_gid(gid, is_create=True, context=context)
-            network = db.network_create(context, values["db"])
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.format_message())
-        except Exception as e:
-            LOG.exception(e)
-            raise exception.NetworkCreateFailed()
-
-        try:
-            # scheduler access
-            resourceoperator = self._get_resorceoperator(context)
-            # resource operator access
-            for k, v in values["opst"].items():
-                if v is not None:
-                    network[k] = v
-            self.resourceoperator_rpcapi.network_create(
-                context, resourceoperator["host"], network)
-        except Exception as e:
-            LOG.exception(e)
-            error_values = {"status": "ERROR"}
-            db.network_update(context, network["network_id"], error_values)
-            raise exception.NetworkCreateFailed()
 
         return self._view_builder.create(network)
 
-    @wsgi.response(200)
-    def index(self, req, gid):
-        def _validate(gid):
-            self._check_gid(gid)
-
-        try:
-            context = req.environ['rack.context']
-            _validate(gid)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.format_message())
-
-        filters = {}
-        network_id = req.params.get('network_id')
-        neutron_network_id = req.params.get('neutron_network_id')
-        name = req.params.get('name')
-        status = req.params.get('status')
-        is_admin = req.params.get('is_admin')
-        subnet = req.params.get('subnet')
-        ext_router = req.params.get('ext_router')
-
-        if network_id:
-            filters['network_id'] = network_id
-        if neutron_network_id:
-            filters['neutron_network_id'] = neutron_network_id
-        if name:
-            filters['name'] = name
-        if status:
-            filters['status'] = status
-        if is_admin:
-            filters['is_admin'] = is_admin
-        if subnet:
-            filters['subnet'] = subnet
-        if ext_router:
-            filters['ext_router'] = ext_router
-
-        network_list = db.network_get_all(context, gid)
-
-        return self._view_builder.index(network_list)
-
-    @wsgi.response(200)
-    def show(self, req, gid, network_id):
-        def _validate(gid, network_id):
-            self._check_gid(gid)
-            if not uuidutils.is_uuid_like(network_id):
-                raise exception.NetworkNotFound(network_id=network_id)
-
-        try:
-            context = req.environ['rack.context']
-            _validate(gid, network_id)
-            network = db.network_get_by_network_id(context, gid, network_id)
-        except exception.NotFound as e:
-            raise webob.exc.HTTPNotFound(explanation=e.format_message())
-
-        return self._view_builder.show(network)
-
     @wsgi.response(204)
     def delete(self, req, gid, network_id):
-        def _validate(gid, network_id):
-            self._check_gid(gid)
-            if not uuidutils.is_uuid_like(network_id):
-                raise exception.NetworkNotFound(network_id=network_id)
-
         try:
+            self._uuid_check(gid, network_id)
             context = req.environ['rack.context']
-            _validate(gid, network_id)
             network = db.network_get_by_network_id(context, gid, network_id)
             if network["processes"]:
                 raise exception.NetworkInUse(network_id=network_id)
-            network = db.network_delete(context, gid, network_id)
-            resourceoperator = self._get_resorceoperator(context)
-            self.resourceoperator_rpcapi.network_delete(
-                context, resourceoperator["host"],
-                neutron_network_id=network["neutron_network_id"],
-                ext_router=network["ext_router"])
+
+            self.manager.network_delete(context, network["neutron_network_id"],
+                                        network["ext_router"])
+            db.network_delete(context, gid, network_id)
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.format_message())
         except exception.NetworkInUse as e:
             raise webob.exc.HTTPConflict(explanation=e.format_message())
-        except Exception as e:
-            LOG.exception(e)
-            raise exception.NetworkDeleteFailed()
-
-    def _check_gid(self, gid, is_create=False, context=None):
-        if not uuidutils.is_uuid_like(gid):
-            raise exception.GroupNotFound(gid=gid)
-        if is_create:
-            db.group_get_by_gid(context, gid)
-
-    def _get_resorceoperator(self, context,
-                             request_spec={}, filter_properties={}):
-        resorceoperator = self.scheduler_rpcapi.select_destinations(
-            context, request_spec, filter_properties)
-        return resorceoperator
 
 
 def create_resource():

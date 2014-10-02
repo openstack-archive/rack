@@ -11,7 +11,6 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from rack import exception
 from rack.openstack.common import log as logging
 from rack.resourceoperator import openstack as os_client
 
@@ -23,14 +22,21 @@ class KeypairAPI(object):
     def __init__(self):
         super(KeypairAPI, self).__init__()
 
+    def keypair_list(self):
+        nova = os_client.get_nova_client()
+        keypairs = nova.keypairs.list()
+        nova_keypair_ids = []
+        for keypair in keypairs:
+            nova_keypair_ids.append(keypair.id)
+        return nova_keypair_ids
+
+    def keypair_show(self, nova_keypair_id):
+        nova = os_client.get_nova_client()
+        return nova.keypairs.get(nova_keypair_id)
+
     def keypair_create(self, name):
         nova = os_client.get_nova_client()
-        try:
-            keypair = nova.keypairs.create(name)
-        except Exception as e:
-            LOG.exception(e)
-            raise exception.KeypairCreateFailed()
-
+        keypair = nova.keypairs.create(name)
         values = {}
         values["nova_keypair_id"] = keypair.name
         values["private_key"] = keypair.private_key
@@ -38,8 +44,4 @@ class KeypairAPI(object):
 
     def keypair_delete(self, nova_keypair_id):
         nova = os_client.get_nova_client()
-        try:
-            nova.keypairs.delete(nova_keypair_id)
-        except Exception as e:
-            LOG.exception(e)
-            raise exception.KeypairDeleteFailed()
+        nova.keypairs.delete(nova_keypair_id)

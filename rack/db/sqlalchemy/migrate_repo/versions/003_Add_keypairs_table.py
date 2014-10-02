@@ -37,7 +37,6 @@ keypairs = Table('keypairs', meta,
                  Column('is_default', Boolean),
                  Column('user_id', String(length=255)),
                  Column('project_id', String(length=255)),
-                 Column('status', String(length=255)),
                  mysql_engine='InnoDB',
                  mysql_charset='utf8'
                  )

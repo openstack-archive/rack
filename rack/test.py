@@ -41,7 +41,6 @@ from rack.openstack.common.fixture import moxstubout
 from rack.openstack.common import log as oslo_logging
 from rack.openstack.common import timeutils
 from rack import paths
-from rack import rpc
 from rack import service
 from rack.tests import conf_fixture
 from rack.tests import policy_fixture
@@ -202,10 +201,6 @@ class TestCase(testtools.TestCase):
             stderr = self.useFixture(fixtures.StringStream('stderr')).stream
             self.useFixture(fixtures.MonkeyPatch('sys.stderr', stderr))
 
-        rpc.add_extra_exmods('rack.test')
-        self.addCleanup(rpc.clear_extra_exmods)
-        self.addCleanup(rpc.cleanup)
-
         fs = '%(levelname)s [%(name)s] %(message)s'
         self.log_fixture = self.useFixture(fixtures.FakeLogger(
             level=logging.DEBUG,
@@ -216,8 +211,6 @@ class TestCase(testtools.TestCase):
         self.messaging_conf.transport_driver = 'fake'
         self.messaging_conf.response_timeout = 15
         self.useFixture(self.messaging_conf)
-
-        rpc.init(CONF)
 
         if self.USES_DB:
             global _DB_CACHE
