@@ -332,8 +332,8 @@ def network_get_all(context, gid, filters):
         query = query.filter_by(status=filters['status'])
     if 'is_admin' in filters:
         query = query.filter_by(is_admin=filters['is_admin'])
-    if 'subnet' in filters:
-        query = query.filter_by(subnet=filters['subnet'])
+    if 'cidr' in filters:
+        query = query.filter_by(cidr=filters['cidr'])
     if 'ext_router' in filters:
         query = query.filter_by(ext_router=filters['ext_router'])
 
@@ -573,7 +573,6 @@ def process_get_all(context, gid, filters={}):
 def process_get_by_pid(context, gid, pid):
     session = get_session()
     process_ref = session.query(models.Process)\
-        .filter_by(deleted=0)\
         .filter_by(gid=gid)\
         .filter_by(pid=pid)\
         .first()
@@ -648,7 +647,7 @@ def process_update(context, gid, pid, values):
     process_ref.update(values)
     process_ref.save(session)
 
-    return dict(process_ref)
+    return _get_process_dict(process_ref)
 
 
 def process_delete(context, gid, pid):

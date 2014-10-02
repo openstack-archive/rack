@@ -11,7 +11,6 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from rack import exception
 from rack.openstack.common import log as logging
 from rack.resourceoperator import openstack as os_client
 
@@ -21,51 +20,55 @@ LOG = logging.getLogger(__name__)
 
 class NetworkAPI(object):
 
-    def network_create(self, name, cidr, gateway=None, dns_nameservers=None,
-                       ext_router=None):
+    def network_list(self):
         neutron = os_client.get_neutron_client()
+        networks = neutron.list_networks().get("networks")
+        neutron_network_ids = []
+        for network in networks:
+            neutron_network_ids.append(network.get("id"))
+        return neutron_network_ids
+
+    def network_show(self, neutron_network_id):
+        neutron = os_client.get_neutron_client()
+        return neutron.show_network(neutron_network_id)
+
+    def network_create(self, name, cidr, gateway=None, ext_router=None,
+                       dns_nameservers=None):
+        neutron = os_client.get_neutron_client()
+        network_body = {"network": {"name": name}}
+        network = neutron.create_network(network_body)["network"]
 
         try:
-            create_network_body = {"network": {"name": name}}
-            network = neutron.create_network(create_network_body)["network"]
-
-            create_subnet_body = {
+            subnet_body = {
                 "subnet": {
                     "network_id": network["id"],
                     "ip_version": 4,
-                    "cidr": cidr}
+                    "cidr": cidr
+                }
             }
             if gateway:
-                create_subnet_body["subnet"]["gateway_ip"] = gateway
+                subnet_body["subnet"]["gateway_ip"] = gateway
             if dns_nameservers:
-                create_subnet_body["subnet"][
-                    "dns_nameservers"] = dns_nameservers
-            subnet = neutron.create_subnet(create_subnet_body)["subnet"]
+                subnet_body["subnet"]["dns_nameservers"] = dns_nameservers
+            subnet = neutron.create_subnet(subnet_body)["subnet"]
 
             if ext_router:
-                add_interface_router_body = {"subnet_id": subnet["id"]}
-                neutron.add_interface_router(
-                    ext_router, add_interface_router_body)
-
+                router_body = {"subnet_id": subnet["id"]}
+                neutron.add_interface_router(ext_router, router_body)
         except Exception as e:
-            LOG.exception(e)
-            raise exception.NetworkCreateFailed()
+            neutron.delete_network(network['id'])
+            raise e
 
-        return network["id"]
+        return dict(neutron_network_id=network["id"])
 
     def network_delete(self, neutron_network_id, ext_router=None):
         neutron = os_client.get_neutron_client()
 
-        try:
-            if ext_router:
-                network = neutron.show_network(neutron_network_id)["network"]
-                subnets = network["subnets"]
-                for subnet in subnets:
-                    neutron.remove_interface_router(
-                        ext_router, {"subnet_id": subnet})
+        if ext_router:
+            network = neutron.show_network(neutron_network_id)["network"]
+            subnets = network["subnets"]
+            for subnet in subnets:
+                neutron.remove_interface_router(
+                    ext_router, {"subnet_id": subnet})
 
-            neutron.delete_network(neutron_network_id)
-
-        except Exception as e:
-            LOG.exception(e)
-            raise exception.NetworkDeleteFailed()
+        neutron.delete_network(neutron_network_id)
