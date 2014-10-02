@@ -1,81 +1,130 @@
-# How to work RACK
+# How to deploy RACK
 
-## Overview
+This chapter describes how to deploy RACK.
 
-This text explains how to create "Rack" Image.  
-"Rack" image is the source of both "API" VM and "Proxy" VM.  
+If you don't have an OpenStack environment or just want to test RACK, please refer to [Test RACK with devstack](#procedure2).
 
-## Workflow
+## Deploy steps
 
-### 1. Install RPM based Linux Operation System
+### 1. Prerequisites
 
-* setup RPM based Linux like Fedora/CentOS in your OpenStack environment to create "Rack" image.  
-  (In advance, we did this workflow at CentOS 6.5. We recommend to use same OS version to avoid any problems.)  
-* you need to install Git for cloning "Rack" image building tool and connect to the internet.  
+`Icehouse` version is intended.
 
-### 2. Clone "Rack" In Your VM From Github
+Following OpenStack services must be online for RACK to work properly. Any backend can be used for each OpenStack service and only APIs are required.
 
-```
-    [SSH:]   git clone?git@github.com:stackforge/rack.git
-    [HTTPS:] git clone?https://github.com/stackforge/rack.git
-```
+| Service  | API version |
+| -------- |:-----------:|
+| Nova     | v2          |
+| Neutron  | v2          |
+| Glance   | v1          |
+| Keystone | v2.0        |
+| Swift    | v1          |
 
-### 3. Execute "Rack" Image Build Tool(imagebuid.sh)  
+Glance image of `CentOS-6.5` is required, too.
 
-* __System commands run in this process.__  
-  __You should consider any other application compatibility before running.__  
 
-```
-    /your/rack/path/tools/setup/imagebuild.sh  
-```
- 
-### 4. Shutdown VM and Create Snapshot of VM image
 
-* Use nova client or horizon to shutdown VM and create a snapshot of it.  
-  And note your "Rack" grance image id.  
+### 2. Architecture
 
-### 5. Start "API" role VM
+RACK is composed of two main roles, `rack-api` and `rack-proxy`. A `rack-proxy` runs in each process group and share database which `rack-api` holds.
+`rack-api` and `rack-proxy` run as virtual instances.
 
-* Execute command below.  
+![network-topology](network-topology.png "network-topology")
 
-```
-    nova boot \  
-    --image ${RACK_GRANCE_IMAGE_ID} \  
-    --flavor ${FLAVLOR_ID_THAT_HAS_AT_LEAST_2GB_MEMORY} \  
-    --nic net-id=${YOUR_NETWORK_ID} \  
-    --meta "roles=api/mysql/rabbitmq/scheduler/resourceoperator" \  
-    --meta "sql_connection=mysql://root:password@127.0.0.1/rack?charset=utf8" \  
-    --meta "os_username=${OPENSTACK_USER_NAME}" \  
-    --meta "os_password=${OPENSTACK_PASSWORD}" \  
-    --meta "os_tenant_name=${OPENSTACK_TENANT_NAME}" \  
-    --meta "os_auth_url=${OPENSTACK_AUTH_URL}" \  
-    --meta "rabbit_password=guest" \  
-    --meta "rabbit_host=localhost" \  
-    --meta "rabbit_userid=guest" \  
-    rack-api
-```
 
-* Add inbound SecurityGroupRule below 
+### 3. Desploy steps
+
+#### 3.1. Create a snapshot for RACK
+
+`rack-api` and `rack-proxy` shares the same image. You can choose a role by changing boot condition. This section describes how to make an image(actually a snapshot) out of `CentOS-6.5` based image and register it.
+
+First, boot a VM with Horizon or Nova CLI from `CentOS-6.5` based Glance image. This VM must be able to connect to the Internet.
+
+Secondly, login to this VM as root and run following commands.
+During this series of command, `imagebuild.sh` script installs required packages and configure it for `rack-api`.
 
 ```
-    8088:TCP API
-    3306:TCP mysql
-    5672:TCP rabbitmq
+# git clone https://github.com/stackforge/rack
+# cd rack/tools/setup
+# ./imagebuild.sh
+Start RACK image building...
+...
+
+****************************************
+Finish RACK image building.
+Shutdown and save snapshot of this instance via Horizon or glance command.
+****************************************
 ```
 
-### 6. Test API
+Above message indicates the installation is complete. 
 
-* As soon as you start "API" role VM, rack api process run automatically.  
+At last, shutdown VM and create a **Instance Snapshot**.
 
-* Login to VM and Use RackClientTool to test API.  
-  If you succeed, you renspond group data in json body. 
+
+Following message indicates the installation is not complete. Please resolve issue and run `imagebuild.sh` again.
 
 ```
-    export OS_USERNAME="demo_user"
-    export OS_TENANT_NAME="demo_user"
-    rack_client group-create --name=test
+****************************************
+Error occurred. Execution aborted.
+Error: Installing the required packages
+****************************************
 ```
 
-### 7. Experience Rack Application
-[pi-montecarlo] (https://github.com/stackforge/rack/tree/master/tools/sample-apps/pi-montecarlo)
-[tweet-analyzer] (https://github.com/stackforge/rack/tree/master/tools/sample-apps/tweet-analyzer)
+
+#### 3.2. Create a virtual network
+
+We will create a virtual network for `rack-api` VM.
+Please create a virtual network which satisfies following conditions.
+
+- attached to a virtual router which connects to the Internet
+
+
+#### 3.3. Create a security group
+
+`rack-api` VM uses following ports.
+Please create a security group which permits them from Horizon or Neutron CLI.
+
+
+| Port  | Service           |
+|:-----:| ----------------- |
+| 8088  | API Service       |
+| 3306  | MySQL Service     |
+
+
+#### 3.4. boot `rack-api` VM
+
+Boot a `rack-api` VM with following command from Nova CLI.
+
+Please note that OpenStack authentication info fed as meta-data will be written to the configuration file inside `rack-api` VM.
+
+
+```
+# nova boot ¥
+  --flavor { any flavor with more than 2GB RAM } ¥
+  --image { snapshot created at step #3.1 } ¥
+  --nic net-id={ virtual network created at step #3.2 } ¥
+  --meta os_username={Keystone username} ¥
+  --meta os_password={Keystone password} ¥
+  --meta os_tenant_name={Keystone tenant name} ¥
+  --meta os_auth_url={Keystone API URL} ¥
+  rack-api
+```
+
+You can check whether `rack-api` service runs correctly with `RACK CLI`.
+Please refer to how to install `RACK CLI` [**here**](https://github.com/stackforge/python-rackclient).
+
+```
+$ export RACK_URL=http://{IP address of rack-api VM}:8088/v1
+$ rack group-list
++-----+------+-------------+--------+
+| gid | name | description | status |
++-----+------+-------------+--------+
+|     |      |             |        |
++-----+------+-------------+--------+
+```
+
+
+
+## <a name="procedure2">Test RACK with devstack</a>
+
+**to be continued**

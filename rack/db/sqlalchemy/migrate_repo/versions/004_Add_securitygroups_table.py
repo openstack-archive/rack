@@ -27,18 +27,15 @@ securitygroups = Table('securitygroups', meta,
                        Column('created_at', DateTime),
                        Column('updated_at', DateTime),
                        Column('deleted_at', DateTime),
-                       Column('deleted', Integer, nullable=False),
+                       Column('deleted', Integer),
                        Column('securitygroup_id', String(length=36),
                               primary_key=True, nullable=False),
                        Column('gid', String(length=36), nullable=False),
                        Column('neutron_securitygroup_id', String(length=36)),
-                       Column('is_default', Boolean, nullable=False),
-                       Column('user_id', String(length=255), nullable=False),
-                       Column(
-                           'project_id', String(length=255), nullable=False),
-                       Column(
-                           'display_name', String(length=255), nullable=False),
-                       Column('status', String(length=255), nullable=False),
+                       Column('is_default', Boolean),
+                       Column('user_id', String(length=255)),
+                       Column('project_id', String(length=255)),
+                       Column('display_name', String(length=255)),
                        mysql_engine='InnoDB',
                        mysql_charset='utf8'
                        )

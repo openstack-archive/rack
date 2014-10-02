@@ -11,11 +11,11 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
+import json
 
 from oslo.config import cfg
 
 import base64
-import six
 import uuid
 import webob
 
@@ -30,8 +30,7 @@ from rack.openstack.common.gettextutils import _
 from rack.openstack.common import log as logging
 from rack.openstack.common import uuidutils
 
-from rack.resourceoperator import rpcapi as operator_rpcapi
-from rack.scheduler import rpcapi as scheduler_rpcapi
+from rack.resourceoperator import manager
 
 
 LOG = logging.getLogger(__name__)
@@ -45,269 +44,296 @@ class Controller(wsgi.Controller):
 
     def __init__(self):
         super(Controller, self).__init__()
-        self.scheduler_rpcapi = scheduler_rpcapi.SchedulerAPI()
-        self.operator_rpcapi = operator_rpcapi.ResourceOperatorAPI()
+        self.manager = manager.ResourceOperator()
+
+    def _uuid_check(self, gid=None, pid=None, keypair_id=None,
+                    securitygroup_id=None):
+        if gid:
+            if not uuidutils.is_uuid_like(gid):
+                raise exception.GroupNotFound(gid=gid)
+        if pid:
+            if not uuidutils.is_uuid_like(pid):
+                raise exception.ProcessNotFound(pid=pid)
+        if keypair_id:
+            if not uuidutils.is_uuid_like(keypair_id):
+                raise exception.KeypairNotFound(keypair_id=keypair_id)
+        if securitygroup_id:
+            if not uuidutils.is_uuid_like(securitygroup_id):
+                raise exception.SecuritygroupNotFound(
+                    securitygroup_id=securitygroup_id)
 
     @wsgi.response(200)
     def index(self, req, gid):
-
-        def _validate(gid):
-            if not uuidutils.is_uuid_like(gid):
-                raise exception.GroupNotFound(gid=gid)
-
         try:
-            _validate(gid)
-        except exception.ProcessNotFound:
-            msg = _("Process could not be found")
-            raise webob.exc.HTTPNotFound(explanation=msg)
-
-        filters = {}
-        pid = req.params.get('pid')
-        ppid = req.params.get('ppid')
-        name = req.params.get('name')
-        status = req.params.get('status')
-        glance_image_id = req.params.get('glance_image_id')
-        nova_flavor_id = req.params.get('nova_flavor_id')
-        securitygroup_id = req.params.get('securitygroup_id')
-        network_id = req.params.get('network_id')
-        keypair_id = req.params.get('keypair_id')
-
-        if pid:
-            filters['pid'] = pid
-        if ppid:
-            filters['ppid'] = ppid
-        if name:
-            filters['name'] = name
-        if status:
-            filters['status'] = status
-        if glance_image_id:
-            filters['glance_image_id'] = glance_image_id
-        if nova_flavor_id:
-            filters['nova_flavor_id'] = nova_flavor_id
-        if securitygroup_id:
-            filters['securitygroup_id'] = securitygroup_id
-        if network_id:
-            filters['network_id'] = network_id
-        if keypair_id:
-            filters['keypair_id'] = keypair_id
+            self._uuid_check(gid)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
 
         context = req.environ['rack.context']
-        process_list = db.process_get_all(context, gid, filters)
+        process_list = db.process_get_all(context, gid)
+        process_list = self.manager.process_list(context, process_list)
 
         return self._view_builder.index(process_list)
 
     @wsgi.response(200)
     def show(self, req, gid, pid):
-
-        def _validate(gid, pid):
-            if not uuidutils.is_uuid_like(gid):
-                raise exception.GroupNotFound(gid=gid)
-
-            if not uuidutils.is_uuid_like(pid):
-                raise exception.ProcessNotFound(pid=pid)
-
         try:
-            _validate(gid, pid)
+            self._uuid_check(gid, pid)
             context = req.environ['rack.context']
             process = db.process_get_by_pid(context, gid, pid)
-        except exception.NotFound as exc:
-            raise webob.exc.HTTPNotFound(explanation=exc.format_message())
+            self.manager.process_show(context, process)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
 
         return self._view_builder.show(process)
 
+    @wsgi.response(200)
+    def show_proxy(self, req, gid):
+        try:
+            self._uuid_check(gid)
+            context = req.environ['rack.context']
+            process = db.process_get_all(
+                context, gid, filters={"is_proxy": True})
+            if not process:
+                msg = _("Proxy process does not exist in the group %s" % gid)
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+            self.manager.process_show(context, process[0])
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
+
+        return self._view_builder.show_proxy(process[0])
+
     @wsgi.response(202)
-    def create(self, req, body, gid):
+    def create(self, req, body, gid, is_proxy=False):
 
-        def _validate_process(context, gid, body):
-            if not uuidutils.is_uuid_like(gid):
-                raise exception.GroupNotFound(gid=gid)
+        def _validate(context, body, gid, is_proxy=False):
+            proxy = db.process_get_all(
+                context, gid, filters={"is_proxy": True})
+            if is_proxy:
+                if len(proxy) > 0:
+                    msg = _(
+                        "Proxy process already exists in the group %s" % gid)
+                    raise exception.InvalidInput(reason=msg)
+            else:
+                if len(proxy) != 1:
+                    msg = _(
+                        "Proxy process does not exist in the group %s" % gid)
+                    raise webob.exc.HTTPBadRequest(explanation=msg)
 
-            if not self.is_valid_body(body, 'process'):
+            keyname = "proxy" if is_proxy else "process"
+            if not self.is_valid_body(body, keyname):
                 msg = _("Invalid request body")
                 raise exception.InvalidInput(reason=msg)
 
-            values = body["process"]
+            values = body[keyname]
             ppid = values.get("ppid")
-            keypair_id = values.get("keypair_id")
             name = values.get("name")
+            keypair_id = values.get("keypair_id")
+            securitygroup_ids = values.get("securitygroup_ids")
             glance_image_id = values.get("glance_image_id")
             nova_flavor_id = values.get("nova_flavor_id")
-            securitygroup_ids = values.get("securitygroup_ids")
             userdata = values.get("userdata")
+            args = values.get("args")
 
-            if ppid is not None:
-                if not uuidutils.is_uuid_like(ppid):
-                    raise exception.ProcessNotFound(pid=ppid)
-                p_process = db.process_get_by_pid(context, gid, ppid)
+            self._uuid_check(gid, ppid, keypair_id)
 
-            if keypair_id is not None:
-                if not uuidutils.is_uuid_like(keypair_id):
-                    raise exception.KeypairNotFound(keypair_id=keypair_id)
-            elif ppid is not None:
-                keypair_id = p_process.get("keypair_id")
+            pid = unicode(uuid.uuid4())
+            if not name:
+                prefix = "proxy-" if is_proxy else "process-"
+                name = prefix + pid
 
-            if isinstance(name, six.string_types):
-                name = name.strip()
-                utils.check_string_length(name, 'name', min_length=1,
-                                          max_length=255)
-            elif name is not None:
-                msg = _("name must be a String")
+            if ppid:
+                parent_process = db.process_get_by_pid(context, gid, ppid)
+
+            nova_keypair_id = None
+            if keypair_id:
+                keypair = db.keypair_get_by_keypair_id(
+                    context, gid, keypair_id)
+                nova_keypair_id = keypair["nova_keypair_id"]
+            elif ppid:
+                keypair_id = parent_process.get("keypair_id")
+                if keypair_id:
+                    keypair = db.keypair_get_by_keypair_id(
+                        context, gid, keypair_id)
+                    nova_keypair_id = keypair["nova_keypair_id"]
+            else:
+                default_keypair = db.keypair_get_all(
+                    context, gid,
+                    filters={"is_default": True})
+                if default_keypair:
+                    keypair_id = default_keypair[0]["keypair_id"]
+                    nova_keypair_id = default_keypair[0]["nova_keypair_id"]
+
+            if securitygroup_ids is not None and\
+                    not isinstance(securitygroup_ids, list):
+                msg = _("securitygroupids must be a list")
                 raise exception.InvalidInput(reason=msg)
-
-            if glance_image_id is None:
-                if ppid is not None:
-                    glance_image_id = p_process.get("glance_image_id")
-            elif not uuidutils.is_uuid_like(glance_image_id):
-                msg = _("glance_image_id is invalid format")
-                raise exception.InvalidInput(reason=msg)
-
-            if nova_flavor_id is None and ppid is not None:
-                nova_flavor_id = p_process.get("nova_flavor_id")
-            utils.validate_integer(nova_flavor_id, 'nova_flavor_id')
-
-            if not securitygroup_ids:
-                if ppid is not None:
-                    securitygroup_ids = [securitygroup.get("securitygroup_id")
-                                         for securitygroup in p_process.get(
-                                         "securitygroups")]
+            elif securitygroup_ids:
+                neutron_securitygroup_ids = []
+                for id in securitygroup_ids:
+                    self._uuid_check(securitygroup_id=id)
+                    securitygroup = db.securitygroup_get_by_securitygroup_id(
+                        context, gid, id)
+                    neutron_securitygroup_ids.append(
+                        securitygroup["neutron_securitygroup_id"])
+            elif ppid:
+                securitygroups = parent_process.get("securitygroups")
+                securitygroup_ids =\
+                    [securitygroup["securitygroup_id"]
+                        for securitygroup in securitygroups]
+                neutron_securitygroup_ids =\
+                    [securitygroup["neutron_securitygroup_id"]
+                        for securitygroup in securitygroups]
+            else:
+                default_securitygroups = db.securitygroup_get_all(
+                    context, gid,
+                    filters={"is_default": True})
+                if default_securitygroups:
+                    securitygroup_ids =\
+                        [securitygroup["securitygroup_id"]
+                            for securitygroup in default_securitygroups]
+                    neutron_securitygroup_ids =\
+                        [securitygroup["neutron_securitygroup_id"]
+                            for securitygroup in default_securitygroups]
                 else:
-                    msg = _("securitygroup_ids is required")
+                    msg = _(
+                        "securitygroup_ids is required. Default \
+                            securitygroup_ids are not registered.")
                     raise exception.InvalidInput(reason=msg)
 
-            if isinstance(securitygroup_ids, list):
-                for securitygroup_id in securitygroup_ids:
-                    if securitygroup_id is not None and not uuidutils\
-                            .is_uuid_like(securitygroup_id):
-                        raise exception.SecuritygroupNotFound(
-                            securitygroup_id=securitygroup_id)
-            else:
-                msg = _("securitygroup_ids must be list")
-                raise exception.InvalidInput(reason=msg)
+            if not glance_image_id and ppid:
+                glance_image_id = parent_process.get("glance_image_id")
+
+            if not nova_flavor_id and ppid:
+                nova_flavor_id = parent_process.get("nova_flavor_id")
 
             if userdata:
                 try:
-                    userdata = base64.b64decode(userdata)
-                except TypeError as e:
-                    raise webob.exc.HTTPBadRequest(
-                        explanation=e.format_message())
+                    base64.b64decode(userdata)
+                except TypeError:
+                    msg = _("userdadta must be a base64 encoded value.")
+                    raise exception.InvalidInput(reason=msg)
+
+            networks = db.network_get_all(context, gid)
+            if not networks:
+                msg = _("Netwoks does not exist in the group %s" % gid)
+                raise webob.exc.HTTPBadRequest(explanation=msg)
+
+            network_ids =\
+                [network["network_id"] for network in networks]
+            neutron_network_ids =\
+                [network["neutron_network_id"] for network in networks]
+            nics = []
+            for id in neutron_network_ids:
+                nics.append({"net-id": id})
+
+            if args is None:
+                args = {}
+            elif args is not None and\
+                    not isinstance(args, dict):
+                msg = _("args must be a dict.")
+                raise exception.InvalidInput(reason=msg)
+            else:
+                for key in args.keys():
+                    args[key] = str(args[key])
+
+            default_args = {
+                "gid": gid,
+                "pid": pid,
+            }
+            if ppid:
+                default_args["ppid"] = ppid
+
+            if is_proxy:
+                default_args["rackapi_ip"] = cfg.CONF.my_ip
+                default_args["os_username"] = cfg.CONF.os_username
+                default_args["os_password"] = cfg.CONF.os_password
+                default_args["os_tenant_name"] = cfg.CONF.os_tenant_name
+                default_args["os_auth_url"] = cfg.CONF.os_auth_url
+            else:
+                proxy_instance_id = proxy[0]["nova_instance_id"]
+                default_args["proxy_ip"] = self.manager.get_process_address(
+                    context, proxy_instance_id)
+            args.update(default_args)
 
             valid_values = {}
-            valid_values_process = {}
-            valid_values_process["gid"] = gid
-            valid_values_process["keypair_id"] = keypair_id
-            valid_values_process["ppid"] = ppid
-            valid_values_process["display_name"] = name
-            valid_values_process["glance_image_id"] = glance_image_id
-            valid_values_process["nova_flavor_id"] = nova_flavor_id
-            valid_values_process["is_proxy"] = False
-            valid_values_process["app_status"] = "BUILDING"
+            valid_values["gid"] = gid
+            valid_values["ppid"] = ppid
+            valid_values["pid"] = pid
+            valid_values["display_name"] = name
+            valid_values["keypair_id"] = keypair_id
+            valid_values["securitygroup_ids"] = securitygroup_ids
+            valid_values["glance_image_id"] = glance_image_id
+            valid_values["nova_flavor_id"] = nova_flavor_id
+            valid_values["userdata"] = userdata
+            valid_values["args"] = json.dumps(args)
+            valid_values["is_proxy"] = True if is_proxy else False
+            valid_values["network_ids"] = network_ids
 
-            valid_values_userdata = {}
-            valid_values_userdata["userdata"] = userdata
+            if is_proxy:
+                ipc_endpoint = values.get("ipc_endpoint")
+                shm_endpoint = values.get("shm_endpoint")
+                fs_endpoint = values.get("fs_endpoint")
+                if ipc_endpoint:
+                    utils.check_string_length(
+                        ipc_endpoint, 'ipc_endpoint', min_length=1,
+                        max_length=255)
+                if shm_endpoint:
+                    utils.check_string_length(
+                        shm_endpoint, 'shm_endpoint', min_length=1,
+                        max_length=255)
+                if fs_endpoint:
+                    utils.check_string_length(
+                        fs_endpoint, 'fs_endpoint', min_length=1,
+                        max_length=255)
+                valid_values["ipc_endpoint"] = ipc_endpoint
+                valid_values["shm_endpoint"] = shm_endpoint
+                valid_values["fs_endpoint"] = fs_endpoint
 
-            valid_values_securitygroup = {}
-            valid_values_securitygroup["securitygroup_ids"] = securitygroup_ids
+            boot_values = {}
+            boot_values["name"] = name
+            boot_values["key_name"] = nova_keypair_id
+            boot_values["security_groups"] = neutron_securitygroup_ids
+            boot_values["image"] = glance_image_id
+            boot_values["flavor"] = nova_flavor_id
+            boot_values["userdata"] = userdata
+            boot_values["meta"] = args
+            boot_values["nics"] = nics
 
-            valid_values["process"] = valid_values_process
-            valid_values["userdata"] = valid_values_userdata
-            valid_values["securitygroup"] = valid_values_securitygroup
-
-            return valid_values
-
-        def _validate_metadata(metadata):
-            if metadata is None:
-                return {}
-
-            if not isinstance(metadata, dict):
-                msg = _("metadata must be a dict")
-                raise exception.InvalidInput(reason=msg)
-
-            return metadata
+            return valid_values, boot_values
 
         try:
             context = req.environ['rack.context']
-            valid_values = _validate_process(context, gid, body)
-            values = valid_values.get("process")
-            securitygroup_ids = valid_values.get(
-                "securitygroup").get("securitygroup_ids")
-            metadata = _validate_metadata(metadata=body["process"]
-                                          .get("args"))
-            metadata.update({"proxy_ip": cfg.CONF.my_ip})
-            userdata = valid_values.get("userdata")
-
-            values["deleted"] = 0
-            values["status"] = "BUILDING"
-            values["pid"] = unicode(uuid.uuid4())
+            values, boot_values = _validate(context, body, gid, is_proxy)
+            nova_instance_id, status = self.manager.process_create(
+                context, **boot_values)
+            values["nova_instance_id"] = nova_instance_id
             values["user_id"] = context.user_id
             values["project_id"] = context.project_id
-            values["display_name"] = values[
-                "display_name"] or "pro-" + values["pid"]
-            values["userdata"] = userdata.get("userdata")
-
-            if values["ppid"]:
-                db.process_get_by_pid(context, gid, values["ppid"])
-            if values["keypair_id"]:
-                nova_keypair_id = db.keypair_get_by_keypair_id(
-                    context, gid, values["keypair_id"]).get("nova_keypair_id")
-            else:
-                nova_keypair_id = None
-            networks = db.network_get_all(context, gid, {"status": "ACTIVE"})
-            if not networks:
-                raise exception.NoNetworksFound(gid=values["gid"])
-            network_ids = [network["network_id"] for network in networks]
-            process = db.process_create(
-                context, values, network_ids, securitygroup_ids)
-
+            process = db.process_create(context, values,
+                                        values.pop("network_ids"),
+                                        values.pop("securitygroup_ids"))
+            process["status"] = status
         except exception.InvalidInput as e:
             raise webob.exc.HTTPBadRequest(explanation=e.format_message())
         except exception.NotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.format_message())
 
-        try:
-            host = self.scheduler_rpcapi.select_destinations(
-                context,
-                request_spec={},
-                filter_properties={})
-            self.operator_rpcapi.process_create(
-                context,
-                host["host"],
-                pid=values["pid"],
-                ppid=values["ppid"] or values["pid"],
-                gid=gid,
-                name=values["display_name"],
-                glance_image_id=values["glance_image_id"],
-                nova_flavor_id=values["nova_flavor_id"],
-                nova_keypair_id=nova_keypair_id,
-                neutron_securitygroup_ids=[securitygroup[
-                    "neutron_securitygroup_id"]
-                    for securitygroup in process["securitygroups"]],
-                neutron_network_ids=[network["neutron_network_id"]
-                                     for network in process["networks"]],
-                metadata=metadata,
-                userdata=userdata.get("userdata"))
-        except Exception as e:
-            LOG.exception(e)
-            pid = values["pid"]
-            db.process_update(context, gid, pid, {"status": "ERROR"})
-            raise exception.ProcessCreateFailed()
-
         return self._view_builder.create(process)
+
+    @wsgi.response(202)
+    def create_proxy(self, req, body, gid):
+        return self.create(req, body, gid, is_proxy=True)
 
     @wsgi.response(200)
     def update(self, req, body, gid, pid):
 
         def _validate(body, gid, pid):
-            if not uuidutils.is_uuid_like(gid):
-                raise exception.GroupNotFound(gid=gid)
-
-            if not uuidutils.is_uuid_like(pid):
-                raise exception.ProcessNotFound(pid=pid)
+            self._uuid_check(gid, pid)
 
             if not self.is_valid_body(body, 'process'):
                 msg = _("Invalid request body")
                 raise exception.InvalidInput(reason=msg)
-
-            db.process_get_by_pid(context, gid, pid)
 
             values = body["process"]
             app_status = values.get("app_status")
@@ -316,20 +342,72 @@ class Controller(wsgi.Controller):
                 msg = _("app_status is required")
                 raise exception.InvalidInput(reason=msg)
 
-            valid_values = {}
-            valid_values["app_status"] = app_status
+            valid_values = {"app_status": app_status}
 
             return valid_values
 
-        context = req.environ['rack.context']
-
         try:
             values = _validate(body, gid, pid)
+            context = req.environ['rack.context']
             process = db.process_update(context, gid, pid, values)
-
         except exception.InvalidInput as e:
             raise webob.exc.HTTPBadRequest(explanation=e.format_message())
+        except exception.ProcessNotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
 
+        return self._view_builder.update(process)
+
+    @wsgi.response(200)
+    def update_proxy(self, req, body, gid):
+
+        def _validate(context, body, gid):
+            self._uuid_check(gid)
+            process = db.process_get_all(
+                context, gid, filters={"is_proxy": True})
+            if not process:
+                msg = _("Proxy process does not exist in the group %s" % gid)
+                raise exception.InvalidInput(reason=msg)
+
+            if not self.is_valid_body(body, 'proxy'):
+                msg = _("Invalid request body")
+                raise exception.InvalidInput(reason=msg)
+
+            values = body["proxy"]
+            app_status = values.get("app_status")
+            ipc_endpoint = values.get("ipc_endpoint")
+            shm_endpoint = values.get("shm_endpoint")
+            fs_endpoint = values.get("fs_endpoint")
+
+            valid_values = {}
+            if app_status:
+                utils.check_string_length(
+                    app_status, 'app_status', min_length=1, max_length=255)
+                valid_values["app_status"] = app_status
+            if ipc_endpoint:
+                utils.check_string_length(
+                    ipc_endpoint, 'ipc_endpoint', min_length=1, max_length=255)
+                valid_values["ipc_endpoint"] = ipc_endpoint
+            if shm_endpoint:
+                utils.check_string_length(
+                    shm_endpoint, 'shm_endpoint', min_length=1, max_length=255)
+                valid_values["shm_endpoint"] = shm_endpoint
+            if fs_endpoint:
+                utils.check_string_length(
+                    fs_endpoint, 'fs_endpoint', min_length=1, max_length=255)
+                valid_values["fs_endpoint"] = fs_endpoint
+
+            if not valid_values:
+                msg = _("No keyword is provided.")
+                raise exception.InvalidInput(reason=msg)
+
+            return process[0]["pid"], valid_values
+
+        try:
+            context = req.environ['rack.context']
+            pid, values = _validate(context, body, gid)
+            process = db.process_update(context, gid, pid, values)
+        except exception.InvalidInput as e:
+            raise webob.exc.HTTPBadRequest(explanation=e.format_message())
         except exception.ProcessNotFound as e:
             raise webob.exc.HTTPNotFound(explanation=e.format_message())
 
@@ -338,47 +416,28 @@ class Controller(wsgi.Controller):
     @wsgi.response(204)
     def delete(self, req, gid, pid):
 
-        def _validate(gid, pid):
-
-            if not uuidutils.is_uuid_like(gid):
-                raise exception.GroupNotFound(gid=gid)
-
-            if not uuidutils.is_uuid_like(pid):
-                raise exception.ProcessNotFound(pid=pid)
-
-        def _get_child_pid(context, gid, pid):
+        def _get_children(context, gid, pid):
             processes = db.process_get_all(context, gid, {"ppid": pid})
-            targets = []
+            target_list = []
             for process in processes:
-                if "pid" in process:
-                    targets.append(process["pid"])
-                    targets.extend(
-                        _get_child_pid(context, gid, process["pid"]))
-            return targets
+                target_list.append(process)
+                target_list.extend(
+                    _get_children(context, gid, process["pid"]))
+            return target_list
 
         try:
-            _validate(gid, pid)
+            self._uuid_check(gid, pid)
             context = req.environ['rack.context']
-            targets = _get_child_pid(context, gid, pid)
-            targets.append(pid)
+            process = db.process_get_by_pid(context, gid, pid)
+            target_list = _get_children(context, gid, pid)
+            target_list.append(process)
 
-            for target in targets:
-                process = db.process_delete(context, gid, target)
-                host = self.scheduler_rpcapi.select_destinations(
-                    context,
-                    request_spec={},
-                    filter_properties={})
-                self.operator_rpcapi.process_delete(
-                    context,
-                    host["host"],
-                    nova_instance_id=process["nova_instance_id"])
-
+            for process in target_list:
+                self.manager.process_delete(
+                    context, process["nova_instance_id"])
+                db.process_delete(context, gid, process["pid"])
         except exception.NotFound as exc:
             raise webob.exc.HTTPNotFound(explanation=exc.format_message())
-
-        except Exception as e:
-            LOG.exception(e)
-            raise exception.ProcessDeleteFailed()
 
 
 def create_resource():

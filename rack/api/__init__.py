@@ -41,7 +41,6 @@ class FaultWrapper(base_wsgi.Middleware):
     def _error(self, inner, req):
         LOG.exception(_("Caught error: %s"), unicode(inner))
 
-        safe = getattr(inner, 'safe', False)
         headers = getattr(inner, 'headers', None)
         status = getattr(inner, 'code', 500)
         if status is None:
@@ -52,24 +51,14 @@ class FaultWrapper(base_wsgi.Middleware):
         outer = self.status_to_type(status)
         if headers:
             outer.headers = headers
-        # NOTE(johannes): We leave the explanation empty here on
-        # purpose. It could possibly have sensitive information
-        # that should not be returned back to the user. See
-        # bugs 868360 and 874472
-        # NOTE(eglynn): However, it would be over-conservative and
-        # inconsistent with the EC2 API to hide every exception,
-        # including those that are safe to expose, see bug 1021373
-        if safe:
-            if isinstance(inner.msg_fmt, gettextutils.Message):
-                user_locale = req.best_match_language()
-                inner_msg = gettextutils.translate(
-                    inner.msg_fmt, user_locale)
-            else:
-                inner_msg = unicode(inner)
-            outer.explanation = '%s: %s' % (inner.__class__.__name__,
-                                            inner_msg)
-
-        #notifications.send_api_fault(req.url, status, inner)
+        if isinstance(inner.msg_fmt, gettextutils.Message):
+            user_locale = req.best_match_language()
+            inner_msg = gettextutils.translate(
+                inner.msg_fmt, user_locale)
+        else:
+            inner_msg = unicode(inner)
+        outer.explanation = '%s: %s' % (inner.__class__.__name__,
+                                        inner_msg)
         return wsgi.Fault(outer)
 
     @webob.dec.wsgify(RequestClass=wsgi.Request)
