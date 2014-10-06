@@ -485,6 +485,7 @@ class ProcessesTest(test.NoDBTestCase):
         self.mox.StubOutWithMock(cfg.CONF, "os_password")
         self.mox.StubOutWithMock(cfg.CONF, "os_tenant_name")
         self.mox.StubOutWithMock(cfg.CONF, "os_auth_url")
+        self.mox.StubOutWithMock(cfg.CONF, "os_region_name")
         db.process_get_all(
             IsA(context.RequestContext), GID, filters=IsA(dict))\
             .AndReturn([])
@@ -509,6 +510,7 @@ class ProcessesTest(test.NoDBTestCase):
         cfg.CONF.os_password = "os_password_data"
         cfg.CONF.os_tenant_name = "os_tenant_name_data"
         cfg.CONF.os_auth_url = "os_auth_url_data"
+        cfg.CONF.os_region_name = "os_region_name"
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -528,6 +530,7 @@ class ProcessesTest(test.NoDBTestCase):
         expect["proxy"]["args"].update(os_password="os_password_data")
         expect["proxy"]["args"].update(os_tenant_name="os_tenant_name_data")
         expect["proxy"]["args"].update(os_auth_url="os_auth_url_data")
+        expect["proxy"]["args"].update(os_region_name="os_region_name")
         for key in body["proxy"]:
             self.assertEqual(body["proxy"][key], expect["proxy"][key])
 
@@ -540,6 +543,7 @@ class ProcessesTest(test.NoDBTestCase):
         self.mox.StubOutWithMock(cfg.CONF, "os_password")
         self.mox.StubOutWithMock(cfg.CONF, "os_tenant_name")
         self.mox.StubOutWithMock(cfg.CONF, "os_auth_url")
+        self.mox.StubOutWithMock(cfg.CONF, "os_region_name")
         db.process_get_all(
             IsA(context.RequestContext), GID, filters=IsA(dict))\
             .AndReturn([])
@@ -564,6 +568,7 @@ class ProcessesTest(test.NoDBTestCase):
         cfg.CONF.os_password = "os_password_data"
         cfg.CONF.os_tenant_name = "os_tenant_name_data"
         cfg.CONF.os_auth_url = "os_auth_url_data"
+        cfg.CONF.os_region_name = "os_region_name"
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -584,6 +589,7 @@ class ProcessesTest(test.NoDBTestCase):
         expect["proxy"]["args"].update(os_password="os_password_data")
         expect["proxy"]["args"].update(os_tenant_name="os_tenant_name_data")
         expect["proxy"]["args"].update(os_auth_url="os_auth_url_data")
+        expect["proxy"]["args"].update(os_region_name="os_region_name")
         expect["proxy"].update(name="proxy-" + PID1)
         for key in body["proxy"]:
             self.assertEqual(body["proxy"][key], expect["proxy"][key])
@@ -596,6 +602,7 @@ class ProcessesTest(test.NoDBTestCase):
         self.mox.StubOutWithMock(cfg.CONF, "os_password")
         self.mox.StubOutWithMock(cfg.CONF, "os_tenant_name")
         self.mox.StubOutWithMock(cfg.CONF, "os_auth_url")
+        self.mox.StubOutWithMock(cfg.CONF, "os_region_name")
         db.process_get_all(
             IsA(context.RequestContext), GID, filters=IsA(dict))\
             .AndReturn([])
@@ -610,6 +617,7 @@ class ProcessesTest(test.NoDBTestCase):
         cfg.CONF.os_password = "os_password_data"
         cfg.CONF.os_tenant_name = "os_tenant_name_data"
         cfg.CONF.os_auth_url = "os_auth_url_data"
+        cfg.CONF.os_region_name = "os_region_name"
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -629,6 +637,7 @@ class ProcessesTest(test.NoDBTestCase):
         self.mox.StubOutWithMock(cfg.CONF, "os_password")
         self.mox.StubOutWithMock(cfg.CONF, "os_tenant_name")
         self.mox.StubOutWithMock(cfg.CONF, "os_auth_url")
+        self.mox.StubOutWithMock(cfg.CONF, "os_region_name")
         db.process_get_all(
             IsA(context.RequestContext), GID, filters=IsA(dict))\
             .AndReturn([])
@@ -643,6 +652,7 @@ class ProcessesTest(test.NoDBTestCase):
         cfg.CONF.os_password = "os_password_data"
         cfg.CONF.os_tenant_name = "os_tenant_name_data"
         cfg.CONF.os_auth_url = "os_auth_url_data"
+        cfg.CONF.os_region_name = "os_region_name"
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -662,6 +672,7 @@ class ProcessesTest(test.NoDBTestCase):
         self.mox.StubOutWithMock(cfg.CONF, "os_password")
         self.mox.StubOutWithMock(cfg.CONF, "os_tenant_name")
         self.mox.StubOutWithMock(cfg.CONF, "os_auth_url")
+        self.mox.StubOutWithMock(cfg.CONF, "os_region_name")
         db.process_get_all(
             IsA(context.RequestContext), GID, filters=IsA(dict))\
             .AndReturn([])
@@ -676,6 +687,7 @@ class ProcessesTest(test.NoDBTestCase):
         cfg.CONF.os_password = "os_password_data"
         cfg.CONF.os_tenant_name = "os_tenant_name_data"
         cfg.CONF.os_auth_url = "os_auth_url_data"
+        cfg.CONF.os_region_name = "os_region_name"
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)

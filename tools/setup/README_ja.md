@@ -108,6 +108,7 @@ Nova CLIを利用し、以下のコマンドを実行してください。
   --meta os_password={Keystone認証用のパスワード} \
   --meta os_tenant_name={Keystone認証用のテナント名} \
   --meta os_auth_url={Keystone APIのURL} \
+  --meta os_region_name={リージョン名}
   rack-api
 ```
 
@@ -121,7 +122,6 @@ $ rack group-list
 +-----+------+-------------+--------+
 | gid | name | description | status |
 +-----+------+-------------+--------+
-|     |      |             |        |
 +-----+------+-------------+--------+
 ```
 

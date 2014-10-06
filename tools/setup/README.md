@@ -99,14 +99,15 @@ Please note that OpenStack authentication info fed as meta-data will be written 
 
 
 ```
-# nova boot ¥
-  --flavor { any flavor with more than 2GB RAM } ¥
-  --image { snapshot created at step #3.1 } ¥
-  --nic net-id={ virtual network created at step #3.2 } ¥
-  --meta os_username={Keystone username} ¥
-  --meta os_password={Keystone password} ¥
-  --meta os_tenant_name={Keystone tenant name} ¥
-  --meta os_auth_url={Keystone API URL} ¥
+# nova boot \
+  --flavor { any flavor with more than 2GB RAM } \
+  --image { snapshot created at step #3.1 } \
+  --nic net-id={ virtual network created at step #3.2 } \
+  --meta os_username={Keystone username} \
+  --meta os_password={Keystone password} \
+  --meta os_tenant_name={Keystone tenant name} \
+  --meta os_auth_url={Keystone API URL} \
+  --meta os_region_name={region name} \
   rack-api
 ```
 
@@ -119,7 +120,6 @@ $ rack group-list
 +-----+------+-------------+--------+
 | gid | name | description | status |
 +-----+------+-------------+--------+
-|     |      |             |        |
 +-----+------+-------------+--------+
 ```
 

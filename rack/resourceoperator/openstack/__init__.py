@@ -27,7 +27,9 @@ openstack_client_opts = [
     cfg.StrOpt('os_tenant_name',
                help='Valid tenant name for OpenStack'),
     cfg.StrOpt('os_auth_url',
-               help='The keystone endpoint')
+               help='The keystone endpoint'),
+    cfg.StrOpt('os_region_name',
+               help='Valid region name for OpenStack')
 ]
 
 CONF = cfg.CONF
@@ -41,7 +43,8 @@ def get_nova_client():
         "username": CONF.os_username,
         "api_key": CONF.os_password,
         "project_id": CONF.os_tenant_name,
-        "auth_url": CONF.os_auth_url
+        "auth_url": CONF.os_auth_url,
+        "region_name": CONF.os_region_name
     }
 
     for key, value in credentials.items():
@@ -56,7 +59,8 @@ def get_neutron_client():
         "username": CONF.os_username,
         "password": CONF.os_password,
         "tenant_name": CONF.os_tenant_name,
-        "auth_url": CONF.os_auth_url
+        "auth_url": CONF.os_auth_url,
+        "region_name": CONF.os_region_name
     }
 
     for key, value in credentials.items():

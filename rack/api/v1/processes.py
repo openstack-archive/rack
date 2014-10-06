@@ -250,6 +250,7 @@ class Controller(wsgi.Controller):
                 default_args["os_password"] = cfg.CONF.os_password
                 default_args["os_tenant_name"] = cfg.CONF.os_tenant_name
                 default_args["os_auth_url"] = cfg.CONF.os_auth_url
+                default_args["os_region_name"] = cfg.CONF.os_region_name
             else:
                 proxy_instance_id = proxy[0]["nova_instance_id"]
                 default_args["proxy_ip"] = self.manager.get_process_address(

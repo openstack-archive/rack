@@ -10,5 +10,6 @@
 #os_password = password
 #os_tenant_name = demo
 #os_auth_url = http://localhost:5000/v2.0
+#os_region_name = RegionOne
 #ipc_port = 8888
 #shm_port = 6379
