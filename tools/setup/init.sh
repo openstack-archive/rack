@@ -11,6 +11,7 @@ OS_USERNAME=$(echo $META | jq -r '.os_username')
 OS_PASSWORD=$(echo $META | jq -r '.os_password')
 OS_TENANT_NAME=$(echo $META | jq -r '.os_tenant_name')
 OS_AUTH_URL=$(echo $META | jq -r '.os_auth_url')
+OS_REGION_NAME=$(echo $META | jq -r '.os_region_name')
 if [ "$OS_USERNAME" == "null" ] || [ "$OS_PASSWORD" == "null" ] ||\
    [ "$OS_TENANT_NAME" == "null" ] || [ "$OS_AUTH_URL" == "null" ]; then
   echo "Error: OpenStack credentials are required."
@@ -21,6 +22,7 @@ os_username = $OS_USERNAME
 os_password = $OS_PASSWORD
 os_tenant_name = $OS_TENANT_NAME
 os_auth_url = $OS_AUTH_URL
+os_region_name = $OS_REGION_NAME
 EOF
 
 

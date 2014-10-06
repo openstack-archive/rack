@@ -95,7 +95,7 @@ Error: Installing the required packages
 
 本アプリケーションを動作させるための環境を用意します。
 事前に`rack-api`が起動している必要があります。
-`rack-api`の準備については[**こちら**](https://github.com/stackforge/rack/tree/master/tools/setup/)をご覧ください。
+`rack-api`の準備については[**こちら**](https://github.com/stackforge/rack/blob/master/tools/setup/README_ja.md)をご覧ください。
 
 RACK CLIを導入したマシン上で、グループ初期化用の設定ファイルを作成します。
 RACK CLIの導入方法については[**こちら**](https://github.com/stackforge/python-rackclient)をご覧ください。

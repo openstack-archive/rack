@@ -30,7 +30,8 @@ CREDENTIALS = {
     "os_username": "fake",
     "os_password": "fake",
     "os_tenant_name": "fake",
-    "os_auth_url": "fake"
+    "os_auth_url": "fake",
+    "os_region_name": "fake"
 }
 cfg.set_defaults(os_client.openstack_client_opts, **CREDENTIALS)
 

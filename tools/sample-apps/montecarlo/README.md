@@ -89,9 +89,10 @@ Error: Installing the required packages
 ### 2. Initialize the process group
 
 This section describes how to set up an environment for this application. `rack-api` needs to be run before proceeding this step.
+For details of installation of `rack-api`, please refer to [**here**](https://github.com/stackforge/rack/tree/master/tools/setup).
 
 First, we will create a configuration file for process group initialization on RACK CLI installed machine.
-For details of installation of RACK CLI, please refer to [**here**](https://github.com/stackforgehon-rackclient).
+For details of installation of RACK CLI, please refer to [**here**](https://github.com/stackforge/python-rackclient).
 
 Please fill empty section with your environment parameters.
 

@@ -33,6 +33,7 @@ class ProcessesTest(test.NoDBTestCase):
         cfg.CONF.os_password = "os_password"
         cfg.CONF.os_tenant_name = "os_tenant_name"
         cfg.CONF.os_auth_url = "os_auth_url"
+        cfg.CONF.os_region_name = "os_region_name"
 
         self.process_client = processes.ProcessesAPI()
         self.nova = os_client.get_nova_client()
