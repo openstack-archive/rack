@@ -12,8 +12,8 @@ ROOT_DIR=$(cd $(dirname "$0") && cd ../../ && pwd)
 function exit_abort() {
   set +x
   echo "****************************************"
-  echo "Error occurred. Execution aborted."
-  echo $1
+  echo "Error occurred."
+  echo "Reason: $1"
   echo "****************************************"
   exit 1
 }
@@ -29,7 +29,7 @@ echo "Start RACK image building..."
 # Update System
 ########################################
 echo "Update system..."
-yum update -y || exit_abort "Error: Updating system"
+yum update -y || exit_abort "Failed to execute 'yum update'"
 
 
 ########################################
@@ -38,11 +38,11 @@ yum update -y || exit_abort "Error: Updating system"
 echo "Ensure that EPEL repository is installed..."
 if ! yum repolist enabled epel | grep -q epel; then
   yum install -y https://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm || \
-    exit_abort "Error: Installing EPEL repository"
+    exit_abort "Failed to install EPEL repository"
 fi
 if ! yum repolist enabled openstack-icehouse | grep -q openstack-icehouse; then
-  yum install -y https://rdo.fedorapeople.org/rdo-release.rpm || \
-    exit_abort "Error: Installing RDO repository"
+  yum install -y https://rdo.fedorapeople.org/openstack-icehouse/rdo-release-icehouse.rpm || \
+    exit_abort "Failed to install RDO repository"
 fi
 
 
@@ -55,7 +55,7 @@ yum -y install \
   libxml2-devel openssl-devel MySQL-python mysql-server python-pip redis \
   openstack-swift openstack-swift-proxy openstack-swift-account openstack-swift-container \
   openstack-swift-object memcached rsync xinetd openstack-utils xfsprogs || \
-    exit_abort "Error: Installing the required packages"
+    exit_abort "Failed to install the required rpm packages"
 
 service iptables stop
 
@@ -63,7 +63,7 @@ service iptables stop
 # Setup MySQL
 ########################################
 echo "Setup MySQL..."
-service mysqld restart || exit_abort "Error: Starting mysqld"
+service mysqld restart || exit_abort "Failed to start mysqld"
 mysqladmin -u root password password
 mysql -uroot -ppassword -h127.0.0.1 -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' identified by 'password';"
 
@@ -73,7 +73,7 @@ mysql -uroot -ppassword -h127.0.0.1 -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%
 ########################################
 echo "Setup Redis..."
 sed -i -e "s/bind 127.0.0.1/bind 0.0.0.0/g" /etc/redis.conf
-service redis restart || exit_abort "Error: Starting redis"
+service redis restart || exit_abort "Failed to start redis"
 
 
 ########################################
@@ -83,10 +83,10 @@ echo "Deploy RACK..."
 
 ### install RACK ###
 cd $ROOT_DIR
-pip install -r requirements.txt || exit_abort "Error: Installing the required python packages of RACK"
+pip install -r requirements.txt || exit_abort "Failed to install the RACK requirements"
 retval=$(which rack-api > /dev/null 2>&1; echo $?)
 if [ "$retval" -ne 0 ]; then
-  python setup.py install || exit_abort "Error: Installing RACK"
+  python setup.py install || exit_abort "Failed to install RACK"
 fi
 
 ### create DB tables ###
@@ -94,13 +94,13 @@ mysql -uroot -ppassword -e "DROP DATABASE IF EXISTS rack"
 mysql -uroot -ppassword -e "CREATE DATABASE rack CHARACTER SET utf8;"
 cd $ROOT_DIR/rack/db/sqlalchemy/migrate_repo
 python manage.py version_control mysql://root:password@localhost/rack ||\
-  exit_abort "Error: Creating the migration table"
+  exit_abort "Failed to create the migration table"
 python manage.py upgrade mysql://root:password@localhost/rack ||\
-  exit_abort "Error: Creating the database tables"
+  exit_abort "Failed to create the database tables"
 
 ### install jq ###
 wget -q -O /usr/bin/jq http://stedolan.github.io/jq/download/linux64/jq ||\
-  exit_abort "Error: Downloading jq"
+  exit_abort "Failed to download jq"
 chmod +x /usr/bin/jq
 
 ### configure RACK ###
@@ -140,11 +140,12 @@ chmod +x /usr/bin/websocket_server
 echo "Install python-rackclient..."
 retval=$(which rack > /dev/null 2>&1; echo $?)
 if [ "$retval" -ne 0 ]; then
+  rm -fr ~/python-rackclient
   git clone https://github.com/stackforge/python-rackclient.git ~/python-rackclient ||\
-    exit_abort "Error: Cloning python-rackclient repository"
+    exit_abort "Failed to clone python-rackclient repository"
   cd ~/python-rackclient
-  pip install -r requirements.txt || exit_abort "Error: Installing the required python packages of rackclient"
-  python setup.py install || exit_abort "Error: Installing rackclient"
+  pip install -r requirements.txt || exit_abort "Failed to install the rackclient requirements"
+  python setup.py install || exit_abort "Failed to install rackclient"
 fi
 
 
@@ -186,12 +187,12 @@ umount /srv/node/part1 > /dev/null 2>&1
 rm -fr /srv/node/part1
 mkdir -p /srv/node/part1
 rm -fr /srv/swift-disk
-dd if=/dev/zero of=/srv/swift-disk bs=1GB count=10 || exit_abort "Error: Creating a dummy file"
-mkfs.xfs /srv/swift-disk || exit_abort "Error: Making a XFS file system"
+dd if=/dev/zero of=/srv/swift-disk bs=1GB count=10 || exit_abort "(Swift setup) Failed to create a dummy file"
+mkfs.xfs /srv/swift-disk || exit_abort "(Swift setup) Failed to make a XFS file system"
 if ! grep -q /srv/node/part1 /etc/fstab; then
   echo "/srv/swift-disk /srv/node/part1 xfs loop,noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
 fi
-mount /srv/node/part1 || exit_abort "Error: Mounting a loopback device"
+mount /srv/node/part1 || exit_abort "(Swift setup) Failed to mount a loopback device"
 chown -R swift:swift /srv/node
 
 # configure swift.conf
@@ -234,10 +235,10 @@ swift-ring-builder object.builder rebalance
 chown -R swift:swift /etc/swift
 
 # check if the services work
-service memcached restart || exit_abort "Error: Starting memcached"
-service xinetd restart || exit_abort "Error: Starting xinetd"
-swift-init main start || exit_abort "Error: Starting the main Swift services"
-swift-init rest start || exit_abort "Error: Starting the rest of the Swift services"
+service memcached restart || exit_abort "Failed to start memcached"
+service xinetd restart || exit_abort "Failed to start xinetd"
+swift-init main start || exit_abort "Failed to start the main Swift services"
+swift-init rest start || exit_abort "Failed to start the rest of the Swift services"
 
 
 ########################################
