@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Tomohiro Maruyama <tomohiro.maruyama@ctc-g.co.jp>
+Workflow+1: Tomohiro Maruyama <tomohiro.maruyama@ctc-g.co.jp>
+Submitted-by: Jenkins
+Submitted-at: Thu, 18 Dec 2014 05:41:28 +0000
+Reviewed-on: https://review.openstack.org/142665
+Project: stackforge/rack
+Branch: refs/heads/master
