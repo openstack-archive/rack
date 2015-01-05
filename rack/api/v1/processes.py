@@ -417,29 +417,30 @@ class Controller(wsgi.Controller):
     @wsgi.response(204)
     def delete(self, req, gid, pid):
 
-        def _get_children(context, gid, pid):
+        def _delete_children(context, gid, pid):
             processes = db.process_get_all(context, gid, {"ppid": pid})
-            target_list = []
             for process in processes:
-                target_list.append(process)
-                target_list.extend(
-                    _get_children(context, gid, process["pid"]))
-            return target_list
+                _delete_children(context, gid, process["pid"])
+                _delete(context, gid, process["pid"],
+                        process["nova_instance_id"])
+            return
 
+        def _delete(context, gid, pid, nova_id):
+            self.manager.process_delete(context, nova_id)
+            try:
+                db.process_delete(context, gid, pid)
+            except exception.NotFound as e:
+                LOG.exception(e)
+
+        self._uuid_check(gid, pid)
+        context = req.environ['rack.context']
         try:
-            self._uuid_check(gid, pid)
-            context = req.environ['rack.context']
             process = db.process_get_by_pid(context, gid, pid)
-            target_list = _get_children(context, gid, pid)
-            target_list.append(process)
+        except exception.NotFound as e:
+            raise webob.exc.HTTPNotFound(explanation=e.format_message())
 
-            for process in target_list:
-                self.manager.process_delete(
-                    context, process["nova_instance_id"])
-                db.process_delete(context, gid, process["pid"])
-        except exception.NotFound as exc:
-            raise webob.exc.HTTPNotFound(explanation=exc.format_message())
-
+        _delete_children(context, gid, pid)
+        _delete(context, gid, pid, process["nova_instance_id"])
 
 def create_resource():
     return wsgi.Resource(Controller())
