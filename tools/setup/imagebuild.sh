@@ -54,7 +54,7 @@ yum -y install \
   libffi-devel libgcc-devel gcc python-devel python-lxml libxslt-devel \
   libxml2-devel openssl-devel MySQL-python mysql-server python-pip redis \
   openstack-swift openstack-swift-proxy openstack-swift-account openstack-swift-container \
-  openstack-swift-object memcached rsync xinetd openstack-utils xfsprogs || \
+  openstack-swift-object memcached rsync xinetd openstack-utils xfsprogs rabbitmq-server || \
     exit_abort "Failed to install the required rpm packages"
 
 service iptables stop
@@ -74,6 +74,14 @@ mysql -uroot -ppassword -h127.0.0.1 -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%
 echo "Setup Redis..."
 sed -i -e "s/bind 127.0.0.1/bind 0.0.0.0/g" /etc/redis.conf
 service redis restart || exit_abort "Failed to start redis"
+
+
+########################################
+# Setup RabbitMQ
+########################################
+echo "Setup RabbitMQ..."
+/usr/lib/rabbitmq/bin/rabbitmq-plugins enable rabbitmq_management
+service rabbitmq-server restart || exit_abort "Failed to start rabbitmq-server"
 
 
 ########################################
@@ -132,22 +140,6 @@ fi
 rm -f /usr/bin/websocket_server
 cp -f $ROOT_DIR/tools/setup/websocket_server.py /usr/bin/websocket_server
 chmod +x /usr/bin/websocket_server
-
-
-########################################
-# Install python-rackclient
-########################################
-echo "Install python-rackclient..."
-retval=$(which rack > /dev/null 2>&1; echo $?)
-if [ "$retval" -ne 0 ]; then
-  rm -fr ~/python-rackclient
-  git clone https://github.com/stackforge/python-rackclient.git ~/python-rackclient ||\
-    exit_abort "Failed to clone python-rackclient repository"
-  cd ~/python-rackclient
-  pip install -r requirements.txt || exit_abort "Failed to install the rackclient requirements"
-  python setup.py install || exit_abort "Failed to install rackclient"
-fi
-
 
 
 ########################################
@@ -247,6 +239,7 @@ swift-init rest start || exit_abort "Failed to start the rest of the Swift servi
 chkconfig mysqld off
 chkconfig redis off
 chkconfig iptables off
+chkconfig rabbitmq-server off
 
 # set SELinux disabled
 sed -i "s/\(^SELINUX=\).*/\1Disabled/" /etc/selinux/config

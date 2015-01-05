@@ -39,6 +39,7 @@ proxy() {
 
   websocket_server -d --bind-ipaddress 0.0.0.0 --bind-port 8888 --logfile /var/log/rack/ipc.log &
   service redis start || { echo "Error: redis could not start."; exit 1; }
+  service rabbitmq-server start || { echo "Error: rabbitmq-server could not start."; exit 1; }
   service memcached start || { echo "Error: memcached could not start."; exit 1; }
   service xinetd start || { echo "Error: xinetd could not start."; exit 1; }
   swift-init main start && swift-init rest start || { echo "Error: Swift services could not start."; exit 1; }
