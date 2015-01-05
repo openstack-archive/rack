@@ -1886,23 +1886,82 @@ class ProcessesTest(test.NoDBTestCase):
         self.mox.StubOutWithMock(db, "process_get_by_pid")
         self.mox.StubOutWithMock(db, 'process_get_all')
         self.mox.StubOutWithMock(manager.ResourceOperator, "process_delete")
-        db.process_get_by_pid(IsA(context.RequestContext), GID, PID1)\
+
+        # ppid
+        #  |-- pid_1
+        #  |    |---pid_1_1
+        #  |---pid_2
+        #  |    |---pid_2_1
+        #  |         |---pid_2_1_1
+        #  |         |---pid_2_1_2
+        #  |---pid_3
+        ppid = unicode(uuid.uuid4())
+        pid_1 = unicode(uuid.uuid4())
+        pid_1_1 = unicode(uuid.uuid4())
+        pid_2 = unicode(uuid.uuid4())
+        pid_2_1 = unicode(uuid.uuid4())
+        pid_2_1_1 = unicode(uuid.uuid4())
+        pid_2_1_2 = unicode(uuid.uuid4())
+        pid_3 = unicode(uuid.uuid4())
+
+        db.process_get_by_pid(IsA(context.RequestContext), GID, ppid)\
             .AndReturn(
-                {"pid": PPID1, "nova_instance_id": "nova_instance_id_data1"})
+                {"pid": ppid, "nova_instance_id": "nova_id_ppid"})
+
+        # ppid -> [pid_1, pid_2, pid_3]
         db.process_get_all(
-            IsA(context.RequestContext), GID, {"ppid": PID1})\
+            IsA(context.RequestContext), GID, {"ppid": ppid})\
             .AndReturn(
-                [{"pid": PID2, "nova_instance_id":
-                    "nova_instance_id_data2"}])
+                [{"pid": pid_1, "nova_instance_id": "nova_id_pid_1"},
+                 {"pid": pid_2, "nova_instance_id": "nova_id_pid_2"},
+                 {"pid": pid_3, "nova_instance_id": "nova_id_pid_3"}])
+
+        # pid_1 -> [pid_1_1]
         db.process_get_all(
-            IsA(context.RequestContext), GID, {"ppid": PID2}).AndReturn([])
-        manager.ResourceOperator.process_delete(
-            IsA(context.RequestContext), IsA(str))
-        manager.ResourceOperator.process_delete(
-            IsA(context.RequestContext), IsA(str))
+            IsA(context.RequestContext), GID, {"ppid": pid_1})\
+            .AndReturn(
+                [{"pid": pid_1_1, "nova_instance_id": "nova_id_pid_1_1"}])
+
+        # pid_1_1 -> []
+        db.process_get_all(
+            IsA(context.RequestContext), GID, {"ppid": pid_1_1})\
+            .AndReturn([])
+
+        # pid_2 -> [pid_2_1]
+        db.process_get_all(
+            IsA(context.RequestContext), GID, {"ppid": pid_2})\
+            .AndReturn(
+                [{"pid": pid_2_1, "nova_instance_id": "nova_id_pid_2_1"}])
+
+        # pid_2_1 -> [pid_2_1_1, pid_2_1_2]
+        db.process_get_all(
+            IsA(context.RequestContext), GID, {"ppid": pid_2_1})\
+            .AndReturn(
+                [{"pid": pid_2_1_1, "nova_instance_id": "nova_id_pid_2_1_1"},
+                 {"pid": pid_2_1_2, "nova_instance_id": "nova_id_pid_2_1_2"}])
+
+        # pid_2_1_1 -> []
+        db.process_get_all(
+            IsA(context.RequestContext), GID, {"ppid": pid_2_1_1})\
+            .AndReturn([])
+
+        # pid_2_1_2 -> []
+        db.process_get_all(
+            IsA(context.RequestContext), GID, {"ppid": pid_2_1_2})\
+            .AndReturn([])
+
+        # pid_3 -> []
+        db.process_get_all(
+            IsA(context.RequestContext), GID, {"ppid": pid_3})\
+            .AndReturn([])
+
+        for i in range(8):
+            manager.ResourceOperator.process_delete(
+			    IsA(context.RequestContext), IsA(str))
+
         self.mox.ReplayAll()
 
-        url = get_base_url(GID) + "/" + PID1
+        url = get_base_url(GID) + "/" + ppid
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
         self.assertEqual(res.status_code, 204)
