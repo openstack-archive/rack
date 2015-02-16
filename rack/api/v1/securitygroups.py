@@ -164,7 +164,7 @@ class Controller(wsgi.Controller):
             self._uuid_check(gid, securitygroup_id)
             values = body["securitygroup"]
             is_default = values.get("is_default")
-            if is_default:
+            if is_default is not None:
                 try:
                     is_default = strutils.bool_from_string(
                         is_default, strict=True)
