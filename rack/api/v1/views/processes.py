@@ -57,6 +57,7 @@ class ViewBuilder(common.ViewBuilder):
             "user_id": process.get("user_id"),
             "project_id": process.get("project_id"),
             "name": process.get("display_name"),
+            "nova_instance_id": process.get("nova_instance_id"),
             "glance_image_id": process.get("glance_image_id"),
             "nova_flavor_id": process.get("nova_flavor_id"),
             "status": process.get("status"),

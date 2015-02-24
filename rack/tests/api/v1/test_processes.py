@@ -69,7 +69,9 @@ METADATA1 = {"type1": "test1", "type2": "test2"}
 USER_DATA_B64_ENC = "IyEvYmluL3NoCmVjaG8gXCd0ZXN0Llwn"
 USER_DATA_B64_DEC = "#!/bin/sh\necho \\'test.\\'"
 
-NOVA_INSTANCE_ID = unicode(uuid.uuid4())
+NOVA_INSTANCE_ID1 = unicode(uuid.uuid4())
+NOVA_INSTANCE_ID2 = unicode(uuid.uuid4())
+NOVA_INSTANCE_ID3 = unicode(uuid.uuid4())
 
 
 def _base(context):
@@ -124,7 +126,7 @@ def _base_process1(gid, pid):
     return {
         "pid": pid,
         "ppid": PPID1,
-        "nova_instance_id": None,
+        "nova_instance_id": NOVA_INSTANCE_ID1,
         "gid": gid,
         "project_id": "noauth",
         "user_id": "noauth",
@@ -148,7 +150,7 @@ def _base_process2(gid, pid):
     return {
         "pid": pid,
         "ppid": PPID2,
-        "nova_instance_id": None,
+        "nova_instance_id": NOVA_INSTANCE_ID2,
         "gid": gid,
         "project_id": "noauth",
         "user_id": "noauth",
@@ -172,7 +174,7 @@ def _base_process3(gid, pid):
     return {
         "pid": pid,
         "ppid": PPID1,
-        "nova_instance_id": None,
+        "nova_instance_id": NOVA_INSTANCE_ID3,
         "gid": gid,
         "project_id": "noauth",
         "user_id": "noauth",
@@ -254,7 +256,7 @@ def fake_delete(context, gid, pid):
     process = _base(context)
     process.update(gid=gid)
     process.update(pid=pid)
-    process.update(nova_instance_id=NOVA_INSTANCE_ID)
+    process.update(nova_instance_id=NOVA_INSTANCE_ID1)
     return process
 
 
@@ -277,6 +279,7 @@ def get_base_body(process):
         "user_id": process["user_id"],
         "ppid": process["ppid"],
         "name": process["display_name"],
+        "nova_instance_id": process["nova_instance_id"],
         "nova_flavor_id": process["nova_flavor_id"],
         "glance_image_id": process["glance_image_id"],
         "keypair_id": process["keypair_id"],
@@ -504,7 +507,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         cfg.CONF.my_ip = "my_ip_data"
         cfg.CONF.os_username = "os_username_data"
         cfg.CONF.os_password = "os_password_data"
@@ -562,7 +565,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         cfg.CONF.my_ip = "my_ip_data"
         cfg.CONF.os_username = "os_username_data"
         cfg.CONF.os_password = "os_password_data"
@@ -757,7 +760,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -804,7 +807,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -854,7 +857,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -896,7 +899,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -949,7 +952,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -1003,7 +1006,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -1054,7 +1057,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn(("nova_instance_id_data", "BUILDING"))
+            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -1334,6 +1337,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": pid,
                 "ppid": None,
                 "gid": gid,
+                "nova_instance_id": None,
                 "nova_flavor_id": None,
                 "display_name": None,
                 "glance_image_id": None,
@@ -1353,6 +1357,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": process["pid"],
                 "ppid": process["ppid"],
                 "gid": process["gid"],
+                "nova_instance_id": process["nova_instance_id"],
                 "nova_flavor_id": process["nova_flavor_id"],
                 "name": process["display_name"],
                 "glance_image_id": process["glance_image_id"],
@@ -1433,6 +1438,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": pid,
                 "ppid": None,
                 "gid": gid,
+                "nova_instance_id": None,
                 "nova_flavor_id": None,
                 "display_name": None,
                 "glance_image_id": None,
@@ -1457,6 +1463,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "ppid": process["ppid"],
                 "gid": process["gid"],
                 "nova_flavor_id": process["nova_flavor_id"],
+                "nova_instance_id": process["nova_instance_id"],
                 "name": process["display_name"],
                 "glance_image_id": process["glance_image_id"],
                 "keypair_id": process["keypair_id"],
@@ -1515,6 +1522,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": pid,
                 "ppid": None,
                 "gid": gid,
+                "nova_instance_id": None,
                 "nova_flavor_id": None,
                 "display_name": None,
                 "glance_image_id": None,
@@ -1537,6 +1545,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": process["pid"],
                 "ppid": process["ppid"],
                 "gid": process["gid"],
+                "nova_instance_id": process["nova_instance_id"],
                 "nova_flavor_id": process["nova_flavor_id"],
                 "name": process["display_name"],
                 "glance_image_id": process["glance_image_id"],
@@ -1593,6 +1602,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": pid,
                 "ppid": None,
                 "gid": gid,
+                "nova_instance_id": None,
                 "nova_flavor_id": None,
                 "display_name": None,
                 "glance_image_id": None,
@@ -1615,6 +1625,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": process["pid"],
                 "ppid": process["ppid"],
                 "gid": process["gid"],
+                "nova_instance_id": process["nova_instance_id"],
                 "nova_flavor_id": process["nova_flavor_id"],
                 "name": process["display_name"],
                 "glance_image_id": process["glance_image_id"],
@@ -1671,6 +1682,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": pid,
                 "ppid": None,
                 "gid": gid,
+                "nova_instance_id": None,
                 "nova_flavor_id": None,
                 "display_name": None,
                 "glance_image_id": None,
@@ -1693,6 +1705,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": process["pid"],
                 "ppid": process["ppid"],
                 "gid": process["gid"],
+                "nova_instance_id": process["nova_instance_id"],
                 "nova_flavor_id": process["nova_flavor_id"],
                 "name": process["display_name"],
                 "glance_image_id": process["glance_image_id"],
@@ -1749,6 +1762,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": pid,
                 "ppid": None,
                 "gid": gid,
+                "nova_instance_id": None,
                 "nova_flavor_id": None,
                 "display_name": None,
                 "glance_image_id": None,
@@ -1771,6 +1785,7 @@ class ProcessesTest(test.NoDBTestCase):
                 "pid": process["pid"],
                 "ppid": process["ppid"],
                 "gid": process["gid"],
+                "nova_instance_id": process["nova_instance_id"],
                 "nova_flavor_id": process["nova_flavor_id"],
                 "name": process["display_name"],
                 "glance_image_id": process["glance_image_id"],
