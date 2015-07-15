@@ -61,6 +61,8 @@ NETWORK_ID2 = unicode(uuid.uuid4())
 NEUTRON_NETWORK_ID1 = unicode(uuid.uuid4())
 NEUTRON_NETWORK_ID2 = unicode(uuid.uuid4())
 
+EXT_ROUTER_ID = unicode(uuid.uuid4())
+
 GLANCE_IMAGE_ID1 = unicode(uuid.uuid4())
 GLANCE_IMAGE_ID2 = unicode(uuid.uuid4())
 
@@ -108,18 +110,23 @@ def _base_securitygroups2():
     ]
 
 
-def _base_network(network_id, neutron_network_id):
+def _base_network(network_id, neutron_network_id, ext_router_id):
     return {
         "network_id": network_id,
-        "neutron_network_id": neutron_network_id
+        "neutron_network_id": neutron_network_id,
+        "ext_router": ext_router_id
     }
 
 
 def _base_networks():
     return [
-        _base_network(NETWORK_ID1, NEUTRON_NETWORK_ID1),
-        _base_network(NETWORK_ID2, NEUTRON_NETWORK_ID2),
+        _base_network(NETWORK_ID1, NEUTRON_NETWORK_ID1, EXT_ROUTER_ID),
+        _base_network(NETWORK_ID2, NEUTRON_NETWORK_ID2, EXT_ROUTER_ID),
     ]
+
+
+def _base_floating_networks():
+    return [NETWORK_ID1, NETWORK_ID2]
 
 
 def _base_process1(gid, pid):
@@ -136,6 +143,7 @@ def _base_process1(gid, pid):
         "keypair_id": KEYPAIR_ID1,
         "securitygroups": _base_securitygroups1(),
         "networks": _base_networks(),
+        "floating_networks": _base_floating_networks(),
         "is_proxy": False,
         "status": "BUILDING",
         "app_status": None,
@@ -160,6 +168,7 @@ def _base_process2(gid, pid):
         "keypair_id": KEYPAIR_ID2,
         "securitygroups": _base_securitygroups2(),
         "networks": _base_networks(),
+        "floating_networks": _base_floating_networks(),
         "is_proxy": False,
         "status": "BUILDING",
         "app_status": "BUILDING",
@@ -184,6 +193,7 @@ def _base_process3(gid, pid):
         "keypair_id": KEYPAIR_ID1,
         "securitygroups": _base_securitygroups1(),
         "networks": _base_networks(),
+        "floating_networks": _base_floating_networks(),
         "is_proxy": True,
         "status": "BUILDING",
         "app_status": "BUILDING",
@@ -286,7 +296,8 @@ def get_base_body(process):
         "securitygroup_ids": [securitygroup["securitygroup_id"]
                               for securitygroup in process["securitygroups"]],
         "metadata": METADATA1,
-        "userdata": process["userdata"]
+        "userdata": process["userdata"],
+        "floating_networks": process["floating_networks"]
     }
 
 
@@ -418,7 +429,8 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(body, expect)
+        for key in body["process"]:
+            self.assertEqual(body["process"][key], expect["process"][key])
 
     def test_show_invalid_format_gid(self):
         url = get_base_url("aaaaa") + "/" + PID1
@@ -454,7 +466,8 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(body, expect)
+        for key in body["proxy"]:
+            self.assertEqual(body["proxy"][key], expect["proxy"][key])
 
     def test_show_proxy_not_found_exception(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -507,7 +520,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         cfg.CONF.my_ip = "my_ip_data"
         cfg.CONF.os_username = "os_username_data"
         cfg.CONF.os_password = "os_password_data"
@@ -565,7 +578,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         cfg.CONF.my_ip = "my_ip_data"
         cfg.CONF.os_username = "os_username_data"
         cfg.CONF.os_password = "os_password_data"
@@ -760,7 +773,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -807,7 +820,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -857,7 +870,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -899,7 +912,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -952,7 +965,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -1006,7 +1019,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -1057,7 +1070,7 @@ class ProcessesTest(test.NoDBTestCase):
             flavor=IsA(int),
             userdata=IsA(unicode),
             meta=IsA(dict),
-            nics=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
         self.mox.ReplayAll()
 
         process = _base_process1(GID, PID1)
@@ -1065,6 +1078,54 @@ class ProcessesTest(test.NoDBTestCase):
         request_body["process"].pop("name")
         expect = get_base_process_response_body(process)
         expect["process"]["name"] = "process-" + PID1
+
+        url = get_base_url(GID)
+        req = get_request(url, 'POST', request_body)
+        res = req.get_response(self.app)
+        body = jsonutils.loads(res.body)
+
+        self.assertEqual(res.status_code, 202)
+        expect["process"]["userdata"] = USER_DATA_B64_ENC
+        expect["process"]["args"].update(ppid=PPID1)
+        expect["process"]["args"].update(proxy_ip="proxy_instance_id_data")
+        for key in body["process"]:
+            self.assertEqual(body["process"][key], expect["process"][key])
+
+    def test_create_without_floating_networks(self):
+        self.mox.StubOutWithMock(db, "process_get_all")
+        self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
+        self.mox.StubOutWithMock(manager.ResourceOperator, "process_create")
+        self.mox.StubOutWithMock(
+            manager.ResourceOperator, "get_process_address")
+
+        db.process_get_all(
+            IsA(context.RequestContext), GID, filters=IsA(dict))\
+            .AndReturn([{"nova_instance_id": "nova_instance_id_data"}])
+        db.securitygroup_get_by_securitygroup_id(
+            IsA(context.RequestContext), GID, IsA(unicode)).AndReturn(
+                {"neutron_securitygroup_id": "securitygroup_id_data1"})
+        db.securitygroup_get_by_securitygroup_id(
+            IsA(context.RequestContext), GID, IsA(unicode)).AndReturn(
+                {"neutron_securitygroup_id": "securitygroup_id_data2"})
+        manager.ResourceOperator.get_process_address(
+            IsA(context.RequestContext),
+            IsA(str)).AndReturn("proxy_instance_id_data")
+        manager.ResourceOperator.process_create(
+            IsA(context.RequestContext),
+            name=IsA(unicode),
+            key_name=IsA(unicode),
+            security_groups=IsA(list),
+            image=IsA(unicode),
+            flavor=IsA(int),
+            userdata=IsA(unicode),
+            meta=IsA(dict),
+            networks=IsA(list)).AndReturn((NOVA_INSTANCE_ID1, "BUILDING"))
+        self.mox.ReplayAll()
+
+        process = _base_process1(GID, PID1)
+        request_body = get_base_request_body1(process)
+        request_body["process"].pop("floating_networks")
+        expect = get_base_process_response_body(process)
 
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
@@ -1206,6 +1267,83 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         self.assertEqual(res.status_code, 404)
+
+    def test_create_invalid_format_floating_networks(self):
+        self.mox.StubOutWithMock(db, "process_get_all")
+        self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
+        db.process_get_all(
+            IsA(context.RequestContext), GID, filters=IsA(dict))\
+            .AndReturn([{"nova_instance_id": "nova_instance_id_data"}])
+        db.securitygroup_get_by_securitygroup_id(
+            IsA(context.RequestContext), GID, IsA(unicode)).AndReturn(
+                {"neutron_securitygroup_id": "securitygroup_id_data1"})
+        db.securitygroup_get_by_securitygroup_id(
+            IsA(context.RequestContext), GID, IsA(unicode)).AndReturn(
+                {"neutron_securitygroup_id": "securitygroup_id_data2"})
+        self.mox.ReplayAll()
+
+        process = _base_process1(GID, PID1)
+        request_body = get_base_request_body1(process)
+        request_body["process"].update(floating_networks="invalid")
+
+        url = get_base_url(GID)
+        req = get_request(url, 'POST', request_body)
+        res = req.get_response(self.app)
+        self.assertEqual(res.status_code, 400)
+
+    def test_create_not_match_floating_networks(self):
+        self.mox.StubOutWithMock(db, "process_get_all")
+        self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
+        db.process_get_all(
+            IsA(context.RequestContext), GID, filters=IsA(dict))\
+            .AndReturn([{"nova_instance_id": "nova_instance_id_data"}])
+        db.securitygroup_get_by_securitygroup_id(
+            IsA(context.RequestContext), GID, IsA(unicode)).AndReturn(
+                {"neutron_securitygroup_id": "securitygroup_id_data1"})
+        db.securitygroup_get_by_securitygroup_id(
+            IsA(context.RequestContext), GID, IsA(unicode)).AndReturn(
+                {"neutron_securitygroup_id": "securitygroup_id_data2"})
+        self.mox.ReplayAll()
+
+        process = _base_process1(GID, PID1)
+        request_body = get_base_request_body1(process)
+        floating_networks = ["invalid"]
+        request_body["process"].update(floating_networks=floating_networks)
+
+        url = get_base_url(GID)
+        req = get_request(url, 'POST', request_body)
+        res = req.get_response(self.app)
+        self.assertEqual(res.status_code, 400)
+
+    def test_create_non_external_floating_networks(self):
+        def _fake_network_get_all(context, gid, filters=None):
+            networks = _base_networks()
+            networks[0]["ext_router"] = ""
+            return networks
+
+        self.stubs.Set(db, "network_get_all", _fake_network_get_all)
+        self.mox.StubOutWithMock(db, "process_get_all")
+        self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
+        db.process_get_all(
+            IsA(context.RequestContext), GID, filters=IsA(dict))\
+            .AndReturn([{"nova_instance_id": "nova_instance_id_data"}])
+        db.securitygroup_get_by_securitygroup_id(
+            IsA(context.RequestContext), GID, IsA(unicode)).AndReturn(
+                {"neutron_securitygroup_id": "securitygroup_id_data1"})
+        db.securitygroup_get_by_securitygroup_id(
+            IsA(context.RequestContext), GID, IsA(unicode)).AndReturn(
+                {"neutron_securitygroup_id": "securitygroup_id_data2"})
+        self.mox.ReplayAll()
+
+        process = _base_process1(GID, PID1)
+        request_body = get_base_request_body1(process)
+        floating_networks = [NETWORK_ID1, NETWORK_ID2]
+        request_body["process"].update(floating_networks=floating_networks)
+
+        url = get_base_url(GID)
+        req = get_request(url, 'POST', request_body)
+        res = req.get_response(self.app)
+        self.assertEqual(res.status_code, 400)
 
     def test_create_process_name_is_whitespace(self):
         process = _base_process1(GID, PID1)

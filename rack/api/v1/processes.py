@@ -130,6 +130,7 @@ class Controller(wsgi.Controller):
             name = values.get("name")
             keypair_id = values.get("keypair_id")
             securitygroup_ids = values.get("securitygroup_ids")
+            floating_networks = values.get("floating_networks")
             glance_image_id = values.get("glance_image_id")
             nova_flavor_id = values.get("nova_flavor_id")
             userdata = values.get("userdata")
@@ -219,13 +220,30 @@ class Controller(wsgi.Controller):
                 msg = _("Netwoks does not exist in the group %s" % gid)
                 raise webob.exc.HTTPBadRequest(explanation=msg)
 
+            if floating_networks is None:
+                floating_networks = []
+            elif floating_networks is not None and\
+                    not isinstance(floating_networks, list):
+                msg = _("floating_networks must be a list")
+                raise exception.InvalidInput(reason=msg)
+
             network_ids =\
                 [network["network_id"] for network in networks]
-            neutron_network_ids =\
-                [network["neutron_network_id"] for network in networks]
-            nics = []
-            for id in neutron_network_ids:
-                nics.append({"net-id": id})
+
+            for floating_net_id in floating_networks:
+                if floating_net_id not in network_ids:
+                    msg = _("floating_networks do not exist in the group %s"\
+                            % gid)
+                    raise webob.exc.HTTPBadRequest(explanation=msg)
+
+                for network in networks:
+                    if floating_net_id == network["network_id"] and\
+                            not network["ext_router"]:
+                        msg = _("floating_networks must be connected to a "
+                                "router that connects to an external network")
+                        raise webob.exc.HTTPBadRequest(explanation=msg)
+                    else:
+                        network["is_floating"] = True
 
             if args is None:
                 args = {}
@@ -299,7 +317,7 @@ class Controller(wsgi.Controller):
             boot_values["flavor"] = nova_flavor_id
             boot_values["userdata"] = userdata
             boot_values["meta"] = args
-            boot_values["nics"] = nics
+            boot_values["networks"] = networks
 
             return valid_values, boot_values
 

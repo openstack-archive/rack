@@ -209,11 +209,27 @@ class ResourceOperator(object):
 
     def process_create(self, context, name, key_name,
                        security_groups, image, flavor,
-                       userdata, meta, nics):
+                       userdata, meta, networks):
         try:
-            return self.process_client.process_create(
-                name, key_name, security_groups, image, flavor,
-                userdata, meta, nics)
+            nics = []
+            for network in networks:
+                nics.append({"net-id": network["neutron_network_id"]})
+
+            nova_instance_id, status = self.process_client.process_create(
+                            name, key_name, security_groups, image, flavor,
+                            userdata, meta, nics)
+
+            for network in networks:
+                if network.get("is_floating"):
+                    try:
+                        self.network_client.add_floatingip(
+                            nova_instance_id, network["neutron_network_id"],
+                            network["ext_router"])
+                    except:
+                        pass
+
+            return nova_instance_id, status
+
         except Exception as e:
             LOG.exception(e)
             raise exception.OpenStackException(e.code, e.message)
