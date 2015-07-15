@@ -11,11 +11,15 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
+import time
+from oslo.config import cfg
 from rack.openstack.common import log as logging
 from rack.resourceoperator import openstack as os_client
 
 
 LOG = logging.getLogger(__name__)
+
+CONF = cfg.CONF
 
 
 class NetworkAPI(object):
@@ -72,3 +76,34 @@ class NetworkAPI(object):
                     ext_router, {"subnet_id": subnet})
 
         neutron.delete_network(neutron_network_id)
+
+    def add_floatingip(self, nova_instance_id, neutron_network_id,
+                       ext_router_id):
+        neutron = os_client.get_neutron_client()
+        curr_time = time.time()
+
+        router = neutron.show_router(ext_router_id)["router"]
+        ext_network_id = router["external_gateway_info"]["network_id"]
+
+        while (1):
+            if (time.time() - curr_time) > CONF.add_floatingip_timeout:
+                LOG.exception("Unable to add FloatingIP. Timed out.")
+                break
+
+            ports = neutron.list_ports()
+            for p in ports["ports"]:
+                if p["device_id"] == nova_instance_id and\
+                        p["network_id"] == neutron_network_id:
+                    body = self._build_add_floatingip_body(ext_network_id,
+                                                           p["id"])
+                    neutron.create_floatingip(body)
+                    return
+
+    def _build_add_floatingip_body(self, ext_network_id, port_id):
+        body = {
+            "floatingip": {
+                "floating_network_id": ext_network_id,
+                "port_id": port_id
+            }
+        }
+        return body
