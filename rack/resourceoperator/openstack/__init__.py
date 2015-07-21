@@ -32,8 +32,16 @@ openstack_client_opts = [
                help='Valid region name for OpenStack')
 ]
 
+timeout_opts = [
+    cfg.IntOpt('add_floatingip_timeout',
+               default=10,
+               help='Amount of time to wait in seconds for ports of a process '
+                    'can be listed.')
+]
+
 CONF = cfg.CONF
 CONF.register_opts(openstack_client_opts)
+CONF.register_opts(timeout_opts)
 
 LOG = logging.getLogger(__name__)
 

@@ -27,7 +27,11 @@ CONF = cfg.CONF
 GID = unicode(uuid.uuid4())
 KEYPAIR_ID = unicode(uuid.uuid4())
 NETWORK_ID = unicode(uuid.uuid4())
+NETWORK_ID2 = unicode(uuid.uuid4())
 NEUTRON_NETWORK_ID = unicode(uuid.uuid4())
+NEUTRON_NETWORK_ID2 = unicode(uuid.uuid4())
+EXT_ROUTER_ID = unicode(uuid.uuid4())
+EXT_ROUTER_ID2 = unicode(uuid.uuid4())
 
 NOVA_INSTANCE_ID = unicode(uuid.uuid4())
 
@@ -704,6 +708,8 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
     def test_process_create(self):
         self.mox.StubOutWithMock(self.manager.process_client,
                                  "process_create")
+        self.mox.StubOutWithMock(self.manager.network_client,
+                                 "add_floatingip")
         fake_name = "fake_name"
         fake_key_name = "fake_key_name"
         face_security_groups = ["security_group_id1"]
@@ -711,8 +717,25 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         fake_flavor = "fake_flavor"
         fake_userdata = "fake_userdata"
         fake_meta = "fake_meta"
-        fake_nics = "fake_nics"
-        fake_process = {"pid": "fake_pid"}
+        networks = [
+            {
+                "network_id": NETWORK_ID,
+                "neutron_network_id": NEUTRON_NETWORK_ID,
+                "ext_router": EXT_ROUTER_ID,
+                "is_floating": True
+            },
+            {
+                "network_id": NETWORK_ID2,
+                "neutron_network_id": NEUTRON_NETWORK_ID2,
+                "ext_router": EXT_ROUTER_ID2,
+                "is_floating": False
+            }]
+
+        nics = [
+                {"net-id": NEUTRON_NETWORK_ID},
+                {"net-id": NEUTRON_NETWORK_ID2}
+        ]
+
         self.manager.process_client.process_create(fake_name,
                                                    fake_key_name,
                                                    face_security_groups,
@@ -720,20 +743,23 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
                                                    fake_flavor,
                                                    fake_userdata,
                                                    fake_meta,
-                                                   fake_nics)\
-            .AndReturn(fake_process)
+                                                   nics)\
+            .AndReturn((NOVA_INSTANCE_ID, "ACTIVE"))
+        self.manager.network_client.add_floatingip(NOVA_INSTANCE_ID,
+                                                   NEUTRON_NETWORK_ID,
+                                                   EXT_ROUTER_ID)
         self.mox.ReplayAll()
 
-        process = self.manager.process_create(self.context,
-                                              fake_name,
-                                              fake_key_name,
-                                              face_security_groups,
-                                              fake_image,
-                                              fake_flavor,
-                                              fake_userdata,
-                                              fake_meta,
-                                              fake_nics)
-        self.assertEqual(process["pid"], "fake_pid")
+        res = self.manager.process_create(self.context,
+                                          fake_name,
+                                          fake_key_name,
+                                          face_security_groups,
+                                          fake_image,
+                                          fake_flavor,
+                                          fake_userdata,
+                                          fake_meta,
+                                          networks)
+        self.assertEqual(res, (NOVA_INSTANCE_ID, "ACTIVE"))
 
     def test_process_create_exception_process_create_faild(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -745,7 +771,25 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         fake_flavor = "fake_flavor"
         fake_userdata = "fake_userdata"
         fake_meta = "fake_meta"
-        fake_nics = "fake_nics"
+        networks = [
+            {
+                "network_id": NETWORK_ID,
+                "neutron_network_id": NEUTRON_NETWORK_ID,
+                "ext_router": EXT_ROUTER_ID,
+                "is_floating": True
+            },
+            {
+                "network_id": NETWORK_ID2,
+                "neutron_network_id": NEUTRON_NETWORK_ID2,
+                "ext_router": EXT_ROUTER_ID2,
+                "is_floating": False
+            }]
+
+        nics = [
+                {"net-id": NEUTRON_NETWORK_ID},
+                {"net-id": NEUTRON_NETWORK_ID2}
+        ]
+
         self.manager.process_client.process_create(fake_name,
                                                    fake_key_name,
                                                    face_security_groups,
@@ -753,7 +797,7 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
                                                    fake_flavor,
                                                    fake_userdata,
                                                    fake_meta,
-                                                   fake_nics)\
+                                                   nics)\
             .AndRaise(exception.OpenStackException(400, "fake_msg"))
         self.mox.ReplayAll()
 
@@ -766,7 +810,67 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
                                         fake_flavor,
                                         fake_userdata,
                                         fake_meta,
-                                        fake_nics)
+                                        networks)
+        except Exception as e:
+            self.assertEqual(e.code, 400)
+            self.assertEqual(e.message, "fake_msg")
+
+    def test_process_create_add_floatingip_failed(self):
+        self.mox.StubOutWithMock(self.manager.process_client,
+                                 "process_create")
+        self.mox.StubOutWithMock(self.manager.network_client,
+                                 "add_floatingip")
+        fake_name = "fake_name"
+        fake_key_name = "fake_key_name"
+        face_security_groups = ["security_group_id1"]
+        fake_image = "fake_image"
+        fake_flavor = "fake_flavor"
+        fake_userdata = "fake_userdata"
+        fake_meta = "fake_meta"
+        networks = [
+            {
+                "network_id": NETWORK_ID,
+                "neutron_network_id": NEUTRON_NETWORK_ID,
+                "ext_router": EXT_ROUTER_ID,
+                "is_floating": True
+            },
+            {
+                "network_id": NETWORK_ID2,
+                "neutron_network_id": NEUTRON_NETWORK_ID2,
+                "ext_router": EXT_ROUTER_ID2,
+                "is_floating": False
+            }]
+
+        nics = [
+                {"net-id": NEUTRON_NETWORK_ID},
+                {"net-id": NEUTRON_NETWORK_ID2}
+        ]
+
+        self.manager.process_client.process_create(fake_name,
+                                                   fake_key_name,
+                                                   face_security_groups,
+                                                   fake_image,
+                                                   fake_flavor,
+                                                   fake_userdata,
+                                                   fake_meta,
+                                                   nics)\
+            .AndReturn((NOVA_INSTANCE_ID, "ACTIVE"))
+        self.manager.network_client.add_floatingip(NOVA_INSTANCE_ID,
+                                                   NEUTRON_NETWORK_ID,
+                                                   EXT_ROUTER_ID)\
+            .AndRaise(exception.OpenStackException(400, "fake_msg"))
+        self.mox.ReplayAll()
+
+        try:
+            self.manager.process_create(self.context,
+                                        fake_name,
+                                        fake_key_name,
+                                        face_security_groups,
+                                        fake_image,
+                                        fake_flavor,
+                                        fake_userdata,
+                                        fake_meta,
+                                        networks)
         except Exception as e:
             self.assertEqual(e.code, 400)
             self.assertEqual(e.message, "fake_msg")
