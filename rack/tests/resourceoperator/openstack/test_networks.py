@@ -211,3 +211,61 @@ class NetworkTestCase(test.NoDBTestCase):
         self.mox.ReplayAll()
         self.network_client.network_delete(fake_neutron_network_id,
                                            fake_ext_router)
+
+    def test_add_floatingip(self):
+        router = {
+            "router": {
+                "external_gateway_info": {
+                    "network_id": "ext_network_id"
+                }
+            }
+        }
+        fake_router = "fake_router"
+        self.neutron_mock.show_router(fake_router).AndReturn(router)
+
+        ports = {
+            "ports": [
+                {
+                    "id": "port1",
+                    "network_id": "neutron_network_id1",
+                    "device_id": "nova_instance_id1"
+                },
+                {
+                    "id": "port2",
+                    "network_id": "neutron_network_id2",
+                    "device_id": "nova_instance_id2"
+                }
+            ]}
+        self.neutron_mock.list_ports().AndReturn(ports)
+
+        expected_body = {
+            "floatingip": {
+                "floating_network_id": "ext_network_id",
+                "port_id": "port2"
+            }
+        }
+        self.neutron_mock.create_floatingip(expected_body)
+        self.mox.ReplayAll()
+
+        self.network_client.add_floatingip("nova_instance_id2",
+                                           "neutron_network_id2",
+                                           fake_router)
+
+    def test_add_floatingip_timeout(self):
+        router = {
+            "router": {
+                "external_gateway_info": {
+                    "network_id": "ext_network_id"
+                }
+            }
+        }
+        fake_router = "fake_router"
+        self.neutron_mock.show_router(fake_router).AndReturn(router)
+
+        self.neutron_mock.list_ports().MultipleTimes().AndReturn({"ports": []})
+        CONF.add_floatingip_timeout = 1
+        self.mox.ReplayAll()
+
+        self.network_client.add_floatingip("nova_instance_id1",
+                                           "neutron_network_id1",
+                                           fake_router)
