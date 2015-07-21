@@ -14,7 +14,7 @@
 
 import socket
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack import utils
 

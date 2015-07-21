@@ -30,8 +30,8 @@ import sys
 import uuid
 
 import fixtures
-from oslo.config import cfg
-from oslo.messaging import conffixture as messaging_conffixture
+from oslo_config import cfg
+from oslo_messaging import conffixture as messaging_conffixture
 import testtools
 
 from rack.db import migration

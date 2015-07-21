@@ -26,7 +26,7 @@ import threading
 import time
 import weakref
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack.openstack.common import fileutils
 from rack.openstack.common.gettextutils import _  # noqa

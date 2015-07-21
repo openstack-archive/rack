@@ -15,7 +15,7 @@
 WSGI middleware for RACK API controllers.
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 import routes
 
 from rack.api.v1 import groups

@@ -16,7 +16,7 @@ Common Auth Middleware.
 
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 from rack.api import wsgi
 from rack import context
 from rack.openstack.common.gettextutils import _

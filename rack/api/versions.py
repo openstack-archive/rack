@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 from lxml import etree
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack.api.views import versions as views_versions
 from rack.api import wsgi

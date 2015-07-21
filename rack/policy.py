@@ -16,7 +16,7 @@
 
 import os.path
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack import exception
 from rack.openstack.common.gettextutils import _

@@ -14,7 +14,7 @@
 
 """Generic Node base class for all workers that run on hosts."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack import exception
 from rack.openstack.common.gettextutils import _

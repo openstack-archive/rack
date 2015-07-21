@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 from neutronclient.v2_0 import client as neutron_client
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack import exception
 from rack.resourceoperator import openstack as os_client

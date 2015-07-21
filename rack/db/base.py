@@ -14,7 +14,7 @@
 
 """Base class for classes that need modular database access."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack.openstack.common import importutils
 

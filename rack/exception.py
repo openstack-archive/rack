@@ -14,7 +14,7 @@
 import functools
 import sys
 
-from oslo.config import cfg
+from oslo_config import cfg
 import webob.exc
 
 from rack.openstack.common import excutils

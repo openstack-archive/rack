@@ -32,8 +32,8 @@ from xml.sax import saxutils
 
 import eventlet
 import netaddr
-from oslo.config import cfg
-from oslo import messaging
+from oslo_config import cfg
+import oslo_messaging
 import six
 
 from rack import exception
@@ -965,7 +965,7 @@ class ExceptionHelper(object):
         def wrapper(*args, **kwargs):
             try:
                 return func(*args, **kwargs)
-            except messaging.ExpectedException as e:
+            except oslo_messaging.ExpectedException as e:
                 raise (e.exc_info[1], None, e.exc_info[2])
         return wrapper
 

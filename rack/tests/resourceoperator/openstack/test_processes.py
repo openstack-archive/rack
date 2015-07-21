@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 from mox import IsA
-from oslo.config import cfg
+from oslo_config import cfg
 from rack.resourceoperator import openstack as os_client
 from rack import test
 

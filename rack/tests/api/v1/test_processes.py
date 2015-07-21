@@ -13,7 +13,7 @@
 #    limitations under the License.
 from mox import IsA
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack.api.v1.views.processes import ViewBuilder
 from rack import context

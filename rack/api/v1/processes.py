@@ -13,7 +13,7 @@
 #    limitations under the License.
 import json
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 import base64
 import uuid

@@ -15,7 +15,7 @@
 Unit Tests for rack.resourceoperator.openstack.keypairs
 """
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from rack.resourceoperator import openstack as os_client
 from rack.resourceoperator.openstack import keypairs
