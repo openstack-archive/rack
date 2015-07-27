@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: Tetsuya OIKAWA <tetsuya.oikawa@ctc-g.co.jp>
+Workflow+1: Tetsuya OIKAWA <tetsuya.oikawa@ctc-g.co.jp>
+Submitted-by: Jenkins
+Submitted-at: Mon, 27 Jul 2015 02:38:57 +0000
+Reviewed-on: https://review.openstack.org/205364
+Project: stackforge/rack
+Branch: refs/heads/develop
