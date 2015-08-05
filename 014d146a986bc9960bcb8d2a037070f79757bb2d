@@ -1,0 +1,9 @@
+Verified+2: Jenkins
+Code-Review+2: takehirokaneko <myphone.tk@gmail.com>
+Code-Review+2: Nobuteru Nishida <nobuteru.nishida@ctc-g.co.jp>
+Workflow+1: Nobuteru Nishida <nobuteru.nishida@ctc-g.co.jp>
+Submitted-by: Jenkins
+Submitted-at: Wed, 05 Aug 2015 05:39:19 +0000
+Reviewed-on: https://review.openstack.org/209345
+Project: stackforge/rack
+Branch: refs/heads/develop
