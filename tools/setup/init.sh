@@ -33,6 +33,8 @@ api() {
 
 proxy() {
   rackapi_ip=$(echo $META | jq -r '.rackapi_ip')
+  gid=$(echo $META | jq -r '.gid')
+  pid=$(echo $META | jq -r '.pid')
   sed -i '/^sql_connection/d' $RACK_CONF
   echo "sql_connection = mysql://root:password@${rackapi_ip}/rack?charset=utf8" >> $RACK_CONF
   rack-api --config-file $RACK_CONF &
@@ -40,9 +42,9 @@ proxy() {
   websocket_server -d --bind-ipaddress 0.0.0.0 --bind-port 8888 --logfile /var/log/rack/ipc.log &
   service redis start || { echo "Error: redis could not start."; exit 1; }
   service rabbitmq-server start || { echo "Error: rabbitmq-server could not start."; exit 1; }
-  service memcached start || { echo "Error: memcached could not start."; exit 1; }
-  service xinetd start || { echo "Error: xinetd could not start."; exit 1; }
-  swift-init main start && swift-init rest start || { echo "Error: Swift services could not start."; exit 1; }
+  curl ${rackapi_ip}:8088/v1/groups/${gid}/processes/${pid} -X PUT \
+  -H "Content-Type: application/json" \
+  -d "{\"process\": {\"app_status\": \"ACTIVE\"}}"
 }
 
 # main
