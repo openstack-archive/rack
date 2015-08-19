@@ -86,6 +86,7 @@ echo "Deploy RACK..."
 
 ### install RACK ###
 cd $ROOT_DIR
+pip install -U setuptools
 pip install -r requirements.txt || exit_abort "Failed to install the RACK requirements"
 retval=$(which rack-api > /dev/null 2>&1; echo $?)
 if [ "$retval" -ne 0 ]; then
