@@ -1,0 +1,8 @@
+Verified+2: Jenkins
+Code-Review+2: t-oi <tetsuya.oikawa@ctc-g.co.jp>
+Workflow+1: t-oi <tetsuya.oikawa@ctc-g.co.jp>
+Submitted-by: Jenkins
+Submitted-at: Mon, 19 Oct 2015 06:00:41 +0000
+Reviewed-on: https://review.openstack.org/236795
+Project: openstack/rack
+Branch: refs/heads/develop
