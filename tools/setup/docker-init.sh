@@ -25,26 +25,34 @@ os_auth_url = $OS_AUTH_URL
 os_region_name = $OS_REGION_NAME
 EOF
 
+function exit_abort() {
+  set +x
+  echo "****************************************"
+  echo "Error occurred."
+  echo "Reason: $1"
+  echo "****************************************"
+  exit 1
+}
 
 api() {
-  service mysqld start || { echo "Error: mysqld could not start."; exit 1; }
-  rack-api --config-file $RACK_CONF &
+  db="mysql://root:password@mysql/rack?charset=utf8"
+  cd /app/rack/db/sqlalchemy/migrate_repo
+  python manage.py version_control $db ||\
+    exit_abort "Failed to create the migration table."
+  python manage.py upgrade $db ||\
+    exit_abort "Failed to create the database tables."
+  rack-api --config-file $RACK_CONF
 }
 
 proxy() {
-  rackapi_ip=$(echo $META | jq -r '.rackapi_ip')
-  gid=$(echo $META | jq -r '.gid')
+  rackapi_ip=$(python /app/tools/setup/get_rackapi_addr.py $OS_USERNAME $OS_PASSWORD $OS_TENANT_NAME $OS_AUTH_URL)
   pid=$(echo $META | jq -r '.pid')
   sed -i '/^sql_connection/d' $RACK_CONF
   echo "sql_connection = mysql://root:password@${rackapi_ip}/rack?charset=utf8" >> $RACK_CONF
-  rack-api --config-file $RACK_CONF &
-
-  websocket_server -d --bind-ipaddress 0.0.0.0 --bind-port 8888 --logfile /var/log/rack/ipc.log &
-  service redis start || { echo "Error: redis could not start."; exit 1; }
-  service rabbitmq-server start || { echo "Error: rabbitmq-server could not start."; exit 1; }
   curl ${rackapi_ip}:8088/v1/groups/${gid}/processes/${pid} -X PUT \
   -H "Content-Type: application/json" \
   -d "{\"process\": {\"app_status\": \"ACTIVE\"}}"
+  rack-api --config-file $RACK_CONF
 }
 
 # main

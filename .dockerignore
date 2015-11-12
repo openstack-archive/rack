@@ -1,0 +1,7 @@
+.testrepository
+.tox
+.testr.conf
+.coverage*
+.DS_Store
+cover
+rack.egg-info
