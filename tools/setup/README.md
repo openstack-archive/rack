@@ -2,13 +2,12 @@
 
 This chapter describes how to deploy RACK.
 
-If you don't have an OpenStack environment or just want to test RACK, please refer to [Test RACK with devstack](#procedure2).
 
 ## Deploy steps
 
 ### 1. Prerequisites
 
-`Icehouse` version is intended.
+`Juno` version is intended.
 
 Following OpenStack services must be online for RACK to work properly. Any backend can be used for each OpenStack service and only APIs are required.
 
@@ -20,7 +19,7 @@ Following OpenStack services must be online for RACK to work properly. Any backe
 | Keystone | v2.0        |
 | Swift    | v1          |
 
-Glance image of `CentOS-6.5` is required, too.
+Glance image of `CentOS-7` is required, too.
 
 
 
@@ -36,15 +35,15 @@ RACK is composed of two main roles, `rack-api` and `rack-proxy`. A `rack-proxy` 
 
 #### 3.1. Create a snapshot for RACK
 
-`rack-api` and `rack-proxy` shares the same image. You can choose a role by changing boot condition. This section describes how to make an image(actually a snapshot) out of `CentOS-6.5` based image and register it.
+`rack-api` and `rack-proxy` shares the same image. You can choose a role by changing boot condition. This section describes how to make an image(actually a snapshot) out of `CentOS-7` based image and register it.
 
-First, boot a VM with Horizon or Nova CLI from `CentOS-6.5` based Glance image. This VM must be able to connect to the Internet.
+First, boot a VM with Horizon or Nova CLI from `CentOS-7` based Glance image. This VM must be able to connect to the Internet.
 
 Secondly, login to this VM as root and run following commands.
 During this series of command, `imagebuild.sh` script installs required packages and configure it for `rack-api`.
 
 ```
-# git clone https://github.com/stackforge/rack
+# git clone https://github.com/openstack/rack
 # cd rack/tools/setup
 # ./imagebuild.sh
 Start RACK image building...
@@ -56,7 +55,7 @@ Shutdown and save snapshot of this instance via Horizon or glance command.
 ****************************************
 ```
 
-Above message indicates the installation is complete. 
+Above message indicates the installation is complete.
 
 At last, shutdown VM and create a **Instance Snapshot**.
 
@@ -76,7 +75,8 @@ Error: Installing the required packages
 We will create a virtual network for `rack-api` VM.
 Please create a virtual network which satisfies following conditions.
 
-- attached to a virtual router which connects to the Internet
+* attached to a virtual router which connects to the Internet
+* registered valid DNS servers
 
 
 #### 3.3. Create a security group
@@ -108,23 +108,21 @@ Please note that OpenStack authentication info fed as meta-data will be written 
   --meta os_tenant_name={Keystone tenant name} \
   --meta os_auth_url={Keystone API URL} \
   --meta os_region_name={region name} \
+  --meta role=api \
   rack-api
 ```
 
 You can check whether `rack-api` service runs correctly with `RACK CLI`.
-Please refer to how to install `RACK CLI` [**here**](https://github.com/stackforge/python-rackclient).
+Please refer to how to install `RACK CLI` [**here**](https://github.com/openstack/python-rackclient).
 
 ```
 $ export RACK_URL=http://{IP address of rack-api VM}:8088/v1
-$ rack group-list
-+-----+------+-------------+--------+
-| gid | name | description | status |
-+-----+------+-------------+--------+
-+-----+------+-------------+--------+
+$ rack group-create test-group
++-------------+--------------------------------------+
+| Field       | Value                                |
++-------------+--------------------------------------+
+| gid         | a77aa1f9-2242-442a-bd3d-f6365728be78 |
+| name        | test-group                           |
+...
 ```
 
-
-
-## <a name="procedure2">Test RACK with devstack</a>
-
-**to be continued**
