@@ -2,18 +2,16 @@
 
 ここではRACKのデプロイ方法について説明します。
 
-OpenStack環境が手元にない、あるいは手軽に試してみたいという場合は、[devstackを使ってRACKを試す](#procedure2)の手順をご覧ください。
-
 
 ## デプロイ手順
 
 ### 1. 前提事項
 
 RACKを利用するに当たり、以下の各OpenStackサービスが起動している必要があります。
-バージョンは`icehouse`を想定しています。
+バージョンは`Juno`を想定しています。
 各サービスのバックエンドの構成については特に指定はなく、基本的には各サービスのAPIが提供されていれば動作可能です。
 
-また、`CentOS-6.5`のGlanceイメージが登録されている必要があります。
+また、`CentOS-7`のGlanceイメージが登録されている必要があります。
 
 | Service  | API version |
 | -------- |:-----------:|
@@ -41,13 +39,13 @@ RACKは大きく２つの役割に別れており、`rack-api`と`rack-proxy`か
 ただし、起動条件を変えることにより、どちらか一方のサービスを提供するVMとして起動します。
 
 まずは、HorizonもしくはNova CLIからVMを起動してください。
-`CentOS-6.5`ベースのGlanceイメージを使用し、VMがDNSサーバにて名前解決できる必要があります。
+`CentOS-7`ベースのGlanceイメージを使用し、VMがDNSサーバにて名前解決できる必要があります。
 
 VMが起動したらrootユーザでログインし、以下のコマンドを順に実行してください。
 `imagebuild.sh`スクリプトは、`rack-api`の動作に必要なパッケージのインストール、設定等を一括で行います。
 
 ```
-# git clone https://github.com/stackforge/rack
+# git clone https://github.com/openstack/rack
 # cd rack/tools/setup
 # ./imagebuild.sh
 Start RACK image building...
@@ -108,25 +106,22 @@ Nova CLIを利用し、以下のコマンドを実行してください。
   --meta os_password={Keystone認証用のパスワード} \
   --meta os_tenant_name={Keystone認証用のテナント名} \
   --meta os_auth_url={Keystone APIのURL} \
-  --meta os_region_name={リージョン名}
+  --meta os_region_name={リージョン名} \
+  --meta role=api \
   rack-api
 ```
 
 VMが起動したら、`rack-api`サービスが正常に動作しているかどうか確認します。
 ここではRACK CLIを使用します。
-RACK CLIの導入方法については[**こちら**](https://github.com/stackforge/python-rackclient)をご覧ください。
+RACK CLIの導入方法については[**こちら**](https://github.com/openstack/python-rackclient)をご覧ください。
 
 ```
 $ export RACK_URL=http://{rack-apiVMのIPアドレス}:8088/v1
-$ rack group-list
-+-----+------+-------------+--------+
-| gid | name | description | status |
-+-----+------+-------------+--------+
-+-----+------+-------------+--------+
+$ rack group-create test-group
++-------------+--------------------------------------+
+| Field       | Value                                |
++-------------+--------------------------------------+
+| gid         | a77aa1f9-2242-442a-bd3d-f6365728be78 |
+| name        | test-group                           |
+...
 ```
-
-
-
-## <a name="procedure2">devstackを使ってRACKを試す</a>
-
-**準備中**
