@@ -1,0 +1,12 @@
+redis:
+  image: redis
+  ports:
+    - "6379:6379"
+rabbitmq:
+  image: rabbitmq:3.5-management
+  ports:
+    - "5672:5672"
+proxy:
+  image: quay.io/rack/api-server
+  ports:
+    - "8088:8088"

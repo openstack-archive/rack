@@ -1,0 +1,11 @@
+[Unit]
+Description=boot rack server
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/init.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
