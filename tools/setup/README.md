@@ -20,7 +20,7 @@ Following OpenStack services must be online for RACK to work properly. Any backe
 | Keystone | v2.0        |
 | Swift    | v1          |
 
-Glance image of `CentOS-6.5` is required, too.
+Glance image of `CentOS-7` is required, too.
 
 
 
@@ -36,7 +36,7 @@ RACK is composed of two main roles, `rack-api` and `rack-proxy`. A `rack-proxy` 
 
 #### 3.1. Create a snapshot for RACK
 
-`rack-api` and `rack-proxy` shares the same image. You can choose a role by changing boot condition. This section describes how to make an image(actually a snapshot) out of `CentOS-6.5` based image and register it.
+`rack-api` and `rack-proxy` shares the same image. You can choose a role by changing boot condition. This section describes how to make an image(actually a snapshot) out of `CentOS-7` based image and register it.
 
 First, boot a VM with Horizon or Nova CLI from `CentOS-6.5` based Glance image. This VM must be able to connect to the Internet.
 
@@ -56,7 +56,7 @@ Shutdown and save snapshot of this instance via Horizon or glance command.
 ****************************************
 ```
 
-Above message indicates the installation is complete. 
+Above message indicates the installation is complete.
 
 At last, shutdown VM and create a **Instance Snapshot**.
 
