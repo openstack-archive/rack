@@ -331,7 +331,7 @@ def check_snapshots_enabled(f):
     @functools.wraps(f)
     def inner(*args, **kwargs):
         if not CONF.allow_instance_snapshots:
-            LOG.warn(_('Rejecting snapshot request, snapshots currently'
+            LOG.warning(_('Rejecting snapshot request, snapshots currently'
                        ' disabled'))
             msg = _("Instance snapshots are not permitted at this time.")
             raise webob.exc.HTTPBadRequest(explanation=msg)
