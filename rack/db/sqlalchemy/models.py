@@ -145,7 +145,7 @@ class Process(models.SoftDeleteMixin,
     fs_endpoint = Column(Text)
     args = Column(Text)
     userdata = Column(Text)
-    app_status = Column(Text)
+    app_status = Column(Integer)
 
     group = relationship("Group",
                          foreign_keys=gid,
