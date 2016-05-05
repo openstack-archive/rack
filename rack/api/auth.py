@@ -141,8 +141,8 @@ class RackKeystoneContext(base_wsgi.Middleware):
             # Fallback to deprecated role header:
             roles = req.headers.get('X_ROLE', '')
             if roles:
-                LOG.warn(_("Sourcing roles from deprecated X-Role HTTP "
-                           "header"))
+                LOG.warning(_("Sourcing roles from deprecated X-Role HTTP "
+                              "header"))
         return [r.strip() for r in roles.split(',')]
 
 

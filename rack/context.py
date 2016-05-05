@@ -59,8 +59,8 @@ class RequestContext(object):
                 because they possibly came in from older rpc messages.
         """
         if kwargs:
-            LOG.warn(_('Arguments dropped when creating context: %s') %
-                     str(kwargs))
+            LOG.warning(_('Arguments dropped when creating context: %s') %
+                          str(kwargs))
 
         self.user_id = user_id
         self.project_id = project_id
