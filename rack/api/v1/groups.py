@@ -205,7 +205,7 @@ class Controller(wsgi.Controller):
             raise webob.exc.HTTPConflict(explanation=e.format_message())
 
         except Exception as e:
-            LOG.warn(e)
+            LOG.warning(e)
             raise exception.GroupDeleteFailed()
 
 

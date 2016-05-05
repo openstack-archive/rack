@@ -139,7 +139,7 @@ def vpn_ping(address, port, timeout=0.05, session_id=None):
         sock.close()
     fmt = '!BQxxxxxQxxxx'
     if len(received) != struct.calcsize(fmt):
-        LOG.warn(_('Expected to receive %(exp)s bytes, but actually %(act)s') %
+        LOG.warning(_('Expected to receive %(exp)s bytes, but actually %(act)s') %
                  dict(exp=struct.calcsize(fmt), act=len(received)))
         return False
     (identifier, server_sess, client_sess) = struct.unpack(fmt, received)
