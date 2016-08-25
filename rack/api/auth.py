@@ -19,7 +19,7 @@ Common Auth Middleware.
 from oslo.config import cfg
 from rack.api import wsgi
 from rack import context
-from rack.openstack.common.gettextutils import _
+from rack.openstack.common.gettextutils import _, _LW
 from rack.openstack.common import jsonutils
 from rack.openstack.common import log as logging
 from rack import wsgi as base_wsgi
@@ -141,8 +141,8 @@ class RackKeystoneContext(base_wsgi.Middleware):
             # Fallback to deprecated role header:
             roles = req.headers.get('X_ROLE', '')
             if roles:
-                LOG.warn(_("Sourcing roles from deprecated X-Role HTTP "
-                           "header"))
+                LOG.warn(_LW("Sourcing roles from deprecated X-Role HTTP "
+                         "header"))
         return [r.strip() for r in roles.split(',')]
 
 

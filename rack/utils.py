@@ -39,7 +39,7 @@ import six
 from rack import exception
 from rack.openstack.common import excutils
 from rack.openstack.common import gettextutils
-from rack.openstack.common.gettextutils import _
+from rack.openstack.common.gettextutils import _, _LW
 from rack.openstack.common import importutils
 from rack.openstack.common import lockutils
 from rack.openstack.common import log as logging
@@ -139,8 +139,8 @@ def vpn_ping(address, port, timeout=0.05, session_id=None):
         sock.close()
     fmt = '!BQxxxxxQxxxx'
     if len(received) != struct.calcsize(fmt):
-        LOG.warn(_('Expected to receive %(exp)s bytes, but actually %(act)s') %
-                 dict(exp=struct.calcsize(fmt), act=len(received)))
+        LOG.warn(_LW('Expected to receive %(exp)s bytes, but actually %(act)s') %
+               dict(exp=struct.calcsize(fmt), act=len(received)))
         return False
     (identifier, server_sess, client_sess) = struct.unpack(fmt, received)
     if identifier == 0x40 and client_sess == session_id:

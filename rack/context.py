@@ -20,7 +20,7 @@ import uuid
 import six
 
 from rack import exception
-from rack.openstack.common.gettextutils import _
+from rack.openstack.common.gettextutils import _, _LW
 from rack.openstack.common import local
 from rack.openstack.common import log as logging
 from rack.openstack.common import timeutils
@@ -59,8 +59,8 @@ class RequestContext(object):
                 because they possibly came in from older rpc messages.
         """
         if kwargs:
-            LOG.warn(_('Arguments dropped when creating context: %s') %
-                     str(kwargs))
+            LOG.warn(_LW('Arguments dropped when creating context: %s') %
+                   str(kwargs))
 
         self.user_id = user_id
         self.project_id = project_id

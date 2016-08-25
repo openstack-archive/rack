@@ -25,7 +25,7 @@ from webob import exc
 from rack.api import wsgi
 from rack.api import xmlutil
 from rack import exception
-from rack.openstack.common.gettextutils import _
+from rack.openstack.common.gettextutils import _, _LW
 from rack.openstack.common import log as logging
 
 osapi_opts = [
@@ -331,8 +331,8 @@ def check_snapshots_enabled(f):
     @functools.wraps(f)
     def inner(*args, **kwargs):
         if not CONF.allow_instance_snapshots:
-            LOG.warn(_('Rejecting snapshot request, snapshots currently'
-                       ' disabled'))
+            LOG.warn(_LW('Rejecting snapshot request, snapshots currently'
+                     ' disabled'))
             msg = _("Instance snapshots are not permitted at this time.")
             raise webob.exc.HTTPBadRequest(explanation=msg)
         return f(*args, **kwargs)

@@ -22,7 +22,7 @@ import sys
 from eventlet import event
 from eventlet import greenthread
 
-from rack.openstack.common.gettextutils import _
+from rack.openstack.common.gettextutils import _, _LW
 from rack.openstack.common import log as logging
 from rack.openstack.common import timeutils
 
@@ -81,8 +81,8 @@ class FixedIntervalLoopingCall(LoopingCallBase):
                         break
                     delay = interval - timeutils.delta_seconds(start, end)
                     if delay <= 0:
-                        LOG.warn(_('task run outlasted interval by %s sec') %
-                                 -delay)
+                        LOG.warn(_LW('task run outlasted interval by %s sec') %
+                               -delay)
                     greenthread.sleep(delay if delay > 0 else 0)
             except LoopingCallDone as e:
                 self.stop()
