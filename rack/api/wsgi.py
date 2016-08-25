@@ -24,7 +24,7 @@ import webob
 from rack.api import xmlutil
 from rack import exception
 from rack.openstack.common import gettextutils
-from rack.openstack.common.gettextutils import _
+from rack.openstack.common.gettextutils import _, _LE
 from rack.openstack.common import jsonutils
 from rack.openstack.common import log as logging
 from rack import utils
@@ -693,8 +693,8 @@ class ResourceExceptionHandler(object):
         # http://bugs.python.org/issue7853
         elif issubclass(ex_type, TypeError):
             exc_info = (ex_type, ex_value, ex_traceback)
-            LOG.error(_('Exception handling resource: %s') % ex_value,
-                      exc_info=exc_info)
+            LOG.error(_LE('Exception handling resource: %s') % ex_value,
+                    exc_info=exc_info)
             raise Fault(webob.exc.HTTPBadRequest())
         elif isinstance(ex_value, Fault):
             LOG.info(_("Fault thrown: %s"), unicode(ex_value))

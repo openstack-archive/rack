@@ -32,7 +32,7 @@ import webob.exc
 
 from rack import exception
 from rack.openstack.common import excutils
-from rack.openstack.common.gettextutils import _
+from rack.openstack.common.gettextutils import _, _LE
 from rack.openstack.common import log as logging
 
 wsgi_opts = [
@@ -127,8 +127,8 @@ class Server(object):
         try:
             self._socket = eventlet.listen(bind_addr, family, backlog=backlog)
         except EnvironmentError:
-            LOG.error(_("Could not bind to %(host)s:%(port)s"),
-                      {'host': host, 'port': port})
+            LOG.error(_LE("Could not bind to %(host)s:%(port)s"),
+                    {'host': host, 'port': port})
             raise
 
         (self.host, self.port) = self._socket.getsockname()[0:2]
@@ -190,8 +190,8 @@ class Server(object):
 
             except Exception:
                 with excutils.save_and_reraise_exception():
-                    LOG.error(_("Failed to start %(name)s on %(host)s"
-                                ":%(port)s with SSL support") % self.__dict__)
+                    LOG.error(_LE("Failed to start %(name)s on %(host)s"
+                              ":%(port)s with SSL support") % self.__dict__)
 
         wsgi_kwargs = {
             'func': eventlet.wsgi.server,
