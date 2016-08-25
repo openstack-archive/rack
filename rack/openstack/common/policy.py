@@ -62,7 +62,7 @@ import urllib
 
 import urllib2
 
-from rack.openstack.common.gettextutils import _
+from rack.openstack.common.gettextutils import _, _LE
 from rack.openstack.common import jsonutils
 from rack.openstack.common import log as logging
 
@@ -401,7 +401,7 @@ def _parse_check(rule):
     elif None in _checks:
         return _checks[None](kind, match)
     else:
-        LOG.error(_("No handler for matches of kind %s") % kind)
+        LOG.error(_LE("No handler for matches of kind %s") % kind)
         return FalseCheck()
 
 
