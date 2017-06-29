@@ -58,10 +58,9 @@ as it allows particular rules to be explicitly disabled.
 
 import abc
 import re
-import urllib
+import six
 
-import urllib2
-
+from six.moves import urllib
 from rack.openstack.common.gettextutils import _
 from rack.openstack.common import jsonutils
 from rack.openstack.common import log as logging
@@ -756,7 +755,7 @@ class HttpCheck(Check):
         data = {'target': jsonutils.dumps(target),
                 'credentials': jsonutils.dumps(creds)}
         post_data = urllib.urlencode(data)
-        f = urllib2.urlopen(url, post_data)
+        f = urllib.request.urlopen(url, post_data)
         return f.read() == "True"
 
 
