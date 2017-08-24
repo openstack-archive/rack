@@ -189,15 +189,15 @@ class SecuritygroupsTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(body["securitygroups"], expected)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(expected, body["securitygroups"])
 
     def test_index_securitygroup_not_found_exception(self):
         url = get_base_url(GID + "a")
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_index_raise_exception_by_manager(self):
         self.stubs.Set(db, "securitygroup_get_all", fake_securitygroup_get_all)
@@ -213,7 +213,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 500)
+        self.assertEqual(500, res.status_code)
 
     def test_show(self):
         self.stubs.Set(db, "securitygroup_get_by_securitygroup_id",
@@ -249,8 +249,8 @@ class SecuritygroupsTest(test.NoDBTestCase):
             "is_default": False,
             "status": "Exist"
         }
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(body["securitygroup"], expected)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(expected, body["securitygroup"])
 
     def test_show_uuidcheck_gid_not_found_exception(self):
         url = get_base_url(GID + "aaa") + "/" + SECURITYGROUP_ID1
@@ -280,7 +280,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show_manager_exception(self):
         self.mox.StubOutWithMock(
@@ -296,7 +296,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_with_no_rules(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_id)
@@ -336,11 +336,11 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
 
         for key in body["securitygroup"]:
             self.assertEqual(
-                body["securitygroup"][key], expected["securitygroup"][key])
+                expected["securitygroup"][key], body["securitygroup"][key])
 
     def test_create_with_no_name(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_id)
@@ -387,10 +387,10 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
         for key in body["securitygroup"]:
             self.assertEqual(
-                body["securitygroup"][key], expected["securitygroup"][key])
+                expected["securitygroup"][key], body["securitygroup"][key])
 
     def test_create_with_rules(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_id)
@@ -456,10 +456,10 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
         for key in body["securitygroup"]:
             self.assertEqual(
-                body["securitygroup"][key], expected["securitygroup"][key])
+                expected["securitygroup"][key], body["securitygroup"][key])
 
     def test_create_exception_InvalidInput_invalid_request_body(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_id)
@@ -469,7 +469,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_exception_InvalidInput_rule_is_not_list(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_id)
@@ -486,7 +486,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_exception_InvalidInput_is_default_is_not_boolean(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_id)
@@ -502,7 +502,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_exception_HTTPNotFound_gid_not_found(self):
         self.mox.StubOutWithMock(db, "group_get_by_gid")
@@ -522,7 +522,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_exception_HTTPNotFound_gid_is_not_uuid(self):
         name = "test_securitygroup"
@@ -537,7 +537,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_exception_manager_securitygroup_create(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_id)
@@ -561,7 +561,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 500)
+        self.assertEqual(500, res.status_code)
 
     def test_create_exception_db_securitygroup_create(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_id)
@@ -599,7 +599,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 500)
+        self.assertEqual(500, res.status_code)
 
     def test_update(self):
         self.stubs.Set(db, "securitygroup_update", fake_update)
@@ -625,10 +625,10 @@ class SecuritygroupsTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in body["securitygroup"]:
             self.assertEqual(
-                body["securitygroup"][key], expected["securitygroup"][key])
+                expected["securitygroup"][key], body["securitygroup"][key])
 
     def test_update_exception_InValidInput_invalid_request_body(self):
         request_body = {}
@@ -637,7 +637,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_exception_InValidInput_is_default_is_not_boolean(self):
         request_body = {
@@ -650,7 +650,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_exception_InValidInput_is_default_is_required(self):
         request_body = {
@@ -661,7 +661,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_exception_NotFound_gid_is_not_uuid(self):
         request_body = {
@@ -674,7 +674,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_update_exception_NotFound_securitygroup_id_is_not_uuid(self):
         request_body = {
@@ -687,7 +687,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_update_NotFound_db_securitygroup_create(self):
         self.mox.StubOutWithMock(db, "securitygroup_update")
@@ -709,7 +709,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete(self):
         self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
@@ -735,19 +735,19 @@ class SecuritygroupsTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + SECURITYGROUP_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 204)
+        self.assertEqual(204, res.status_code)
 
     def test_delete_exception_HTTPNotFound_gid_is_not_uuid(self):
         url = get_base_url(GID + "aaa") + "/" + SECURITYGROUP_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_exception_HTTPNotFound_securitygroup_id_is_not_uuid(self):
         url = get_base_url(GID) + "/" + SECURITYGROUP_ID + "aaa"
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_exeption_HTTPNotFound_securitygroup_not_found(self):
         self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
@@ -762,7 +762,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + SECURITYGROUP_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_exeption_manager_securitygroup_delete(self):
         self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
@@ -784,7 +784,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + SECURITYGROUP_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 500)
+        self.assertEqual(500, res.status_code)
 
     def test_delete_exeption_HTTPNotFound_db_securitygroup_id_not_found(self):
         self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
@@ -812,7 +812,7 @@ class SecuritygroupsTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + SECURITYGROUP_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_exeption_SecuritygroupInUse(self):
         self.mox.StubOutWithMock(db, "securitygroup_get_by_securitygroup_id")
@@ -828,4 +828,4 @@ class SecuritygroupsTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + SECURITYGROUP_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 409)
+        self.assertEqual(409, res.status_code)

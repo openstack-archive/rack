@@ -71,7 +71,7 @@ class ResourceOperatorManagerKeypairTestCase(test.NoDBTestCase):
                          {"nova_keypair_id": "nova_keypair_ids2"}]
         keypairs = self.manager.keypair_list(self.context, test_keypairs)
         for keypair in keypairs:
-            self.assertEqual(keypair["status"], "Exist")
+            self.assertEqual("Exist", keypair["status"])
 
     def test_keypair_list_not_exist(self):
         self.stubs.Set(
@@ -82,7 +82,7 @@ class ResourceOperatorManagerKeypairTestCase(test.NoDBTestCase):
                          {"nova_keypair_id": "fake"}]
         keypairs = self.manager.keypair_list(self.context, test_keypairs)
         for keypair in keypairs:
-            self.assertEqual(keypair["status"], "NotExist")
+            self.assertEqual("NotExist", keypair["status"])
 
     def test_keypair_list_exception_OpenStackException(self):
         self.mox.StubOutWithMock(
@@ -96,8 +96,8 @@ class ResourceOperatorManagerKeypairTestCase(test.NoDBTestCase):
         try:
             self.manager.keypair_list(self.context, test_keypairs)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake", e.message)
 
     def test_keypair_show(self):
         self.mox.StubOutWithMock(
@@ -107,7 +107,7 @@ class ResourceOperatorManagerKeypairTestCase(test.NoDBTestCase):
 
         test_keypair = {"nova_keypair_id": "fake"}
         self.manager.keypair_show(self.context, test_keypair)
-        self.assertEqual(test_keypair["status"], "Exist")
+        self.assertEqual("Exist", test_keypair["status"])
 
     def test_keypair_show_status_not_exist(self):
         self.mox.StubOutWithMock(
@@ -118,7 +118,7 @@ class ResourceOperatorManagerKeypairTestCase(test.NoDBTestCase):
 
         test_keypair = {"nova_keypair_id": "fake"}
         self.manager.keypair_show(self.context, test_keypair)
-        self.assertEqual(test_keypair["status"], "NotExist")
+        self.assertEqual("NotExist", test_keypair["status"])
 
     def test_keypair_show_exception(self):
         self.mox.StubOutWithMock(
@@ -131,8 +131,8 @@ class ResourceOperatorManagerKeypairTestCase(test.NoDBTestCase):
         try:
             self.manager.keypair_show(self.context, test_keypair)
         except Exception as e:
-            self.assertEqual(e.code, 405)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(405, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_keypair_create(self):
         self.mox.StubOutWithMock(
@@ -155,8 +155,8 @@ class ResourceOperatorManagerKeypairTestCase(test.NoDBTestCase):
             self.manager.keypair_create(self.context,
                                         "fake_keypair")
         except Exception as e:
-            self.assertEqual(e.code, 405)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(405, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_keypair_delete(self):
         self.mox.StubOutWithMock(self.manager.keypair_client, "keypair_delete")
@@ -182,8 +182,8 @@ class ResourceOperatorManagerKeypairTestCase(test.NoDBTestCase):
         try:
             self.manager.keypair_delete(self.context, "fake_keypair")
         except Exception as e:
-            self.assertEqual(e.code, 405)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(405, e.code)
+            self.assertEqual("fake_msg", e.message)
 
 
 class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
@@ -207,7 +207,7 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
         networks = self.manager.network_list(self.context,
                                              fake_networks)
         for network in networks:
-            self.assertEqual(network["status"], "Exist")
+            self.assertEqual("Exist", network["status"])
 
     def test_network_list_not_exist(self):
         self.mox.StubOutWithMock(self.manager.network_client, "network_list")
@@ -220,7 +220,7 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
         networks = self.manager.network_list(self.context,
                                              fake_networks)
         for network in networks:
-            self.assertEqual(network["status"], "NotExist")
+            self.assertEqual("NotExist", network["status"])
 
     def test_network_list_exception_network_list_faild(self):
         self.mox.StubOutWithMock(self.manager.network_client, "network_list")
@@ -233,8 +233,8 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
         try:
             self.manager.network_list(self.context, fake_networks)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_network_show_exist(self):
         self.mox.StubOutWithMock(self.manager.network_client, "network_show")
@@ -244,7 +244,7 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
         fake_network = {"neutron_network_id": NEUTRON_NETWORK_ID}
         self.manager.network_show(self.context,
                                   fake_network)
-        self.assertEqual(fake_network["status"], "Exist")
+        self.assertEqual("Exist", fake_network["status"])
 
     def test_network_show_not_exist(self):
         self.mox.StubOutWithMock(self.manager.network_client, "network_show")
@@ -256,7 +256,7 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
         fake_network = {"neutron_network_id": NEUTRON_NETWORK_ID}
         self.manager.network_show(self.context,
                                   fake_network)
-        self.assertEqual(fake_network["status"], "NotExist")
+        self.assertEqual("NotExist", fake_network["status"])
 
     def test_network_show_exception_network_show_faild(self):
         self.mox.StubOutWithMock(self.manager.network_client, "network_show")
@@ -269,8 +269,8 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
             self.manager.network_show(self.context,
                                       fake_network)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_network_create(self):
         self.mox.StubOutWithMock(self.manager.network_client, "network_create")
@@ -294,7 +294,7 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
                                               gateway,
                                               ext_router,
                                               dns_nameservers)
-        self.assertEqual(network, expected_values)
+        self.assertEqual(expected_values, network)
 
     def test_network_create_exception_create_faild(self):
         self.mox.StubOutWithMock(self.manager.network_client, "network_create")
@@ -319,8 +319,8 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
                                         ext_router,
                                         dns_nameservers)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_network_delete(self):
         ext_router = "fake_ext_router"
@@ -349,8 +349,8 @@ class ResourceOperatorManagerNetworkTestCase(test.NoDBTestCase):
                                         NEUTRON_NETWORK_ID,
                                         ext_router)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_delete_network_exception_404(self):
         ext_router = "fake_ext_router"
@@ -409,7 +409,7 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
             self.context,
             self.name,
             self._securitygroups())
-        self.assertEqual(securitygroup, "neutron_securitygroup_id")
+        self.assertEqual("neutron_securitygroup_id", securitygroup)
 
     def test_securitygroup_create_exception_securitygroup_create_faild(self):
         self.mox.StubOutWithMock(self.manager.securitygroup_client,
@@ -426,8 +426,8 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
                 self.name,
                 self ._securitygroups())
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_securitygroup_list_exist(self):
         self.mox.StubOutWithMock(self.manager.securitygroup_client,
@@ -443,7 +443,7 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
         securitygroups = self.manager.securitygroup_list(self.context,
                                                          fake_securitygroups)
         for securitygroup in securitygroups:
-            self.assertEqual(securitygroup["status"], "Exist")
+            self.assertEqual("Exist", securitygroup["status"])
 
     def test_securitygroup_list_not_exist(self):
         self.mox.StubOutWithMock(self.manager.securitygroup_client,
@@ -458,7 +458,7 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
         securitygroups = self.manager.securitygroup_list(self.context,
                                                          fake_securitygroups)
         for securitygroup in securitygroups:
-            self.assertEqual(securitygroup["status"], "NotExist")
+            self.assertEqual("NotExist", securitygroup["status"])
 
     def test_securitygroup_list_not_exception(self):
         self.mox.StubOutWithMock(self.manager.securitygroup_client,
@@ -475,8 +475,8 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
                 self.context,
                 fake_securitygroups)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_securitygroup_show_exist(self):
         self.mox.StubOutWithMock(self.manager.securitygroup_client,
@@ -490,7 +490,7 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
             "neutron_securitygroup_id": fake_neutron_securitygroup_id}
         self.manager.securitygroup_show(self.context,
                                         fake_securitygroup)
-        self.assertEqual(fake_securitygroup["status"], "Exist")
+        self.assertEqual("Exist", fake_securitygroup["status"])
 
     def test_securitygroup_show_not_exist(self):
         self.mox.StubOutWithMock(self.manager.securitygroup_client,
@@ -506,7 +506,7 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
             "neutron_securitygroup_id": fake_neutron_securitygroup_id}
         self.manager.securitygroup_show(self.context,
                                         fake_securitygroup)
-        self.assertEqual(fake_securitygroup["status"], "NotExist")
+        self.assertEqual("NotExist", fake_securitygroup["status"])
 
     def test_securitygroup_show_exception_securitygroup_show_failed(self):
         self.mox.StubOutWithMock(self.manager.securitygroup_client,
@@ -523,8 +523,8 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
             self.manager.securitygroup_show(self.context,
                                             fake_securitygroup)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_securitygroup_delete(self):
         self.mox.StubOutWithMock(self.manager.securitygroup_client,
@@ -566,8 +566,8 @@ class ResourceOperatorManagerSecuritygroupTestCase(test.NoDBTestCase):
                 self.context,
                 fake_neutron_securitygroup_id)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
 
 class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
@@ -598,7 +598,7 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         processes = self.manager.process_list(self.context,
                                               fake_processes)
         for i, process in enumerate(processes):
-            self.assertEqual(process, fake_processes[i])
+            self.assertEqual(fake_processes[i], process)
 
     def test_processes_list_not_exist(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -632,7 +632,7 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         self.manager.process_client.process_list().AndReturn(fake_processes)
         self.mox.ReplayAll()
         actual = self.manager.process_list(self.context, expect)
-        self.assertEqual(expect, actual)
+        self.assertEqual(actual, expect)
 
     def test_processes_list_exception(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -648,8 +648,8 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         try:
             self.manager.process_list(self.context, fake_processes)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_process_show(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -672,7 +672,7 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
                      "network_id": "1",
                      "fixed": "0.0.0.1"}]}
         self.manager.process_show(self.context, input)
-        self.assertEqual(input, fake_processes)
+        self.assertEqual(fake_processes, input)
 
     def test_process_show_exception_404(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -684,7 +684,7 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
 
         process = {"nova_instance_id": fake_nova_instance_id}
         self.manager.process_show(self.context, process)
-        self.assertEqual(process["status"], "NotExist")
+        self.assertEqual("NotExist", process["status"])
 
     def test_process_show_exception_not_404(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -698,8 +698,8 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         try:
             self.manager.process_show(self.context, process)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_process_create(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -733,7 +733,7 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
                                               fake_userdata,
                                               fake_meta,
                                               fake_nics)
-        self.assertEqual(process["pid"], "fake_pid")
+        self.assertEqual("fake_pid", process["pid"])
 
     def test_process_create_exception_process_create_faild(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -768,8 +768,8 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
                                         fake_meta,
                                         fake_nics)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_process_delete(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -801,8 +801,8 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
         try:
             self.manager.process_delete(self.context, fake_nova_instance_id)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)
 
     def test_get_process_address(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -815,7 +815,7 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
 
         process_address = self.manager\
             .get_process_address(self.context, fake_nova_instance_id)
-        self.assertEqual(process_address, fake_process_address)
+        self.assertEqual(fake_process_address, process_address)
 
     def test_get_process_address_exception_get_process_address_faild(self):
         self.mox.StubOutWithMock(self.manager.process_client,
@@ -829,5 +829,5 @@ class ResourceOperatorManagerProcessesTestCase(test.NoDBTestCase):
             self.manager.get_process_address(self.context,
                                              fake_nova_instance_id)
         except Exception as e:
-            self.assertEqual(e.code, 400)
-            self.assertEqual(e.message, "fake_msg")
+            self.assertEqual(400, e.code)
+            self.assertEqual("fake_msg", e.message)

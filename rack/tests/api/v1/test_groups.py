@@ -151,8 +151,8 @@ class GroupsTest(test.NoDBTestCase):
         for group in expected["groups"]:
             group["name"] = group.pop("display_name")
             group["description"] = group.pop("display_description")
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(body, expected)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(expected, body)
 
     def test_index_filters(self):
         url = '/v1/groups?project_id=PID&name=NAME&status=STATUS'
@@ -169,8 +169,8 @@ class GroupsTest(test.NoDBTestCase):
              "description": "fake",
              "status": "STATUS"}
         ]}
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(body, expected)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(expected, body)
 
     def test_show(self):
         url = '/v1/groups/00000000-0000-0000-0000-000000000010'
@@ -186,8 +186,8 @@ class GroupsTest(test.NoDBTestCase):
                     "status": "ACTIVE"
                     }}
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(body, expected)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(expected, body)
 
     def test_show_not_found_exception(self):
         self.stubs.Set(db, "group_get_by_gid",
@@ -195,7 +195,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
         self.assertRaises(
             webob.exc.HTTPNotFound, self.controller.show, req, GID)
 
@@ -204,7 +204,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + gid
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
         self.assertRaises(
             webob.exc.HTTPNotFound, self.controller.show, req, gid)
 
@@ -232,9 +232,9 @@ class GroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
         for key in expected["group"]:
-            self.assertEqual(body["group"][key], expected["group"][key])
+            self.assertEqual(expected["group"][key], body["group"][key])
 
     def test_create_group_name_is_whitespace(self):
         request_body = {
@@ -247,7 +247,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_group_name_with_leading_trailing_whitespace(self):
         request_body = {
@@ -271,9 +271,9 @@ class GroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
         for key in expected["group"]:
-            self.assertEqual(body["group"][key], expected["group"][key])
+            self.assertEqual(expected["group"][key], body["group"][key])
 
     def test_create_without_group_name(self):
         request_body = {
@@ -285,7 +285,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_without_group_description(self):
         request_body = {
@@ -307,9 +307,9 @@ class GroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
         for key in expected["group"]:
-            self.assertEqual(body["group"][key], expected["group"][key])
+            self.assertEqual(expected["group"][key], body["group"][key])
 
     def test_create_empty_body(self):
         request_body = {"group": {}}
@@ -317,7 +317,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_no_body(self):
         request_body = {}
@@ -325,7 +325,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_invalid_format_body(self):
         request_body = []
@@ -333,7 +333,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_check_group_name_length(self):
         MAX_LENGTH = 255
@@ -347,7 +347,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_group_description_length_zero(self):
         request_body = {
@@ -371,9 +371,9 @@ class GroupsTest(test.NoDBTestCase):
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
         for key in expected["group"]:
-            self.assertEqual(body["group"][key], expected["group"][key])
+            self.assertEqual(expected["group"][key], body["group"][key])
 
     def test_create_check_group_description_length(self):
         MAX_LENGTH = 255
@@ -387,7 +387,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update(self):
         request_body = {
@@ -411,9 +411,9 @@ class GroupsTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in request_body["group"]:
-            self.assertEqual(body["group"][key], expected["group"][key])
+            self.assertEqual(expected["group"][key], body["group"][key])
 
     def test_update_allow_group_name_none(self):
         request_body = {
@@ -425,7 +425,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
 
     def test_update_allow_group_description_none(self):
         request_body = {
@@ -437,7 +437,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
 
     def test_update_allow_group_description_blank(self):
         request_body = {
@@ -450,7 +450,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
 
     def test_update_invalid_gid(self):
         request_body = {
@@ -462,7 +462,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + "err"
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_update_empty_body(self):
         request_body = {"group": {}}
@@ -470,7 +470,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_no_body(self):
         request_body = {}
@@ -478,7 +478,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_invalid_format_body(self):
         request_body = []
@@ -486,7 +486,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_group_name_blank(self):
         request_body = {
@@ -498,7 +498,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_check_group_name_length(self):
         MAX_LENGTH = 255
@@ -512,7 +512,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_check_group_description_length(self):
         MAX_LENGTH = 255
@@ -526,7 +526,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_group_not_found_on_db(self):
         self.stubs.Set(db, "group_update", raise_group_not_found)
@@ -539,7 +539,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
         self.assertRaises(
             webob.exc.HTTPNotFound,
             self.controller.update,
@@ -551,7 +551,7 @@ class GroupsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + "err"
         req = get_request(url, 'DELETE')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
         body = jsonutils.loads(res.body)
         print(body)
 
@@ -564,14 +564,14 @@ class GroupsTest(test.NoDBTestCase):
         self.stubs.Set(db, "network_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "process_get_all", fake_not_group_data_not_exists)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 204)
+        self.assertEqual(204, res.status_code)
 
     def test_delete_group_inuse_keypair(self):
         url = '/v1/groups/' + GID
         req = get_request(url, 'DELETE')
         self.stubs.Set(db, "keypair_get_all", fake_not_group_data_exists)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 409)
+        self.assertEqual(409, res.status_code)
 
     def test_delete_group_inuse_securitygroup(self):
         url = '/v1/groups/' + GID
@@ -579,7 +579,7 @@ class GroupsTest(test.NoDBTestCase):
         self.stubs.Set(db, "keypair_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "securitygroup_get_all", fake_not_group_data_exists)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 409)
+        self.assertEqual(409, res.status_code)
 
     def test_delete_group_inuse_network(self):
         url = '/v1/groups/' + GID
@@ -589,7 +589,7 @@ class GroupsTest(test.NoDBTestCase):
             db, "securitygroup_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "network_get_all", fake_not_group_data_exists)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 409)
+        self.assertEqual(409, res.status_code)
 
     def test_delete_group_inuse_process(self):
         url = '/v1/groups/' + GID
@@ -600,11 +600,11 @@ class GroupsTest(test.NoDBTestCase):
         self.stubs.Set(db, "network_get_all", fake_not_group_data_not_exists)
         self.stubs.Set(db, "process_get_all", fake_not_group_data_exists)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 409)
+        self.assertEqual(409, res.status_code)
 
     def test_delete_exception(self):
         url = '/v1/groups/' + GID
         req = get_request(url, 'DELETE')
         self.stubs.Set(db, "keypair_get_all", fake_raise_exception)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 500)
+        self.assertEqual(500, res.status_code)

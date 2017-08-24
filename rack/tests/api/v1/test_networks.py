@@ -164,14 +164,14 @@ class NetworksTest(test.NoDBTestCase):
         expected_body = {"networks": []}
 
         self.assertEqual(expected_body, body)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
 
     def test_index_validate_exception_by_gid_format(self):
         not_uuid_gid = "aaaaa"
         url = '/v1/groups/' + not_uuid_gid + '/networks'
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show(self):
 
@@ -208,7 +208,7 @@ class NetworksTest(test.NoDBTestCase):
         expect.update(name="net-45212048-abc3-43cc-89b3-377341426ac")
         expect.update(cidr="10.0.0.0/24")
 
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in body["network"]:
             self.assertEqual(expect[key], body["network"][key])
 
@@ -217,13 +217,13 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + not_uuid_gid + '/networks/' + NETWORK_ID1
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show_validate_exception_by_network_id_format(self):
         url = '/v1/groups/' + GID + '/networks/' + NETWORK_ID1 + "aaa"
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show_exception_networknotfound(self):
         self.mox.StubOutWithMock(db, "network_get_by_network_id")
@@ -235,7 +235,7 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url + "/" + NETWORK_ID1, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
@@ -283,7 +283,7 @@ class NetworksTest(test.NoDBTestCase):
         for key in body["network"]:
             self.assertEqual(
                 expect["network"][key], body["network"][key])
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
 
     def test_create_validate_exception_by_gid_notfound_format(self):
         request_body = {
@@ -299,7 +299,7 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + "a" + '/networks'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_validate_exception_by_gid_notfound(self):
         self.mox.StubOutWithMock(db, "group_get_by_gid")
@@ -320,7 +320,7 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_validate_exception_no_body(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
@@ -328,7 +328,7 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url, 'POST')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_validate_exception_body_format(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
@@ -344,7 +344,7 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_by_name_blank(self):
         self.stubs.Set(db, "network_create", fake_create_db)
@@ -400,7 +400,7 @@ class NetworksTest(test.NoDBTestCase):
         for key in body["network"]:
             self.assertEqual(
                 expect["network"][key], body["network"][key])
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
 
     def test_create_validate_exception_by_is_admin_not_boolean(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
@@ -419,7 +419,7 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_validate_exception_by_dns_nameservers_is_not_list(self):
         self.stubs.Set(db, "group_get_by_gid", fake_group_get_by_gid)
@@ -438,7 +438,7 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/networks'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_delete(self):
         self.stubs.Set(db,
@@ -454,14 +454,14 @@ class NetworksTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/networks/" + NETWORK_ID1
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 204)
+        self.assertEqual(204, res.status_code)
 
     def test_delete_validate_exception_by_gid_format(self):
         not_uuid_gid = "aaaaa"
         url = '/v1/groups/' + not_uuid_gid + '/networks/' + NETWORK_ID1
         req = get_request(url, 'DELETE')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_exception_not_found(self):
         self.mox.StubOutWithMock(db, "network_get_by_network_id")
@@ -472,7 +472,7 @@ class NetworksTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/networks/' + NETWORK_ID1
         req = get_request(url, 'DELETE')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_exception_inuse(self):
         self.mox.StubOutWithMock(db, "network_get_by_network_id")
@@ -487,4 +487,4 @@ class NetworksTest(test.NoDBTestCase):
         req = get_request(url, 'DELETE')
         res = req.get_response(self.app)
 
-        self.assertEqual(res.status_code, 409)
+        self.assertEqual(409, res.status_code)

@@ -215,7 +215,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + "aaaaa" + "/keypairs"
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show(self):
 
@@ -263,13 +263,13 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID1
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show_invalid_format_gid(self):
         url = "/v1/groups/" + "aaaaa" + "/keypairs/" + KEYPAIR_ID1
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create(self):
         request_body = {
@@ -311,7 +311,7 @@ class KeypairsTest(test.NoDBTestCase):
         body = jsonutils.loads(res.body)
         for key in body["keypair"]:
             self.assertEqual(expect["keypair"][key], body["keypair"][key])
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
 
     def test_create_without_name(self):
         request_body = {
@@ -348,7 +348,7 @@ class KeypairsTest(test.NoDBTestCase):
         body = jsonutils.loads(res.body)
         for key in body["keypair"]:
             self.assertEqual(expect["keypair"][key], body["keypair"][key])
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
 
     def test_create_default_keypair_already_exists(self):
         request_body = {
@@ -366,7 +366,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/keypairs'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_raise_exception_by_db_keypair_create(self):
         self.mox.StubOutWithMock(db, "group_get_by_gid")
@@ -382,7 +382,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/keypairs'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_invalid_format_gid(self):
         request_body = {
@@ -394,7 +394,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = '/v1/groups/' + 'aaaaaaa' + '/keypairs'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_without_is_default(self):
         request_body = {
@@ -432,7 +432,7 @@ class KeypairsTest(test.NoDBTestCase):
         body = jsonutils.loads(res.body)
         for key in body["keypair"]:
             self.assertEqual(expect["keypair"][key], body["keypair"][key])
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
 
     def test_create_empty_request_body(self):
         self.mox.StubOutWithMock(manager.ResourceOperator, "keypair_create")
@@ -465,7 +465,7 @@ class KeypairsTest(test.NoDBTestCase):
         body = jsonutils.loads(res.body)
         for key in body["keypair"]:
             self.assertEqual(expect["keypair"][key], body["keypair"][key])
-        self.assertEqual(res.status_code, 201)
+        self.assertEqual(201, res.status_code)
 
     def test_create_no_body(self):
         request_body = {}
@@ -473,7 +473,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/keypairs'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_invalid_format_body(self):
         request_body = []
@@ -481,7 +481,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/keypairs'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_invalid_is_default(self):
         request_body = {
@@ -494,7 +494,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = '/v1/groups/' + GID + '/keypairs'
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update(self):
         request_body = {
@@ -520,9 +520,9 @@ class KeypairsTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in request_body["keypair"]:
-            self.assertEqual(body["keypair"][key], expected["keypair"][key])
+            self.assertEqual(expected["keypair"][key], body["keypair"][key])
 
     def test_update_invalid_format_gid(self):
         request_body = {
@@ -534,7 +534,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + "aaaaaaa" + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "PUT", request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_update_invalid_format_keypair_id(self):
         request_body = {
@@ -546,7 +546,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/keypairs/" + "aaaaa"
         req = get_request(url, "PUT", request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_update_invalid_format_is_default(self):
         request_body = {
@@ -558,7 +558,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "PUT", request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_without_is_default(self):
         request_body = {
@@ -570,28 +570,28 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "PUT", request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_empty_body(self):
         request_body = {"keypair": {}}
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "PUT", request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_no_body(self):
         request_body = {}
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "PUT", request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_invalid_body(self):
         request_body = []
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "PUT", request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_delete(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -612,19 +612,19 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 204)
+        self.assertEqual(204, res.status_code)
 
     def test_delete_invalid_format_gid(self):
         url = "/v1/groups/" + "aaaaaaa" + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_invalid_format_keypair_id(self):
         url = "/v1/groups/" + GID + "/keypairs/" + "aaaaa"
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_keypair_not_found(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -646,7 +646,7 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_raise_exception_keypair_inuse(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -657,4 +657,4 @@ class KeypairsTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/keypairs/" + KEYPAIR_ID
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 409)
+        self.assertEqual(409, res.status_code)

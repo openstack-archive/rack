@@ -403,7 +403,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url("aaaaa")
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show(self):
         process = _base_process1(GID, PID1)
@@ -417,20 +417,20 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(body, expect)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(expect, body)
 
     def test_show_invalid_format_gid(self):
         url = get_base_url("aaaaa") + "/" + PID1
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show_invalid_format_pid(self):
         url = get_base_url(GID) + "/" + "aaaaa"
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show_process_not_found(self):
         self.stubs.Set(db, "keypair_get_by_keypair_id",
@@ -438,7 +438,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + PIDX
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show_proxy(self):
         process = _base_process3(GID, PID1)
@@ -453,8 +453,8 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(body, expect)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(expect, body)
 
     def test_show_proxy_not_found_exception(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -466,7 +466,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_show_proxy_bad_request(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -477,7 +477,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'GET')
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_proxy(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -525,7 +525,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["proxy"]["userdata"] = USER_DATA_B64_ENC
         expect["proxy"]["args"].update(ppid=PPID1)
         expect["proxy"]["args"].update(rackapi_ip="my_ip_data")
@@ -535,7 +535,7 @@ class ProcessesTest(test.NoDBTestCase):
         expect["proxy"]["args"].update(os_auth_url="os_auth_url_data")
         expect["proxy"]["args"].update(os_region_name="os_region_name")
         for key in body["proxy"]:
-            self.assertEqual(body["proxy"][key], expect["proxy"][key])
+            self.assertEqual(expect["proxy"][key], body["proxy"][key])
 
     def test_create_proxy_without_proxy_name(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -584,7 +584,7 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["proxy"]["userdata"] = USER_DATA_B64_ENC
         expect["proxy"]["args"].update(ppid=PPID1)
         expect["proxy"]["args"].update(rackapi_ip="my_ip_data")
@@ -595,7 +595,7 @@ class ProcessesTest(test.NoDBTestCase):
         expect["proxy"]["args"].update(os_region_name="os_region_name")
         expect["proxy"].update(name="proxy-" + PID1)
         for key in body["proxy"]:
-            self.assertEqual(body["proxy"][key], expect["proxy"][key])
+            self.assertEqual(expect["proxy"][key], body["proxy"][key])
 
     def test_create_proxy_ipc_endpoint_invalid_max_length(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -630,7 +630,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_proxy_shm_endpoint_invalid_max_length(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -665,7 +665,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_proxy_fs_endpoint_invalid_max_length(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -700,7 +700,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_proxy_already_exist(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -716,7 +716,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_proxy_invalid_dict_key(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -730,7 +730,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -772,12 +772,12 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["process"]["userdata"] = USER_DATA_B64_ENC
         expect["process"]["args"].update(ppid=PPID1)
         expect["process"]["args"].update(proxy_ip="proxy_instance_id_data")
         for key in body["process"]:
-            self.assertEqual(body["process"][key], expect["process"][key])
+            self.assertEqual(expect["process"][key], body["process"][key])
 
     def test_create_args_value_integer(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -821,14 +821,14 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["process"]["userdata"] = USER_DATA_B64_ENC
         expect["process"]["args"].update(ppid=PPID1)
         expect["process"]["args"].update(proxy_ip="proxy_instance_id_data")
         expect["process"]["args"].update(test_key1="123")
         expect["process"]["args"].update(test_key2="456")
         for key in body["process"]:
-            self.assertEqual(body["process"][key], expect["process"][key])
+            self.assertEqual(expect["process"][key],body["process"][key])
 
     def test_create_default_securitygroup(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -871,12 +871,12 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["process"]["userdata"] = USER_DATA_B64_ENC
         expect["process"]["args"].update(proxy_ip="proxy_instance_id_data")
         expect["process"].update(ppid=None)
         for key in body["process"]:
-            self.assertEqual(body["process"][key], expect["process"][key])
+            self.assertEqual(expect["process"][key], body["process"][key])
 
     def test_create_parent_securitygroup_and_image_and_flavor(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -916,13 +916,13 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["process"]["userdata"] = USER_DATA_B64_ENC
         expect["process"]["args"].update(proxy_ip="proxy_instance_id_data")
         expect["process"]["args"].update(ppid=PPID1)
         expect["process"]["args"].update(key="value")
         for key in body["process"]:
-            self.assertEqual(body["process"][key], expect["process"][key])
+            self.assertEqual(expect["process"][key], body["process"][key])
 
     def test_create_without_keypair_id(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -966,12 +966,12 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["process"]["userdata"] = USER_DATA_B64_ENC
         expect["process"]["args"].update(ppid=PPID1)
         expect["process"]["args"].update(proxy_ip="proxy_instance_id_data")
         for key in body["process"]:
-            self.assertEqual(body["process"][key], expect["process"][key])
+            self.assertEqual(expect["process"][key], body["process"][key])
 
     def test_create_without_keypair_id_and_ppid(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1021,13 +1021,13 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["process"]["userdata"] = USER_DATA_B64_ENC
         expect["process"]["args"].update(proxy_ip="proxy_instance_id_data")
         expect["process"].update(keypair_id="keypair_id_data")
         expect["process"].update(ppid=None)
         for key in body["process"]:
-            self.assertEqual(body["process"][key], expect["process"][key])
+            self.assertEqual(expect["process"][key], body["process"][key])
 
     def test_create_without_process_name(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1071,12 +1071,12 @@ class ProcessesTest(test.NoDBTestCase):
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
 
-        self.assertEqual(res.status_code, 202)
+        self.assertEqual(202, res.status_code)
         expect["process"]["userdata"] = USER_DATA_B64_ENC
         expect["process"]["args"].update(ppid=PPID1)
         expect["process"]["args"].update(proxy_ip="proxy_instance_id_data")
         for key in body["process"]:
-            self.assertEqual(body["process"][key], expect["process"][key])
+            self.assertEqual(expect["process"][key], body["process"][key])
 
     def test_create_process_proxy_not_exits(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1090,7 +1090,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_process_invalid_dict_key(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1104,7 +1104,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_invalid_format_gid(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1120,7 +1120,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(gid)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_invalid_securitygroup_ids(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1135,7 +1135,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_invalid_format_securitygroup_ids(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1150,7 +1150,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_invalid_args(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1173,7 +1173,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_invalid_format_keypair_id(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1189,7 +1189,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_create_invalid_format_ppid(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1205,7 +1205,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(400, res.status_code)
 
     def test_create_process_name_is_whitespace(self):
         process = _base_process1(GID, PID1)
@@ -1215,7 +1215,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_default_security_group_not_found(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1235,7 +1235,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_invalid_userdata(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1259,7 +1259,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_empty_body(self):
         request_body = {"process": {}}
@@ -1267,7 +1267,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID)
         req = get_request(url, 'POST', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_create_no_body(self):
         request_body = {}
@@ -1312,13 +1312,13 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url("aaaaaaa") + "/" + PID1
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_invalid_format_pid(self):
         url = get_base_url(GID) + "/" + "aaaaa"
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_update(self):
 
@@ -1394,7 +1394,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + PID1
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_app_status_required(self):
         request_body = {"process": {}}
@@ -1402,7 +1402,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + PID1
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_not_found(self):
         self.mox.StubOutWithMock(db, "process_update")
@@ -1414,7 +1414,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + PID1
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_update_proxy_all(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1496,7 +1496,7 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in body["proxy"]:
             self.assertEqual(expect["proxy"][key], body["proxy"][key])
 
@@ -1576,7 +1576,7 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in body["proxy"]:
             self.assertEqual(expect["proxy"][key], body["proxy"][key])
 
@@ -1656,7 +1656,7 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in body["proxy"]:
             self.assertEqual(expect["proxy"][key], body["proxy"][key])
 
@@ -1736,7 +1736,7 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in body["proxy"]:
             self.assertEqual(expect["proxy"][key], body["proxy"][key])
 
@@ -1816,7 +1816,7 @@ class ProcessesTest(test.NoDBTestCase):
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
         body = jsonutils.loads(res.body)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(200, res.status_code)
         for key in body["proxy"]:
             self.assertEqual(expect["proxy"][key], body["proxy"][key])
 
@@ -1831,7 +1831,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_proxy_invalid_request_body(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1844,7 +1844,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_prxoy_no_keyword(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1857,7 +1857,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 400)
+        self.assertEqual(400, res.status_code)
 
     def test_update_proxy_not_found(self):
         self.mox.StubOutWithMock(db, "process_get_all")
@@ -1874,7 +1874,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = "/v1/groups/" + GID + "/proxy"
         req = get_request(url, 'PUT', request_body)
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
 
     def test_delete_non_parent(self):
         self.stubs.Set(db, "process_delete", fake_delete)
@@ -1894,7 +1894,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + PID1
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 204)
+        self.assertEqual(204, res.status_code)
 
     def test_delete_parent_child_relation(self):
         self.stubs.Set(db, "process_delete", fake_delete)
@@ -1979,7 +1979,7 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + ppid
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 204)
+        self.assertEqual(204, res.status_code)
 
     def test_delete_not_found_exception(self):
         self.mox.StubOutWithMock(db, "process_get_by_pid")
@@ -1990,4 +1990,4 @@ class ProcessesTest(test.NoDBTestCase):
         url = get_base_url(GID) + "/" + PID1
         req = get_request(url, "DELETE")
         res = req.get_response(self.app)
-        self.assertEqual(res.status_code, 404)
+        self.assertEqual(404, res.status_code)
