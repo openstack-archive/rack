@@ -28,6 +28,8 @@ import os
 import shutil
 import sys
 import uuid
+import mock
+import datetime
 
 import fixtures
 from oslo.config import cfg
@@ -267,10 +269,11 @@ class TimeOverride(fixtures.Fixture):
 
     """Fixture to start and remove time override."""
 
-    def setUp(self):
+    @mock.patch.object(timeutils, 'utcnow')
+    def setUp(self, mock_utcnow):
         super(TimeOverride, self).setUp()
-        timeutils.set_time_override()
-        self.addCleanup(timeutils.clear_time_override)
+        now = datetime.datetime.utcnow()
+        mock_utcnow.return_value = now
 
 
 class NoDBTestCase(TestCase):
