@@ -1,6 +1,0 @@
----
-# delete iptables rule from /etc/sysconfig/iptables. Don't forget to include handler.yml at caller script.
-  - name: ensure iptables rule is deleted.
-    lineinfile: "dest=/etc/sysconfig/iptables regexp=^'{{ delete_line }}' line='{{ '#' + delete_line }}'"
-    notify: restart iptables
-

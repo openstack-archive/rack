@@ -1,5 +1,0 @@
-- include: mysql.yml
-- include: keystone.yml
-- include: frontend.yml
-- include: controller.yml
-- include: volume.yml

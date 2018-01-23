@@ -1,7 +1,0 @@
-export OS_USERNAME={{ admin_user }}
-export OS_TENANT_NAME={{ admin_tenant }}
-export OS_PASSWORD={{ admin_password }}
-export OS_AUTH_URL=http://{{frontend_int_ip}}:35357/v2.0
-export PS1="${PS1}[<keystone_admin>] "
-
-

@@ -1,8 +1,0 @@
----
-- include: mysql.yml
-- include: keystone.yml
-- include: frontend.yml
-- include: gateway.yml
-- include: compute.yml
-
-

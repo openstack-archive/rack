@@ -1,6 +1,0 @@
-- include: playbooks/pre_action/main.yml
-- include: playbooks/common/main.yml
-- include: playbooks/ntp/main.yml
-- include: playbooks/elastic_search/main.yml
-- include: playbooks/fluentd/main.yml
-- include: playbooks/Kibana/main.yml

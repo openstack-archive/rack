@@ -1,9 +1,0 @@
----
-# open port for iptables. Don't forget to include handler.yml at caller script.
-  - name: ensure iptables port is opened.
-    lineinfile: dest=/etc/sysconfig/iptables
-                line="{{ oneline }}"
-                insertafter="-A INPUT -i lo -j ACCEPT"
-                state=present
-    notify: restart iptables
-

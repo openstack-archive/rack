@@ -1,6 +1,0 @@
-[mongodb]
-name=mongoDB repoisitory for RHEL
-baseurl=http://192.168.100.253/norarepo/repository/mongodb
-enabled=1
-gpgcheck=0
-

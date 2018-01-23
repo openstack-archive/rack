@@ -1,4 +1,0 @@
----
-- include: mysql.yml
-- include: frontend.yml
-- include: fixture.yml
